@@ -350,44 +350,60 @@ export async function deleteTopic(topicId: string, sessionId: string) {
 export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
   
-  if (!faculty.email) {
-    return { success: false, message: "Faculty member has no email address." };
-  }
+  if (!faculty.email) return { success: false, message: "Faculty member has no email address." };
 
   try {
-    // 1. Generate the PDF using the existing action
-    console.log('--- STEP 1: Starting PDF generation for', faculty.canonical_name);
+    // 1. Generate the PDF
     const pdfRes = await generatePDFData(faculty.id);
-    console.log('--- STEP 2: PDF Generation Result:', pdfRes);
-    if (!pdfRes.success || !pdfRes.url) {
-      throw new Error(pdfRes.message || "Failed to generate PDF");
-    }
+    if (!pdfRes.success || !pdfRes.url) throw new Error(pdfRes.message || "Failed to generate PDF");
 
-    // 2. Read the PDF from the file system
     const fileName = pdfRes.url.split('/').pop()!;
     const filePath = path.join(process.cwd(), 'public', 'pdfs', fileName);
-    
-    if (!fs.existsSync(filePath)) {
-      throw new Error("PDF generated but file not found on disk.");
-    }
-
-    console.log('--- STEP 3: Reading PDF from disk:', filePath);
     const pdfBuffer = fs.readFileSync(filePath);
     const base64Pdf = pdfBuffer.toString('base64');
 
-    // 3. Send to Google Script
+    // 2. Fetch the detailed session data from Supabase
+    const { data: facultyTopics } = await supabase
+      .from('faculty_topics')
+      .select(`session_topics ( topic_title, conference_sessions ( session_code, session_name, hall ) )`)
+      .eq('faculty_id', faculty.id);
+
+    // 3. Group by session to create sessionsData
+    const uniqueSessions: Record<string, any> = {};
+    if (facultyTopics) {
+      facultyTopics.forEach((ft: any) => {
+        const s = ft.session_topics?.conference_sessions;
+        if (s) {
+          if (!uniqueSessions[s.session_code]) {
+            uniqueSessions[s.session_code] = {
+              session_code: s.session_code,
+              session_name: s.session_name,
+              session_hall: s.hall || 'TBD',
+              topics: []
+            };
+          }
+          if (ft.session_topics?.topic_title) {
+            uniqueSessions[s.session_code].topics.push({ topic_title: ft.session_topics.topic_title });
+          }
+        }
+      });
+    }
+
+    const sessionCodesArray = Object.keys(uniqueSessions);
+
+    // 4. Build the payload
     const payload = {
       action: "sendFormLink",
       name: faculty.canonical_name,
       email: faculty.email,
       phone: faculty.phone || "",
-      sessions: sessionCodes,
-      pdfs: [
-        { name: fileName, base64: base64Pdf }
-      ]
+      sessions: sessionCodesArray.join(','), 
+      sessionsData: Object.values(uniqueSessions),
+      pdfs: [{ name: fileName, base64: base64Pdf }]
     };
 
-    console.log('--- STEP 4: Sending to Google Script');
+    console.log("SENDING TO GOOGLE:", JSON.stringify(payload, null, 2));
+
     const res = await fetch(scriptUrl, {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -398,7 +414,7 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
     const data = await res.json();
     
     if (data.status === "Success") {
-      return { success: true, message: "Email sent successfully with attachments!" };
+      return { success: true, message: "Email sent successfully!" };
     }
     return { success: false, message: data.message || "Failed to send email." };
   } catch (error: any) {
