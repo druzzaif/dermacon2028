@@ -4,83 +4,65 @@
 
 import { supabase } from './supabase';
 import puppeteer from 'puppeteer';
+import { renderCommitmentHTML } from './lib/commitmentPdfHtml';
 import fs from 'fs';
 import path from 'path';
 
 export async function generatePDFData(facultyId: string) {
-  console.log("--- STARTING PDF GENERATION ---");
   try {
     const { data: faculty, error: facError } = await supabase
-      .from('faculty')
-      .select('*')
-      .eq('id', facultyId)
-      .single();
-    if (facError || !faculty) throw new Error("Faculty not found in database.");
+      .from('faculty').select('*').eq('id', facultyId).single();
+    if (facError || !faculty) throw new Error("Faculty not found.");
 
     const { data: topics, error: topError } = await supabase
       .from('faculty_topics')
-      .select(`
-        role,
-        session_topics (
-          topic_title, start_time, end_time, sequence_no,
-          conference_sessions ( id, session_code, session_name, session_date, hall, start_time, end_time )
-        )
-      `)
+      .select(`role, session_topics (topic_title, start_time, end_time, sequence_no, conference_sessions ( id, session_code, session_name, session_date, hall, start_time, end_time ))`)
       .eq('faculty_id', facultyId);
-    if (topError) throw new Error("Error fetching topics: " + topError.message);
-    if (!topics || topics.length === 0)
-      throw new Error("This faculty member has no sessions assigned.");
+    if (topError || !topics || topics.length === 0) throw new Error("No sessions assigned.");
 
     const sessionsMap: Record<string, any> = {};
     topics.forEach((t: any) => {
       const session = t.session_topics?.conference_sessions;
       if (!session) return;
-      if (!sessionsMap[session.id]) {
-        sessionsMap[session.id] = { session, topics: [], role: t.role };
-      }
+      if (!sessionsMap[session.id]) sessionsMap[session.id] = { session, topics: [], role: t.role };
       sessionsMap[session.id].topics.push(t.session_topics);
     });
 
     const inputSessions = [];
     for (const s of Object.values(sessionsMap) as any[]) {
-      const { data: coordData } = await supabase
-        .from('session_coordinators')
-        .select(`role, faculty ( canonical_name, phone, email )`)
-        .eq('session_id', s.session.id)
-        .eq('role', 'Lead Coordinator')
-        .maybeSingle();
-
+      const { data: coordData } = await supabase.from('session_coordinators').select(`role, faculty ( canonical_name, phone, email )`).eq('session_id', s.session.id).eq('role', 'Lead Coordinator').maybeSingle();
       const lead = coordData?.faculty as any;
       inputSessions.push({
-        session: s.session,
-        topics: s.topics,
-        role: s.role || 'Faculty',
-        coordinator: {
-          name:  lead?.canonical_name || 'Scientific Committee',
-          phone: lead?.phone || '+91 99981 84930',
-          email: lead?.email || 'osdermacon@iadvl.org',
-        },
+        session: s.session, topics: s.topics, role: s.role || 'Faculty',
+        coordinator: { name: lead?.canonical_name || 'Scientific Committee', phone: lead?.phone || '+91 99981 84930', email: lead?.email || 'osdermacon@iadvl.org' }
       });
     }
 
-    const { renderCommitmentHTML } = await import('./lib/pdfTemplate');
-    const html = renderCommitmentHTML({
-      faculty: { canonical_name: faculty.canonical_name },
+    const sessionCodes = inputSessions.map(x => x.session.session_code).join(',');
+    const formLink = "https://docs.google.com/forms/d/e/1FAIpQLSdxz_5YnX30AkhVuTEBYiTjAU5Ps38Qa_-Fx-uQS3fbG1cWcg/viewform?usp=pp_url&entry.640056832=" + encodeURIComponent(faculty.canonical_name) + "&entry.778392849=" + encodeURIComponent(faculty.phone || "") + "&entry.1359171350=" + encodeURIComponent(sessionCodes);
+
+    const docData = {
+      faculty: { canonical_name: faculty.canonical_name, phone: faculty.phone || '' },
       sessions: inputSessions,
-    });
+      formLink: formLink
+    };
 
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       headless: true,
     });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' as any });
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
-    });
-    await browser.close();
+    let pdfBuffer: Uint8Array;
+    try {
+      const page = await browser.newPage();
+      await page.setContent(renderCommitmentHTML(docData), { waitUntil: 'networkidle0' });
+      pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      });
+    } finally {
+      await browser.close();
+    }
 
     const safeName = faculty.canonical_name.replace(/[^a-z0-9]/gi, '_');
     const fileName = `Commitment_${safeName}_${Date.now()}.pdf`;
@@ -88,14 +70,12 @@ export async function generatePDFData(facultyId: string) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, fileName), pdfBuffer);
 
-    console.log("PDF saved:", fileName);
     return { success: true, url: `/pdfs/${fileName}` };
   } catch (error: any) {
     console.error("!!! PDF GENERATION FAILED !!!", error);
-    return { success: false, message: error.message || 'Unknown error occurred' };
+    return { success: false, message: error.message || 'Unknown error' };
   }
 }
-
 export async function updateFaculty(formData: FormData) {
   const id = (formData.get('id') as string)?.trim();
   if (!id) return { success: false, message: 'Missing faculty id' };
@@ -248,11 +228,12 @@ export async function generatePDFForSession(sessionId: string) {
 
     // 5. Render to PDF with Puppeteer
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--allow-file-access-from-files'],
       headless: true,
     });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' as any });
+    
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
 
@@ -361,4 +342,67 @@ export async function deleteTopic(topicId: string, sessionId: string) {
   }
 
   return { success: true, message: 'Topic deleted and session resequenced.' };
+}
+// ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────
+//  Google Script Integration: Send PDFs and Form Link via Email
+// ─────────────────────────────────────────────────────────────────────
+export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) {
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
+  
+  if (!faculty.email) {
+    return { success: false, message: "Faculty member has no email address." };
+  }
+
+  try {
+    // 1. Generate the PDF using the existing action
+    console.log('--- STEP 1: Starting PDF generation for', faculty.canonical_name);
+    const pdfRes = await generatePDFData(faculty.id);
+    console.log('--- STEP 2: PDF Generation Result:', pdfRes);
+    if (!pdfRes.success || !pdfRes.url) {
+      throw new Error(pdfRes.message || "Failed to generate PDF");
+    }
+
+    // 2. Read the PDF from the file system
+    const fileName = pdfRes.url.split('/').pop()!;
+    const filePath = path.join(process.cwd(), 'public', 'pdfs', fileName);
+    
+    if (!fs.existsSync(filePath)) {
+      throw new Error("PDF generated but file not found on disk.");
+    }
+
+    console.log('--- STEP 3: Reading PDF from disk:', filePath);
+    const pdfBuffer = fs.readFileSync(filePath);
+    const base64Pdf = pdfBuffer.toString('base64');
+
+    // 3. Send to Google Script
+    const payload = {
+      action: "sendFormLink",
+      name: faculty.canonical_name,
+      email: faculty.email,
+      phone: faculty.phone || "",
+      sessions: sessionCodes,
+      pdfs: [
+        { name: fileName, base64: base64Pdf }
+      ]
+    };
+
+    console.log('--- STEP 4: Sending to Google Script');
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      // @ts-ignore
+      next: { revalidate: 0 } 
+    });
+    
+    const data = await res.json();
+    
+    if (data.status === "Success") {
+      return { success: true, message: "Email sent successfully with attachments!" };
+    }
+    return { success: false, message: data.message || "Failed to send email." };
+  } catch (error: any) {
+    console.error("Google Script Error:", error);
+    return { success: false, message: error.message || "Failed to connect to Google Script." };
+  }
 }

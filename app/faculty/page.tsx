@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
@@ -123,8 +123,9 @@ export default function FacultyDirectoryPage() {
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr className="text-slate-500 text-xs uppercase tracking-wider">
                 <th className="px-6 py-3 font-semibold">Doctor</th>
-                <th className="px-6 py-3 font-semibold">Contact Info</th>
-                <th className="px-6 py-3 font-semibold text-center">Type</th>
+                <th className="px-6 py-3 font-semibold">Email</th>
+                <th className="px-6 py-3 font-semibold">Phone</th>
+                
                 <th className="px-6 py-3 font-semibold text-center">Topics</th>
                 <th className="px-6 py-3 font-semibold text-right">Actions</th>
               </tr>
@@ -132,13 +133,13 @@ export default function FacultyDirectoryPage() {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-12 text-slate-500 text-sm">
+                  <td colSpan={6} className="text-center py-12 text-slate-500 text-sm">
                     Loading directory...
                   </td>
                 </tr>
               ) : filteredFaculty.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-12 text-slate-500 text-sm">
+                  <td colSpan={6} className="text-center py-12 text-slate-500 text-sm">
                     No faculty found matching your filters.
                   </td>
                 </tr>
@@ -202,23 +203,17 @@ export default function FacultyDirectoryPage() {
                         ) : (
                           <div className="text-sm text-slate-400">--</div>
                         )}
-                        {doc.phone && <div className="text-xs text-slate-500 mt-0.5">{doc.phone}</div>}
                       </td>
 
-                      <td className="px-6 py-3 text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          {doc.is_faculty && (
-                            <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
-                              Faculty
-                            </span>
-                          )}
-                          {doc.is_coordinator && (
-                            <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
-                              Coordinator
-                            </span>
-                          )}
-                        </div>
+                      <td className="px-6 py-3">
+                        {doc.phone ? (
+                          <div className="text-sm text-slate-700">{doc.phone}</div>
+                        ) : (
+                          <div className="text-sm text-slate-400">--</div>
+                        )}
                       </td>
+
+
 
                       <td className="px-6 py-3 text-center">
                         <div className={`inline-flex items-center justify-center w-7 h-7 rounded-md font-semibold text-xs ${

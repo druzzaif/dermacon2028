@@ -1,42 +1,43 @@
 {
-    "name":  "dermacon2028",
-    "version":  "0.1.0",
-    "private":  true,
-    "scripts":  {
-                    "dev":  "node auto-open.mjs",
-                    "dev:clean":  "npx kill-port 3000 || true \u0026\u0026 next dev",
-                    "build":  "next build",
-                    "start":  "next start",
-                    "lint":  "eslint",
-                    "fix:null-times":  "node scripts/fix_null_times.mjs",
-                    "fix:null-times:dry":  "node scripts/fix_null_times.mjs --dry",
-                    "resequence:all":  "node scripts/task7_resequence_all.mjs",
-                    "seed:local":  "node scripts/seed-local.mjs",
-                    "seed:local:apply":  "node scripts/seed-local.mjs --force"
-                },
-    "dependencies":  {
-                         "@supabase/supabase-js":  "^2.119.0",
-                         "csv-parse":  "^7.0.3",
-                         "next":  "16.4.5",
-                         "nodemailer":  "^10.4.0",
-                         "open":  "^11.0.4",
-                         "pg":  "^8.23.1",
-                         "puppeteer":  "^25.16.0",
-                         "react":  "19.3.0",
-                         "react-dom":  "19.3.0",
-                         "resend":  "^6.37.0",
-                         "xlsx":  "^0.18.5"
-                     },
-    "devDependencies":  {
-                            "@tailwindcss/postcss":  "^4.3.5",
-                            "@types/node":  "^20",
-                            "@types/react":  "^19",
-                            "@types/react-dom":  "^19",
-                            "autoprefixer":  "^10.6.2",
-                            "eslint":  "^9",
-                            "eslint-config-next":  "16.4.5",
-                            "postcss":  "^8.5.32",
-                            "tailwindcss":  "^4.3.5",
-                            "typescript":  "^5"
-                        }
+    "name": "dermacon2028",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "node auto-open.mjs",
+        "dev:clean": "npx kill-port 3000 || true && next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint",
+        "fix:null-times": "node scripts/fix_null_times.mjs",
+        "fix:null-times:dry": "node scripts/fix_null_times.mjs --dry",
+        "resequence:all": "node scripts/task7_resequence_all.mjs",
+        "seed:local": "node scripts/seed-local.mjs",
+        "seed:local:apply": "node scripts/seed-local.mjs --force"
+    },
+    "dependencies": {
+        "@react-pdf/renderer": "^4.9.0",
+        "@supabase/supabase-js": "^2.119.0",
+        "csv-parse": "^7.0.3",
+        "next": "16.4.5",
+        "nodemailer": "^10.4.0",
+        "open": "^11.0.4",
+        "pg": "^8.23.1",
+        "puppeteer": "^25.16.0",
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "resend": "^6.37.0",
+        "xlsx": "^0.18.5"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4.3.5",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "autoprefixer": "^10.6.2",
+        "eslint": "^9",
+        "eslint-config-next": "16.4.5",
+        "postcss": "^8.5.32",
+        "tailwindcss": "^4.3.5",
+        "typescript": "^5"
+    }
 }

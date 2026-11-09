@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
+import { sendFormLinkToFaculty } from '../actions';
 
 function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   if (!dateStr) return '--';
@@ -33,11 +34,32 @@ export default function FacultyProfileModal({
   const [speakingSessions, setSpeakingSessions] = useState<any[]>([]);
   const [coordinatingSessions, setCoordinatingSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<{type: 'success'|'error', msg: string} | null>(null);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => {
+    async function handleSendEmail() {
+    setSendingEmail(true);
+    setEmailStatus(null);
+    
+    // Get all session codes this faculty is speaking in
+    const sessionCodes = speakingSessions
+      .map((s: any) => s.session_topics?.conference_sessions?.session_code)
+      .filter(Boolean)
+      .join(",");
+
+    const res = await sendFormLinkToFaculty(faculty, sessionCodes);
+    setSendingEmail(false);
+    
+    if (res.success) {
+      setEmailStatus({ type: 'success', msg: 'Email sent successfully!' });
+    } else {
+      setEmailStatus({ type: 'error', msg: res.message });
+    }
+  }
+  return () => {
       document.body.style.overflow = originalOverflow;
     };
   }, []);
@@ -105,6 +127,25 @@ export default function FacultyProfileModal({
   const phone = faculty.phone || '';
   const phoneDigits = phone.replace(/[^0-9+]/g, '');
 
+  async function handleSendEmail() {
+    setSendingEmail(true);
+    setEmailStatus(null);
+    
+    // Get all session codes this faculty is speaking in
+    const sessionCodes = speakingSessions
+      .map((s: any) => s.session_topics?.conference_sessions?.session_code)
+      .filter(Boolean)
+      .join(",");
+
+    const res = await sendFormLinkToFaculty(faculty, sessionCodes);
+    setSendingEmail(false);
+    
+    if (res.success) {
+      setEmailStatus({ type: 'success', msg: 'Email sent successfully!' });
+    } else {
+      setEmailStatus({ type: 'error', msg: res.message });
+    }
+  }
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-end z-50">
       <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-slide-in">
@@ -172,6 +213,21 @@ export default function FacultyProfileModal({
               <div className="text-sm text-gray-900">{faculty.person_type || '--'}</div>
             </div>
           </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <button
+              onClick={handleSendEmail}
+              disabled={sendingEmail || speakingSessions.length === 0}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {sendingEmail ? 'Sending...' : 'Send Confirmation Email'}
+            </button>
+            {emailStatus && (
+              <div className={`mt-2 text-sm text-center font-medium ${emailStatus.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                {emailStatus.msg}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain bg-gray-50 p-6 space-y-6">
@@ -183,7 +239,26 @@ export default function FacultyProfileModal({
               <div className="space-y-3">
                 {coordinatingSessions.map((c, i) => {
                   const session = c.conference_sessions;
-                  return (
+                  async function handleSendEmail() {
+    setSendingEmail(true);
+    setEmailStatus(null);
+    
+    // Get all session codes this faculty is speaking in
+    const sessionCodes = speakingSessions
+      .map((s: any) => s.session_topics?.conference_sessions?.session_code)
+      .filter(Boolean)
+      .join(",");
+
+    const res = await sendFormLinkToFaculty(faculty, sessionCodes);
+    setSendingEmail(false);
+    
+    if (res.success) {
+      setEmailStatus({ type: 'success', msg: 'Email sent successfully!' });
+    } else {
+      setEmailStatus({ type: 'error', msg: res.message });
+    }
+  }
+  return (
                     <a
                       key={i}
                       href={`/sessions?code=${session?.session_code}`}
@@ -224,7 +299,26 @@ export default function FacultyProfileModal({
                 {speakingSessions.map((s, i) => {
                   const topic = s.session_topics;
                   const session = topic?.conference_sessions;
-                  return (
+                  async function handleSendEmail() {
+    setSendingEmail(true);
+    setEmailStatus(null);
+    
+    // Get all session codes this faculty is speaking in
+    const sessionCodes = speakingSessions
+      .map((s: any) => s.session_topics?.conference_sessions?.session_code)
+      .filter(Boolean)
+      .join(",");
+
+    const res = await sendFormLinkToFaculty(faculty, sessionCodes);
+    setSendingEmail(false);
+    
+    if (res.success) {
+      setEmailStatus({ type: 'success', msg: 'Email sent successfully!' });
+    } else {
+      setEmailStatus({ type: 'error', msg: res.message });
+    }
+  }
+  return (
                     <a
                       key={i}
                       href={`/sessions?code=${session?.session_code}`}
