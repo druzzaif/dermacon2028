@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
@@ -37,7 +37,7 @@ export default function RootLayout({
             DERMACON 2028
           </Link>
           <nav className="ml-8 flex items-center gap-5 text-sm font-medium">
-            <Link href="/" className="text-gray-200 hover:text-white transition-colors">
+            <Link href="/faculty" className="text-gray-200 hover:text-white transition-colors">
               Faculty
             </Link>
             <Link href="/sessions" className="text-gray-200 hover:text-white transition-colors">
@@ -45,6 +45,9 @@ export default function RootLayout({
             </Link>
             <Link href="/overlaps" className="text-gray-200 hover:text-white transition-colors">
               Overlaps
+            </Link>
+            <Link href="/missing" className="text-gray-200 hover:text-white transition-colors">
+              Missing Data
             </Link>
           </nav>
         </header>
