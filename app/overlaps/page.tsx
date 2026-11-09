@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
@@ -21,6 +21,26 @@ function formatTimeAmPm(timeStr: string | null | undefined): string {
   if (h === 0) h = 12;
   else if (h > 12) h -= 12;
   return `${h}:${m} ${ampm}`;
+}
+
+function isTbdFacultyName(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const n = name.trim().toUpperCase();
+  if (n === '') return false;
+  // Match any variant of "TBD ..." (e.g. "TBD (To Be Determined)")
+  if (n === 'TBD' || n.startsWith('TBD ') || n.startsWith('TBD(')) return true;
+  // Match empty faculty_id fallback used by the seed importer
+  if (n === 'FAC000') return true;
+  return false;
+}
+
+function isRealHallForOverlap(hall: string | null | undefined): boolean {
+  if (!hall) return false;
+  const t = hall.trim().toLowerCase();
+  if (t === '')     return false;
+  if (t === 'tbd')  return false;
+  if (t === 'null') return false;
+  return true;
 }
 
 function isRealHall(hall: string | null | undefined): boolean {
@@ -55,11 +75,14 @@ export default function OverlapsPage() {
 
       topics.forEach((t) => {
         // Skip topics that are in TBD or blank halls entirely for faculty overlaps
-        if (!isRealHall(t.conference_sessions?.hall)) return;
+        if (!isRealHallForOverlap(t.conference_sessions?.hall)) return;
 
         t.faculty_topics?.forEach((ft: any) => {
           const name = ft.faculty?.canonical_name;
           if (!name) return;
+          // 1A: TBD placeholder is not a real person - never count it as
+          // a faculty overlap (otherwise TBD vs TBD floods the report).
+          if (isTbdFacultyName(name)) return;
           if (!facultySchedules[name]) facultySchedules[name] = [];
           facultySchedules[name].push({ ...t, faculty_name: name });
         });
@@ -85,7 +108,7 @@ export default function OverlapsPage() {
       const sessionsMap = new Map<string, any[]>();
       topics.forEach((t) => {
         const hall = t.conference_sessions?.hall;
-        if (!isRealHall(hall)) return;
+        if (!isRealHallForOverlap(hall)) return;
         const key = `${hall.trim().toUpperCase()}-${t.conference_sessions.session_date}`;
         if (!sessionsMap.has(key)) sessionsMap.set(key, []);
         sessionsMap.get(key)!.push(t);

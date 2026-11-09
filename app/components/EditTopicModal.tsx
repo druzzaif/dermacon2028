@@ -23,6 +23,26 @@ type Conflict = {
   otherEnd: string;
 };
 
+function isTbdFacultyName(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const n = name.trim().toUpperCase();
+  if (n === '') return false;
+  // Match any variant of "TBD ..." (e.g. "TBD (To Be Determined)")
+  if (n === 'TBD' || n.startsWith('TBD ') || n.startsWith('TBD(')) return true;
+  // Match empty faculty_id fallback used by the seed importer
+  if (n === 'FAC000') return true;
+  return false;
+}
+
+function isRealHallForOverlap(hall: string | null | undefined): boolean {
+  if (!hall) return false;
+  const t = hall.trim().toLowerCase();
+  if (t === '')     return false;
+  if (t === 'tbd')  return false;
+  if (t === 'null') return false;
+  return true;
+}
+
 function formatTimeAmPm(timeStr: string | null | undefined): string {
   if (!timeStr) return '--:--';
   const [hStr, mStr] = timeStr.split(':');
@@ -301,6 +321,9 @@ export default function EditTopicModal({
     for (const t of candidateTopics as any[]) {
       const otherSession = t.conference_sessions;
       if (!otherSession) continue;
+      // 2B: sessions with blank / TBD / null hall are excluded from all
+      // overlap checks (faculty AND hall), per the project spec.
+      if (!isRealHallForOverlap(otherSession.hall)) continue;
       if (otherSession.session_date !== session.session_date) continue;
 
       const overlap = sTime < (t.end_time || '') && (t.start_time || '') < eTime;
@@ -308,6 +331,8 @@ export default function EditTopicModal({
 
       for (const ft of t.faculty_topics || []) {
         if (!facultyIds.includes(ft.faculty_id)) continue;
+        // 1A: TBD placeholder is not a real faculty conflict
+        if (isTbdFacultyName(ft.faculty?.canonical_name)) continue;
         found.push({
           facultyName: ft.faculty?.canonical_name || 'Unknown',
           otherTopic: t.topic_title,

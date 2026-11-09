@@ -103,8 +103,13 @@ async function chunkInsert(table, rows, chunkSize = 200) {
   return { inserted, failed };
 }
 
+// Count rows in any table. Composite-PK tables (faculty_topics,
+// session_coordinators) don't have an `id` column, so we count `*`
+// and only use `head: true` (no row payload).
 async function count(table) {
-  const { count: n, error } = await supabase.from(table).select("id", { count: "exact", head: true });
+  const { count: n, error } = await supabase
+    .from(table)
+    .select("*", { count: "exact", head: true });
   return error ? -1 : n;
 }
 
