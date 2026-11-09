@@ -397,12 +397,10 @@ export default function SessionsPage() {
                   <colgroup>
                     <col className="w-10" />
                     <col className="w-32" />
-                    <col />
-                    <col className="w-36" />
+                    <col className="w-auto" />
+                    <col className="w-40" />
+                    <col className="w-20" />
                     <col className="w-24" />
-                    <col className="w-36" />
-                    <col className="w-20" />
-                    <col className="w-20" />
                   </colgroup>
                   <thead>
                     <tr className="bg-gray-100 border-b border-gray-300 text-gray-800 text-[11px] uppercase tracking-wider">
@@ -410,8 +408,8 @@ export default function SessionsPage() {
                       <th className="px-1 py-2 font-bold">Time</th>
                       <th className="px-2 py-2 font-bold">Topic</th>
                       <th className="px-1 py-2 font-bold">Faculty</th>
-                      <th className="px-1 py-2 font-bold">Phone</th>
-                      <th className="px-1 py-2 font-bold">Email</th>
+                      
+                      
                       <th className="px-1 py-2 font-bold text-center">Role</th>
                       <th className="px-1 py-2 font-bold text-center print:hidden">Actions</th>
                     </tr>
@@ -419,13 +417,13 @@ export default function SessionsPage() {
                   <tbody className="divide-y divide-gray-200">
                     {loadingDetails ? (
                       <tr>
-                        <td colSpan={8} className="text-center py-10 text-gray-500 text-sm">
+                        <td colSpan={6} className="text-center py-10 text-gray-500 text-sm">
                           Loading schedule...
                         </td>
                       </tr>
                     ) : topics.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="text-center py-10 text-gray-500 italic text-sm">
+                        <td colSpan={6} className="text-center py-10 text-gray-500 italic text-sm">
                           No topics assigned yet.
                         </td>
                       </tr>
@@ -440,11 +438,11 @@ export default function SessionsPage() {
                             <td className="px-1 py-1.5 text-sm text-gray-600 text-center font-bold bg-gray-50">
                               {t.sequence_no}
                             </td>
-                            <td className="px-1 py-1.5 text-xs text-blue-800 font-semibold whitespace-nowrap">
+                            <td className="px-1 py-1.5 text-xs text-blue-800 font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
                               {formatTimeAmPm(t.start_time)} - {formatTimeAmPm(t.end_time)}
                             </td>
                             <td
-                              className="px-2 py-1.5 text-sm font-medium text-gray-900 leading-snug"
+                              className="px-2 py-1.5 text-sm font-medium text-gray-900 leading-snug break-words min-w-0"
                               title={t.topic_title}
                             >
                               {t.topic_title}
@@ -452,10 +450,10 @@ export default function SessionsPage() {
 
                             {facultyList.length === 0 ? (
                               <>
-                                <td colSpan={4} className="px-1 py-1.5 text-sm text-gray-400 italic">
+                                <td colSpan={2} className="px-1 py-1.5 text-sm text-gray-400 italic">
                                   Unassigned
                                 </td>
-                                <td className="px-1 py-1.5 text-center whitespace-nowrap">
+                                <td className="px-1 py-1.5 pr-2 text-center whitespace-nowrap">
                                   <button
                                     onClick={() => setEditingTopic(t)}
                                     className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline mr-2"
@@ -468,7 +466,7 @@ export default function SessionsPage() {
                                     className="text-xs font-semibold text-red-600 hover:text-red-800 hover:underline"
                                     title="Delete Topic"
                                   >
-                                    Delete
+                                    Del
                                   </button>
                                 </td>
                               </>
@@ -485,28 +483,8 @@ export default function SessionsPage() {
                                     </div>
                                   ))}
                                 </td>
-                                <td className="px-1 py-1.5 text-xs text-gray-700">
-                                  {facultyList.map((ft: any, i: number) => (
-                                    <div
-                                      key={i}
-                                      className="mb-1 truncate"
-                                      title={ft.faculty?.phone || ''}
-                                    >
-                                      {ft.faculty?.phone || '--'}
-                                    </div>
-                                  ))}
-                                </td>
-                                <td className="px-1 py-1.5 text-xs text-gray-700">
-                                  {facultyList.map((ft: any, i: number) => (
-                                    <div
-                                      key={i}
-                                      className="mb-1 truncate"
-                                      title={ft.faculty?.email || ''}
-                                    >
-                                      {ft.faculty?.email || '--'}
-                                    </div>
-                                  ))}
-                                </td>
+                                
+                                
                                 <td className="px-1 py-1.5 text-sm">
                                   {facultyList.map((ft: any, i: number) => (
                                     <div key={i} className="mb-1">
@@ -520,7 +498,7 @@ export default function SessionsPage() {
                                     </div>
                                   ))}
                                 </td>
-                                <td className="px-1 py-1.5 text-center whitespace-nowrap">
+                                <td className="px-1 py-1.5 pr-2 text-center whitespace-nowrap">
                                   <button
                                     onClick={() => setEditingTopic(t)}
                                     className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline mr-2"
@@ -533,7 +511,7 @@ export default function SessionsPage() {
                                     className="text-xs font-semibold text-red-600 hover:text-red-800 hover:underline"
                                     title="Delete Topic"
                                   >
-                                    Delete
+                                    Del
                                   </button>
                                 </td>
                               </>
