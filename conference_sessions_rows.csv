@@ -1,0 +1,45 @@
+id,session_code,session_name,hall,session_date,start_time,end_time,created_at,session_type
+06a20962-8f9e-4ec0-a9fb-0452f2fa357a,WS2,"Office Procedures 1: Patch Test, ASST, Biopsy, LA, Dressing, Smear, Emergencies",E2,2027-02-04,09:00:00,11:00:00,2026-11-08 17:49:10.945737+00,Workshop
+099bd763-c618-4721-97cc-26c72436c47b,WS29,Procedural Mx - Facial Melanosis,E3,2027-02-06,14:00:00,16:00:00,2026-11-08 17:49:12.947366+00,Workshop
+0b57af14-1071-48b4-b95f-16fb5fb41624,WS21,Feminine Rejuvenation,E3,2027-02-05,14:00:00,16:00:00,2026-11-08 17:49:11.276932+00,Workshop
+124d951f-7166-47c7-8927-c49d72a7216f,MC8,Threads - Basic,C2,2027-02-04,09:30:00,13:00:00,2026-11-08 17:49:07.629216+00,MasterClass
+174c20c6-6c74-4ce1-bd24-df6cfb94e71f,WS27,Hand Rejuvenation,E1,2027-02-06,14:00:00,16:00:00,2026-11-08 17:49:12.617694+00,Workshop
+31ae9c07-80de-4788-aa13-3714734c0a21,WS8,Dermatopathology,E2,2027-02-04,16:15:00,18:15:00,2026-11-08 17:49:14.609046+00,Workshop
+3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,MC12,Regenerative Medicine II,C3,2027-02-04,14:00:00,17:30:00,2026-11-08 17:49:05.679823+00,MasterClass
+4340f692-216f-42c9-b38c-855c0b80aa8b,WS6,"Office Procedures 3: Microneedling, Subcision, Fat Transfer, Circumcision, Electrolysis, Lipolytics, Sclerotherapy",E2,2027-02-04,14:00:00,16:00:00,2026-11-08 17:49:14.280059+00,Workshop
+437f89e3-571e-4347-9649-527f1952673c,MC1,Dermal Fillers - Advanced,B1,2027-02-04,09:30:00,13:00:00,2026-11-08 17:49:04.088052+00,MasterClass
+43e0cf1f-69e6-46ba-b118-b85ac26fefa5,WS24,Microblading,E4,2027-02-05,14:00:00,16:00:00,2026-11-08 17:49:12.111923+00,Workshop
+46281f53-703d-4d4f-9106-78a2e835b2d9,WS30,Practice Management 1: Operational Efficiency & Business Management,E4,2027-02-06,14:00:00,16:00:00,2026-11-08 17:49:13.289975+00,Workshop
+496d7566-86b8-4ce5-b449-6dabdb17b817,WS25,Periorbital Rejuvenation,E1,2027-02-06,14:00:00,16:00:00,2026-11-08 17:49:12.284233+00,Workshop
+561d65fe-e6c5-4ad9-b172-69b58d203470,WS17,Neck Rejuvenation,E1,2027-02-05,14:00:00,16:00:00,2026-11-08 17:49:10.170926+00,Workshop
+588dc806-baa4-4f81-a88d-696aa135150b,WS1,Laser LHR,E1,2027-02-04,09:00:00,11:00:00,2026-11-08 17:49:07.980507+00,Workshop
+5c8a73de-0371-4a47-a58b-8f4c8b40ccae,MC4,Botulinum Toxin - Advanced,B1,2027-02-04,14:00:00,17:30:00,2026-11-08 17:49:06.654732+00,MasterClass
+6f552dc5-34ce-4d47-b282-f4c315a13d87,MC10,Threads - Advanced,C1,2027-02-04,14:00:00,17:30:00,2026-11-08 17:49:05.02729+00,MasterClass
+78baaf69-1db1-4b62-ba53-70939ca7572e,WS4,"Office Procedures 2: Cryotherapy, RF Hemostasis, Corn, Comedone, Wart, I/L, Pinhole Ablation",E2,2027-02-04,11:30:00,13:30:00,2026-11-08 17:49:13.951718+00,Workshop
+7dde630c-995f-44f5-b28f-20fd5fc98252,WS19,Lip Rejuvenation,E1,2027-02-05,14:00:00,16:00:00,2026-11-08 17:49:10.78063+00,Workshop
+7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,WS15,Vitiligo Surgery,E3,2027-02-04,16:15:00,18:15:00,2026-11-08 17:49:09.540826+00,Workshop
+84e2f3d8-bece-4ee6-b243-d9256da758e8,WS13,Acne Scar Surgery,E3,2027-02-04,14:00:00,16:00:00,2026-11-08 17:49:08.928809+00,Workshop
+86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,MC5,Dermal Fillers - Basic,B2,2027-02-04,14:00:00,17:30:00,2026-11-08 17:49:07.114269+00,MasterClass
+8ca12b32-767e-4339-bcb6-327f7c64f38f,WS7,Laser 4 (Resurfacing Laser),E1,2027-02-04,16:15:00,18:15:00,2026-11-08 17:49:14.444885+00,Workshop
+91457a77-8282-4dc0-bd65-7fec24aac38c,WS11,Dermatosurgery: Essential Suturing & Instrumentation - Hands-on on Silicone Pad,E3,2027-02-04,11:30:00,13:30:00,2026-11-08 17:49:08.587035+00,Workshop
+9b304322-c36c-4e50-bee9-53fb91439e69,WS33,Uzzaif Rejuvenation,E4,2027-02-02,14:00:00,16:00:00,2026-11-08 17:49:13.786084+00,Workshop
+9e14b3d8-d5cc-48f8-8134-98d4fae6c243,WS32,Practice Management 2: Clinical Governance & Patient Safety,E4,2027-02-06,14:00:00,16:00:00,2026-11-08 17:49:13.622464+00,Workshop
+a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,WS26,Complications in Aesthetics & Laser,E2,2027-02-06,14:00:00,16:00:00,2026-11-08 17:49:12.449288+00,Workshop
+a2855bfd-adb7-4d31-a07e-7b26b0245325,WS10,Platelet Rich Plasma (PRP),E4,2027-02-04,09:00:00,11:00:00,2026-11-08 17:49:08.436361+00,Workshop
+a344d969-36e7-468b-a730-1362a2902bed,MC2,Botulinum Toxin - Basic,B2,2027-02-04,09:30:00,13:00:00,2026-11-08 17:49:05.856062+00,MasterClass
+bab50726-332e-439e-8a6a-8452cf0605e0,MC9,Regenerative Medicine I,C3,2027-02-04,09:30:00,13:00:00,2026-11-08 17:49:07.806245+00,MasterClass
+bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,WS12,Artificial Intelligence and Robotics,,2027-02-04,11:30:00,13:30:00,2026-11-08 17:49:08.7601+00,Workshop
+c2b505d2-809b-43ae-a050-fefacdb1c9d3,WS14,Nail Surgery,E4,2027-02-04,14:00:00,16:00:00,2026-11-08 17:49:09.102045+00,Workshop
+c2de6c3e-8932-437b-9bb5-9be30e2c8738,WS5,Laser EBD,E1,2027-02-04,14:00:00,16:00:00,2026-11-08 17:49:14.113943+00,Workshop
+c785df25-82ad-4e71-ab96-ce4c7301fccd,WS23,Non-Surgical Rhinoplasty,E3,2027-02-05,14:00:00,16:00:00,2026-11-08 17:49:11.942308+00,Workshop
+c92b696e-64c5-4350-b8bf-d0cb50b187d7,WS3,Laser 2 (Pigmentary Lasers),E1,2027-02-04,11:30:00,13:30:00,2026-11-08 17:49:13.118478+00,Workshop
+d2ba5fc5-4f95-413a-a2c5-626d9797c842,MC6,Hair Transplant,B3,2027-02-04,14:00:00,17:30:00,2026-11-08 17:49:07.282956+00,MasterClass
+de0be288-6953-41b8-8feb-994aa2d58b73,MC7,Biostimulators & Bioremodelers,C1,2027-02-04,09:30:00,13:00:00,2026-11-08 17:49:07.459274+00,MasterClass
+de4ee13d-bdc2-4f47-86f5-a284ebfc0952,WS16,Scars & Keloids,E4,2027-02-04,16:15:00,18:15:00,2026-11-08 17:49:09.995181+00,Workshop
+e3ae70e4-00dc-4d68-9b3d-b27686022701,WS28,Dermoscopy Unplugged: Expert Insights and Challenging Cases,E2,2027-02-06,16:15:00,18:15:00,2026-11-08 17:49:12.781215+00,Workshop
+e3b6f75e-0fa3-4d1e-973a-a183072ec850,WS31,Perioral Rejuvenation Workshop,E3,2027-02-06,16:15:00,16:00:00,2026-11-08 17:49:13.449942+00,Workshop
+e8a6555b-fa2d-448a-b369-b38527a7c3de,WS9,Basics of Dermatosurgery,E3,2027-02-04,09:00:00,11:00:00,2026-11-08 17:49:14.771371+00,Workshop
+f0e2998a-eaec-41f9-806b-b2ba4636b448,MC3,Non-Surgical Hair Restoration,B3,2027-02-04,09:30:00,13:00:00,2026-11-08 17:49:06.182496+00,MasterClass
+f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,WS18,Phototherapy,E2,2027-02-05,14:00:00,16:00:00,2026-11-08 17:49:10.621635+00,Workshop
+f63ee231-303d-4394-96bf-42449639fdda,WS20,Chemical Peels,E2,2027-02-05,14:00:00,16:00:00,2026-11-08 17:49:11.112057+00,Workshop
+f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,MC11,Boosters,C2,2027-02-04,14:00:00,17:30:00,2026-11-08 17:49:05.197775+00,MasterClass

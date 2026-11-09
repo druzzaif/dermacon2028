@@ -1,0 +1,450 @@
+TopicID	SessionID	SequenceNo	StartTime	EndTime	TopicTitle	FacultyID	Role	Invited	Duration	Confirmed	Accepted
+886	MC1	1	09:30 AM	10:15 AM	Cadaveric Dissection Videos: Moderator: Dr Marina Landau. Anatomy Discussion. Fat Compartments. Vascular Anatomy. Ligaments. Danger Zones	FAC027	Faculty		00:45:00		
+887	MC1	2	10:15 AM	10:30 AM	Product Selection/Layering: Understanding G Prime. Needle vs. Cannula (When/Why)	FAC181	Faculty		00:15:00		
+888	MC1	2	10:15 AM	10:30 AM	Product Selection/Layering: Understanding G Prime. Needle vs. Cannula (When/Why)	FAC231	Faculty		00:15:00		
+889	MC1	3	10:30 AM	10:46 AM	Area-Wise Injection Techniques: Eyebrow/Orbital Rim, Forehead	FAC232	Faculty		00:16:00		
+890	MC1	4	10:46 AM	11:02 AM	Tear Trough, Lip	FAC228	Faculty		00:16:00		
+891	MC1	5	11:02 AM	11:18 AM	Chin, Nose, Jawline	FAC142	Faculty		00:16:00		
+892	MC1	6	11:18 AM	11:34 AM	Neck	FAC144	Faculty		00:16:00		
+893	MC1	7	11:34 AM	11:50 AM	Buttocks, Décolleté, Hands	FAC168	Faculty		00:16:00		
+894	MC1	8	11:50 AM	12:10 PM	Advancements: Value of USG Imaging for Safety & Precision When Injecting Fillers	FAC140	Faculty		00:20:00		
+895	MC1	9	12:10 PM	12:30 PM	Complications (Prevent/Manage), Acute, Delayed Onset	FAC171	Faculty		00:20:00		
+896	MC1	10	12:30 PM	01:00 PM	Q&A Panel Discussion, Holistic Approach/AI Integration	FAC232	Panel		00:30:00		
+897	MC10	1	02:00 PM	02:15 PM	Anatomy-Driven Vector Planning for Safe and Effective Thread Outcomes	FAC092	Faculty		00:15:00		
+898	MC10	2	02:15 PM	02:30 PM	Beyond PDO: Choosing the Right Thread for the Right Person	FAC000	Faculty		00:15:00		
+899	MC10	3	02:30 PM	02:45 PM	Patient Selection for Threads	FAC128	Faculty		00:15:00		
+900	MC10	4	02:45 PM	03:00 PM	The Science of Modern Thread Lifting: Evolution of Thread Designs, Anchoring Mechanism and Structural Innovation	FAC000	Faculty		00:15:00		
+901	MC10	5	03:00 PM	03:15 PM	Standard Protocol and Video Demonstration of Mid-Face Thread Lift	FAC235	Faculty		00:15:00		
+902	MC10	6	03:15 PM	03:30 PM	Standard Protocol and Video Demonstration of Lower Face Thread Lift	FAC228	Faculty		00:15:00		
+903	MC10	7	03:30 PM	03:45 PM	Standard Protocol and Video Demonstration of Forehead, Fox Eye and Under-Eye Lift	FAC236	Faculty		00:15:00		
+904	MC10	8	03:45 PM	04:10 PM	Advance Techniques for Lips, Nose	FAC140	Faculty		00:25:00		
+905	MC10	9	04:10 PM	04:30 PM	Hammock Technique for Double Chin and Neck Rejuvenation by Thread – Video Demonstration	FAC237	Faculty		00:20:00		
+906	MC10	10	04:30 PM	04:45 PM	Complication Management from Dimpling to Asymmetry	FAC238	Faculty		00:15:00		
+907	MC10	11	04:45 PM	05:00 PM	Upcoming Trends with Thread Lift and Combination Treatment Protocol	FAC000	Faculty		00:15:00		
+908	MC10	12	05:00 PM	05:15 PM	Advance Thread Lift Cases: Challenges and Real-World Decisions	FAC000	Faculty		00:15:00		
+909	MC10	13	05:15 PM	06:00 PM	Q & A Expert Insight	FAC000	Panel		00:45:00		
+910	MC11	1	02:00 PM	02:10 PM	Introduction to the Workshop	FAC181	Faculty		00:10:00		
+911	MC11	2	02:10 PM	02:20 PM	Skin Anatomy and Injection Planes and Science Behind Skin Boosters	FAC099	Faculty		00:10:00		
+912	MC11	3	02:20 PM	02:30 PM	Types of Basic Skin Boosters, Rheology and Indications	FAC182	Faculty		00:10:00		
+913	MC11	4	02:30 PM	02:40 PM	Consultation and Patient Selection	FAC181	Faculty		00:10:00		
+914	MC11	5	02:40 PM	02:50 PM	Clinical Indications	FAC183	Faculty		00:10:00		
+915	MC11	6	02:50 PM	03:00 PM	Undereye and Perioral Skin Boosters	FAC115	Faculty		00:10:00		
+916	MC11	7	03:00 PM	03:10 PM	Neck and Hand Rejuvenation	FAC183	Faculty		00:10:00		
+917	MC11	8	03:10 PM	03:20 PM	Boosters Versus Biomodulators	FAC168	Faculty		00:10:00		
+918	MC11	9	03:20 PM	03:30 PM	SKINVIVE – Video Demo	FAC025	Faculty		00:10:00		
+919	MC11	10	03:30 PM	03:40 PM	Baby Glow – Video Demo	FAC181	Faculty		00:10:00		
+921	MC11	11	03:40 PM	03:50 PM	Restylane Vital – Video Demo	FAC025	Faculty		00:10:00		
+922	MC11	12	03:50 PM	04:00 PM	Profhilo – Video Demo	FAC182	Faculty		00:10:00		
+923	MC11	13	04:00 PM	04:10 PM	NCTF – Video Demo	FAC157	Faculty		00:10:00		
+924	MC11	14	04:10 PM	04:20 PM	Sculptra – Video Demo	FAC168	Faculty		00:10:00		
+925	MC11	15	04:20 PM	04:30 PM	New Meso Hyal Products	FAC181	Faculty		00:10:00		
+926	MC11	16	04:30 PM	04:40 PM	Saypha	FAC127	Faculty		00:10:00		
+927	MC11	17	04:40 PM	04:50 PM	Top 10 Mistakes in Skin Boosters, Wrong Techniques, Wrong Patients	FAC177	Faculty		00:10:00		
+928	MC11	18	04:50 PM	05:00 PM	Practice Integration and Patient Conversion, Pricing and Package Creation	FAC091	Faculty		00:10:00	No	
+929	MC11	19	05:00 PM	05:30 PM	Panel Discussion, Case-Based Discussion – Full Face Planning, Q&A, Rapid Fire Expert Pearls	FAC000	Panel		00:30:00	No	
+930	MC12	1	02:00 PM	02:15 PM	How these factors impact skin health	FAC023	Faculty		00:15:00		
+931	MC12	2	02:15 PM	02:30 PM	The science behind it	FAC219	Faculty		00:15:00		
+932	MC12	3	02:30 PM	02:45 PM	Their potential applications in dermatology	FAC205	Faculty		00:15:00		
+933	MC12	4	02:45 PM	03:00 PM	Science and application in skin and wound healing	FAC019	Faculty		00:15:00		
+934	MC12	5	03:00 PM	03:15 PM	Hair Restoration  and Latest evidence-based results	FAC032	Faculty		00:15:00		
+935	MC12	6	03:15 PM	03:30 PM	Insights on harvesting, processing, and injection techniques	FAC220	Faculty		00:15:00		
+936	MC12	7	03:30 PM	03:45 PM	Uses in FR/scars/soft tissue defects	FAC221	Faculty		00:15:00		
+937	MC12	8	03:45 PM	04:00 PM	Current status	FAC222	Faculty		00:15:00		
+938	MC12	9	04:00 PM	04:15 PM	Future directions	FAC096	Faculty		00:15:00		
+939	MC12	10	04:15 PM	04:35 PM	Explore the use of autologous melanocyte transplant, PRP, and other therapies in treating vitiligo and pigmentary disorders	FAC223	Faculty		00:20:00		
+940	MC12	11	04:35 PM	04:45 PM	The power of tiny fat grafts in regenerative aesthetics	FAC224	Faculty		00:10:00		
+941	MC12	12	04:45 PM	04:55 PM	The evolution of nano- and micro-fat grafting techniques	FAC225	Faculty		00:10:00		
+942	MC12	13	05:05 PM	05:30 PM	Moderator	FAC170	Panel		00:25:00		
+943	MC2	1	09:30 AM	09:45 AM	(Upper face: Frontalis, corrugators, procerus, orbicularis oculi) Face anatomy video (?cadaveric),	FAC141	Faculty		00:15:00		
+944	MC2	2	09:45 AM	10:00 AM	Different neurotoxins, dilutions (reconstitution), Diffusion, dose equivalence, storage, Markings, Critical danger zones, complication-prone areas	FAC131	Faculty		00:15:00		
+945	MC2	3	10:00 AM	11:00 AM	Various injection techniques and dosing	FAC303	Faculty		01:00:00		
+946	MC2	4			Dynamic vs static line evaluation	FAC000	Faculty				
+947	MC2	5			Muscle strength/pattern analysis	FAC000	Faculty				
+948	MC2	6			Gender/ethnic considerations	FAC000	Faculty				
+949	MC2	7			Contraindications/precautions	FAC000	Faculty				
+950	MC2	8			Area-wise dosing principles	FAC000	Faculty				
+951	MC2	9			Injection mapping/marking	FAC000	Faculty				
+952	MC2	10			Individualized treatment goals	FAC000	Faculty				
+953	MC2	11			Injection techniques (depth, angle, placement)	FAC000	Faculty				
+954	MC2	12			Dilution-based variations	FAC000	Faculty				
+955	MC2	13			Standard points	FAC000	Faculty				
+956	MC2	14			Strategies to minimize diffusion	FAC000	Faculty				
+957	MC2	15	11:00 AM	12:00 PM	Live video demo: Upper face, Glabella, Forehead lines, Crow's feet	FAC129	Faculty		01:00:00		
+958	MC2	16	12:00 PM	01:00 PM	Complications, Site-wise complications, Asymmetry/functional issues, Overcorrection vs undercorrection, Resistance/immunogenicity	FAC232	Faculty		01:00:00		
+959	MC2	17	01:00 PM	01:30 PM	Q&APanel discussion	FAC000	Panel		00:30:00		
+960	MC3	1	09:30 AM	09:45 AM	Androgenetic Alopecia - Current Understanding	FAC080	Faculty		00:15:00		
+961	MC3	2	09:45 AM	10:00 AM	Its in Your Blood ! - Unlocking the Regenerative Power of PRP, PRF, GFC	FAC239	Faculty		00:15:00		
+962	MC3	3	10:00 AM	10:10 AM	Cocktails for Your Scalp: The Art and Science of Mesotherapy	FAC055	Faculty		00:10:00		
+963	MC3	4	10:10 AM	10:20 AM	Targeting DHT at the Follicle: The Rise of Dutasteride and Bicalutamide Intralesional Injections	FAC131	Faculty		00:10:00		
+964	MC3	5	10:20 AM	10:30 AM	Decoding the Hairloss: Polynucleotides at play !	FAC204	Faculty		00:10:00		
+965	MC3	6	10:30 AM	10:45 AM	The New Hero of Hair Growth - Exosomes  : Hype or the Real Deal?	FAC130	Faculty		00:15:00		
+966	MC3	7	10:45 AM	11:00 AM	Light's On : Utility of Lasers and EBDs for Hair Regeneration	FAC202	Faculty		00:15:00		
+967	MC3	8	11:00 AM	11:15 AM	From Belly to Bald Spots - The promising journey of  Fat-Derived Stem Cells	FAC140	Faculty		00:15:00		
+968	MC3	9	11:15 AM	11:30 AM	Threading the Future - Novel use of Monofilament threads for Hair Growth	FAC037	Faculty		00:15:00		
+969	MC3	10	11:30 AM	11:40 AM	From Face to Follicle- The Evolving story of Botulinum Toxin	FAC207	Faculty		00:10:00		
+970	MC3	11	11:40 AM	11:50 AM	Hair Cosmetics - A new dawn in Cosmetic Trichology	FAC062	Faculty		00:10:00		
+971	MC3	12	11:50 AM	12:00 PM	The Scalp as a Canvas: The Art and Science of Scalp Micropigmentation	FAC000	Faculty		00:10:00		
+972	MC3	13	12:00 PM	12:10 PM	Filling the Gaps- The Era of Hair Fillers (SPONSORED)	FAC211	Faculty		00:10:00		
+973	MC3	14	12:10 PM	12:20 PM	Autologous Micro-Grafting -The Science of  Regenera Activa (SPONSORED)	FAC212	Faculty		00:10:00		
+974	MC3	15	12:20 PM	12:30 PM	Beyond PRP : Unleashing the Power of Meta Cell Technology (SPONSORED)	FAC213	Faculty		00:10:00		
+975	MC3	16	12:30 PM	12:40 PM	Biomimicry in Trichology : Evolution of QR678 NEO, PREO, ZEO (SPONSORED)	FAC000	Faculty		00:10:00		
+976	MC3	17	12:40 PM	01:00 PM	Q & A/Panel discussion	FAC000	Panel		00:20:00		
+977	MC4	1	02:00 PM	02:40 PM	Video demo: Lower 1/3 face, neck, Neck anatomy, Neck anatomy, Lips anatomy, DAO, masseters, mentalis, temporalis	FAC000	Demo		00:40:00		
+978	MC4	2	02:40 PM	03:00 PM	Neck/jawline: Platysma, Body Botox, Non-cosmetic indications	FAC124	Faculty		00:20:00		
+979	MC4	3	03:00 PM	03:30 PM	Dilution, reconstitution, diffusion, Danger zones/complications, Shift from upper to lower face/neck, Planning, mapping, dosing strategies	FAC212	Faculty		00:30:00		
+980	MC4	4	03:30 PM	04:30 PM	Video demo: Injection sites/techniques	FAC231	Faculty		01:00:00		
+981	MC4	5	04:30 PM	05:30 PM	Complications: Recognition, prevention, management, Site-wise, Asymmetry, Functional issues, Over/undercorrection, Immunogenicity	FAC230	Faculty		01:00:00		
+982	MC4	6	05:30 PM	06:00 PM	Panel discussion - Dr Pankaj Chaturvedi	FAC000	Panel		00:30:00		
+983	MC5	1			Cadaveric videos	FAC000	Faculty				
+984	MC5	2			Fat compartments (15 min)	FAC231	Faculty				
+985	MC5	3			Vascular anatomy (15 min)	FAC000	Faculty				
+986	MC5	4			Ligaments (15 min)	FAC000	Faculty				
+987	MC5	5			Danger zones	FAC000	Faculty				
+988	MC5	6			Product selection	FAC228	Faculty				
+989	MC5	7			Layering techniques	FAC000	Faculty				
+990	MC5	8			Understanding G Prime	FAC000	Faculty				
+991	MC5	9			Needle vs cannula (when/why)	FAC000	Faculty				
+992	MC5	10			Video demo: Mid face/periorbital	FAC000	Faculty				
+993	MC5	11			Gender-specific vectors	FAC000	Faculty				
+994	MC5	12			GLP-1 Face protocol	FAC000	Faculty				
+995	MC5	13			Facial overfilled syndrome (FOS)	FAC000	Faculty				
+996	MC5	14			USG-guided techniques	FAC000	Faculty				
+997	MC5	15			Complications/emergency rescue	FAC142	Faculty				
+998	MC5	16			AI integration/digital advancements	FAC000	Faculty				
+999	MC5	17			Q&APanel discussion	FAC000	Faculty				
+1000	MC6	1	02:00 PM	02:10 PM	Setting Up Hair Transplant Practice for Beginners	FAC184	Faculty		00:10:00		
+1001	MC6	2	02:10 PM	02:20 PM	Advancing Skills in Hair Transplantation: Training Opportunities for Practitioners	FAC185	Faculty		00:10:00		
+1002	MC6	3	02:20 PM	02:30 PM	From OPD consultation to OT Table- How to counsel the patient and investigate.	FAC186	Faculty		00:10:00		
+1003	MC6	4	02:30 PM	02:40 PM	Overview of Instruments in Hair Transplantant and Video Demonstration of Anaesthesia	FAC187	Faculty		00:10:00		
+1004	MC6	5	02:40 PM	02:55 PM	Video Demonstration of Hairline Designing in males, Females and Transgenders	FAC188	Faculty		00:15:00		
+1005	MC6	6	02:55 PM	03:15 PM	Safe Donor Zone: Donor Area Planning and Extraction Techniques	FAC189	Faculty		00:20:00		
+1006	MC6	7	03:15 PM	03:30 PM	Long Hair Transplant	FAC080	Faculty		00:15:00		
+1007	MC6	8	03:30 PM	03:40 PM	Body Hair Transplant	FAC190	Faculty		00:10:00		
+1008	MC6	9	03:40 PM	03:50 PM	Navigating the Tangled Path:Strategies for Managing Hair Transplant Complications	FAC191	Faculty		00:10:00		
+1009	MC6	10	03:50 PM	04:00 PM	The Implantation Saga : An Overview of Techniques	FAC192	Faculty		00:10:00		
+1010	MC6	11	04:00 PM	04:10 PM	Beyond the Procedure: Nurturing New growth- Post-operative Care After Hair Restoration	FAC193	Faculty		00:10:00		
+1011	MC6	12	04:10 PM	04:20 PM	Hair Restoration in Special situations (Cicatricial alopecia, facial hair restoration and other indications)	FAC194	Faculty		00:10:00		
+1012	MC6	13	04:20 PM	04:35 PM	Integrating Regenerative Trichology with Hair Transplant	FAC195	Faculty		00:15:00		
+1013	MC6	14	04:35 PM	04:50 PM	Artificial Intelligence in hair Transplant	FAC064	Faculty		00:15:00		
+1014	MC6	15	04:50 PM	05:05 PM	From Diagnosis to Growth- Integration Genomic Analysis into Clinical Practice	FAC196	Faculty		00:15:00		
+1015	MC6	16	05:05 PM	05:30 PM	Panel discussion	FAC000	Panel		00:25:00		
+1016	MC7	1	09:30 AM	09:45 AM	Introduction to Biostimulators	FAC113	Faculty		00:15:00		
+1017	MC7	2	09:45 AM	10:00 AM	Choosing the Right Biostimulator: PLLA vs CaHA vs PCL vs HA; hybrid biostimulators	FAC114	Faculty		00:15:00		
+1018	MC7	3	10:00 AM	10:15 AM	Collagen Banking: Prevent Ageing Rather Than Treat It; when to start, ideal patients, treatment interval and outcomes	FAC115	Faculty		00:15:00		
+1019	MC7	4	10:15 AM	10:30 AM	Biostimulators in the GLP-1 Era: rapid weight loss, facial deflation and changing treatment priorities	FAC087	Faculty		00:15:00		
+1020	MC7	5	10:30 AM	11:00 AM	Sequencing Biostimulators with Fillers, Toxins and EBDs	FAC116	Faculty		00:30:00		
+1021	MC7	6	11:00 AM	11:30 AM	Complications and Difficult Outcomes with Biostimulators	FAC117	Faculty		00:30:00		
+1022	MC7	7	11:30 AM	11:45 AM	Video demo of hybrid HA and other biostimulators	FAC000	Demo		00:15:00		
+1023	MC7	8	11:45 AM	12:00 PM	Video demo of PLLA	FAC000	Demo		00:15:00		
+1024	MC7	9	12:00 PM	12:15 PM	Video demo of CaHA	FAC000	Demo		00:15:00		
+1025	MC7	10	12:15 PM	12:30 PM	Video demo of PCL	FAC118	Faculty		00:15:00		
+1026	MC7	11	12:30 PM	01:00 PM	"Interactive patient case discussion   Case 1: GLP-1 / major weight-loss face
+Case 2: Young patient with early laxity Case 3: Thin ageing face with volume loss
+Case 4: Heavy face with jowls"	FAC000	Panel		00:30:00		
+1027	MC8	1	09:30 AM	09:35 AM	INTRODUCTION TO WORKSHOP	FAC156	Faculty		00:05:00		
+1028	MC8	1	09:30 AM	09:35 AM	INTRODUCTION TO WORKSHOP	FAC177	Faculty		00:05:00		
+1029	MC8	2	09:35 AM	09:55 AM	HISTORY, EVOLUTION, FUN FACTS AND DIFFERENT TYPES OF THREADS AND THREAD MATERIALS	FAC178	Faculty		00:20:00		
+1030	MC8	3	09:55 AM	10:15 AM	PINCH, PULL OR PUSH - ANATOMY - FAT COMPARTMENTS, RETAINING LIGAMENTS AND SMAS	FAC179	Faculty		00:20:00		
+1031	MC8	4	10:15 AM	10:35 AM	WHY THREADS, WHEN THREADS, WHERE THREADS, WHEN TO REPEAT ?	FAC180	Faculty		00:20:00		
+1032	MC8	5	10:35 AM	10:55 AM	UNCONVENTIONAL INDICATIONS OF MONO THREADS- EYEBROW, NOSE, FOREHEAD, UNDEREYE, GLABELLA, NASOLABIAL THREADS, SCALP)	FAC092	Faculty		00:20:00		
+1033	MC8	6	10:55 AM	11:15 AM	COMBINATION WITH OTHER ANTI AGING MODALITIES	FAC082	Faculty		00:20:00		
+1034	MC8	7	11:15 AM	11:35 AM	WHAT AFTER THREADS ? SIDE EFFECTS COMPLICATIONS  - VASCULAR, NEURAL, MECHANICAL COMPLICATIONS	FAC132	Faculty		00:20:00		
+1035	MC8	8	11:35 AM	11:55 AM	NEWER INNOVATIONS IN THREADS	FAC114	Faculty		00:20:00		
+1036	MC8	9	11:55 AM	12:15 PM	COST JUSTIFYING RESULTS	FAC024	Faculty		00:20:00		
+1037	MC8	10	12:15 PM	12:55 PM	PANEL DISCUSSION - CASE BASED DISCUSSION -  FULL FACE PLANNING	FAC180	Panel		00:40:00		
+1038	MC8	11	12:55 PM	01:00 PM	Q & A	FAC000	QA		00:05:00		
+1039	MC9	1	09:30 AM	09:45 AM	"Regenerative Medicine for Skin Health-
+Have we finally found the fountain of youth?"	FAC227	Faculty		00:15:00		
+1040	MC9	2	09:45 AM	10:00 AM	Exosomes -The next frontier in regenerative medicine(Explore the biology and their role in cell signalling)	FAC228	Faculty		00:15:00		
+1041	MC9	2	10:00 AM	10:15 AM	Exosomes -The next frontier in regenerative medicine(Explore the biology and their role in cell signalling)	FAC130	Faculty		00:15:00		
+1042	MC9	3	10:15 AM	10:30 AM	Role in Dermatology - Aesthetic Indications (Video Demonstration)	FAC229	Faculty		00:15:00		
+1043	MC9	4	10:30 AM	10:45 AM	PN/PDRN -The trending kid on social media - will it live up to its expectations? (Video Demonstration)	FAC198	Faculty		00:15:00		
+1044	MC9	5	10:45 AM	11:00 AM	Growth Factors/Peptides -My experience with it (Video Demonstration)	FAC230	Faculty		00:15:00		
+1045	MC9	6	11:00 AM	11:15 AM	Optimising Outcomes with Anti oxidants + Diet + Nutrition	FAC087	Faculty		00:15:00		
+1046	MC9	7	11:15 AM	11:25 AM	Biofillers	FAC226	Faculty		00:10:00		
+1047	MC9	8	11:25 AM	11:55 AM	Panel Discussion: How I treat	FAC000	Panel		00:30:00		
+1048	WS1	5	10:00 AM	10:15 AM	Complications & Management: Burns, PIH, Paradoxical Hair Growth	FAC011	Faculty		00:10:00		
+1049	WS1	1	09:00 AM	09:15 AM	Laser Physics + Hair Biology: Selective Photothermolysis & Hair Cycle Relevance	FAC007	Faculty		00:15:00		
+1050	WS1	2	09:15 AM	09:30 AM	Technology Comparison: Diode vs Alexandrite vs Nd:YAG — When to Use What	FAC008	Faculty		00:15:00		
+1051	WS1	4	09:45 AM	10:00 AM	Approaching a Patient with Hirsutism + Treatment Techniques for Different Areas (Face, Beard, Hormonal Areas, Sensitive Zones)	FAC010	Faculty		00:10:00		
+1052	WS1	6	10:15 AM	10:30 AM	What's New in Laser Hair Reduction: Single vs Triple Wavelength	FAC300	Faculty		00:40:00		
+1053	WS1	3	09:30 AM	09:45 AM	Patient Selection & Parameter Optimization: Skin Typing, Fluence, Pulse Duration, Spot Size	FAC009	Faculty		00:15:00		
+1054	WS10	1	09:00 AM	09:15 AM	Evidence Checkpoint: PRP in Dermatology - Critical appraisal of RCTs/meta-analyses in AGA, acne scars, melasma, skin rejuvenation. Setting the Stage: Biology of Regeneration	FAC215	Faculty		00:15:00		
+1055	WS10	2	09:15 AM	09:30 AM	PRP Under the Microscope: Science, Systems & Standardization - Centrifugation variables, leukocyte-rich vs poor PRP, activation pathways, dose-response relationships	FAC202	Faculty		00:15:00		
+1056	WS10	3	09:30 AM	09:45 AM	GFC Technology & PRF (I-PRF) - Mechanistic insights, cytokine profiling vs PRP, reproducibility, clinical endpoints & Fibrin matrix dynamics, sustained release kinetics, angiogenesis modulation	FAC294	Faculty		00:15:00		
+1057	WS10	4	09:45 AM	10:00 AM	Comparative Biologics: PRP vs GFC vs I-PRF - Indication-based selection, kinetics, scaffold vs liquid systems, personalization strategies	FAC239	Faculty		00:15:00		
+1058	WS10	5	10:00 AM	10:15 AM	Frontiers of Regeneration: Future Advancements & Advanced Uses - Exosomes & secretome therapy, PRP bio-enhancement, nanofat + PRF, scaffold engineering, AI-guided personalization, stem-cell interface	FAC295	Faculty		00:15:00		
+1059	WS10	6	10:15 AM	10:30 AM	Beyond Basics: Synergistic Clinical Protocols - PRP + microneedling, PRF + fillers, combination with lasers, indication-specific protocols	FAC296	Faculty		00:15:00		
+1060	WS10	7	10:30 AM	10:45 AM	Complications - Complications, regulatory issues, consensus gaps + quick decision-making guide	FAC000	Faculty		00:15:00		
+1061	WS10	8	10:45 AM	11:00 AM	Q/A	FAC000	Panelist		00:15:00		
+1062	WS11	1	11:30 AM	11:40 AM	Needle Handling and Knot Tying Techniques	FAC001	Faculty		00:10:00		
+1063	WS11	2	11:40 AM	11:50 AM	Basic Suturing Techniques (Interrupted, Continuous, Mattress)	FAC002	Faculty		00:10:00		
+1064	WS11	3	11:50 AM	12:00 PM	Advanced Suturing Techniques (Subcuticular, Buried Sutures)	FAC003	Faculty		00:10:00		
+1065	WS11	4	12:00 PM	01:30 PM	Hands On Workshop on Silicone Model	FAC004	Faculty		01:30:00		
+1066	WS11	5	12:00 PM	01:30 PM	Hands On Workshop on Silicone Model	FAC005	Faculty		01:30:00		
+1067	WS11	6	12:00 PM	01:30 PM	Hands On Workshop on Silicone Model	FAC006	Faculty		01:30:00		
+1068	WS12	1	12:00 PM	12:20 PM	AI in clinical practice: personalized patient education	FAC263	Faculty		00:20:00		
+1069	WS12	2	12:20 PM	12:32 PM	AI clinic workflow: virtual receptionist, appointments and WhatsApp communication	FAC000	Faculty		00:12:00		
+1070	WS12	3	12:32 PM	12:44 PM	AI clinic workflow: documentation, clinical scribe and staff SOP assistant	FAC290	Faculty		00:12:00		
+1071	WS12	4	12:44 PM	12:59 PM	AI-assisted clinical diagnosis: decision support and triage	FAC284	Faculty		00:15:00		
+1072	WS12	5	12:59 PM	01:14 PM	AI in dermatology imaging: image analysis and clinical limitations	FAC175	Faculty		00:15:00		
+1073	WS12	6	01:14 PM	01:29 PM	AI in clinical research	FAC285	Faculty		00:15:00		
+1074	WS12	7	01:29 PM	01:49 PM	Personalized AI using MedGemma	FAC000	Faculty		00:20:00		
+1075	WS12	8	01:49 PM	01:56 PM	AI in aesthetic dermatology – Part 1: AI nurse and personalized skincare	FAC262	Faculty		00:07:00		
+1076	WS12	9	01:56 PM	02:04 PM	AI for aging identification and anti-aging assessment	FAC288	Faculty		00:08:00		
+1077	WS12	10	02:04 PM	02:12 PM	AI for laser treatment planning	FAC000	Faculty		00:08:00	No	
+1078	WS12	11	02:12 PM	02:20 PM	AI before/after prediction tools	FAC286	Faculty		00:08:00	No	
+1079	WS12	12	02:20 PM	02:40 PM	Transition and contingency buffer	FAC000	Faculty		00:20:00		
+1080	WS12	13	02:40 PM	02:50 PM	Panel discussion	FAC000	Panel		00:10:00		
+1081	WS12	14	02:50 PM	03:00 PM	Audience Q&A and closing	FAC000	QA		00:10:00		
+1082	WS13	1	02:00 PM	02:12 PM	Morphology guided monothreads therapy	FAC051	Faculty		00:12:00		
+1083	WS13	2	02:12 PM	02:24 PM	Acne scars 2030 : Emerging concepts and changing paradigms.	FAC000	Faculty		00:12:00		
+1084	WS13	3	02:24 PM	02:36 PM	Introduction to acne scars with Subcision: Breaking Fibrosis, Restoring Skin	FAC052	Faculty		00:12:00		
+1085	WS13	4	02:36 PM	02:48 PM	Surgical Excision: From Planning to Perfect Closure	FAC053	Faculty		00:12:00		
+1086	WS13	5	02:48 PM	03:00 PM	Minimal invasive procedure for acne scar	FAC054	Faculty		00:12:00		
+1087	WS13	6	03:00 PM	03:12 PM	Regenerative Therapies: Rebuilding Skin from Within	FAC055	Faculty		00:12:00		
+1088	WS13	7	03:12 PM	03:24 PM	Punch Elevation & Punch Excision for Ice Pick and Boxcar Scars	FAC056	Faculty		00:12:00		
+1089	WS13	8	03:24 PM	03:36 PM	Fat Grafting in Acne Scar Revision: Volume Restoration Techniques	FAC057	Faculty		00:12:00		
+1090	WS13	9	03:36 PM	03:48 PM	Combination Approach in Complex Acne Scars: Surgery + Energy Devices	FAC058	Faculty		00:12:00		
+1091	WS13	10	03:48 PM	04:00 PM	Perioral, Temporal & Difficult Area Acne Scar Management: Advanced Surgical Pearls	FAC059	Faculty		00:12:00		
+1092	WS14	1	02:00 PM	02:10 PM	Planning Nail Surgery: Before you pick the scalpel, Applied Surgical anatomy, Patient pre-requisites, Indications and Contraindications, Anesthesia and tourniquet, Instrument selection, Post-op Dressing	FAC067	Faculty		00:10:00		
+1093	WS14	2	02:10 PM	02:20 PM	Injectable therapies of the nail unit, Video Demonstration: Rationale for injectables, nail matrix, nail bed, hyponychial and intralesional injections	FAC068	Faculty		00:10:00		
+1094	WS14	3	02:20 PM	02:30 PM	Nail Plate Surgery, Video Demonstration: Partial nail avulsion, Total nail avulsion, Longitudinal nail avulsion, Window technique. Discussion of Indications, Pitfalls	FAC069	Faculty		00:10:00		
+1095	WS14	4	02:30 PM	02:40 PM	Nail Biopsies, Video Demonstrations: Nail bed biopsy, Nail Matrix biopsy, Tangential matrix biopsy	FAC070	Faculty		00:10:00		
+1096	WS14	5	02:40 PM	02:50 PM	Surgery for Ingrown nail, Video-Based: Partial avulsion and matricectomy	FAC071	Faculty		00:10:00		
+1097	WS14	6	02:50 PM	03:00 PM	Gel nails and nail peels, Video-Based: aesthetic enhancement in nail, cosmetic camouflage	FAC072	Faculty		00:10:00		
+1098	WS14	7	03:00 PM	03:10 PM	Nail Tumors, Video-Based: Nail fold and nail bed tumors	FAC073	Faculty		00:10:00		
+1099	WS14	8	03:10 PM	03:20 PM	Nail Matrix Tumors, Video Based: tumors localized in the matrix region	FAC000	Faculty		00:10:00		
+1100	WS14	9	03:20 PM	03:30 PM	Nail Lasers, Video-based: Various lasers useful in nail, indications and contraindications, what to expect	FAC015	Faculty		00:10:00		
+1101	WS14	10	03:30 PM	03:40 PM	Complications & Pearls, Complications expected, immediate, short-term, long-term, how to prevent them, Pearls for safe nail surgery	FAC045	Faculty		00:10:00		
+1102	WS14	11	03:40 PM	04:00 PM	Audience Interaction  20 min	FAC000	Faculty		00:20:00		
+1103	WS15	1	04:15 PM	04:27 PM	Understanding Vitiligo: Pathogenesis and Clinical Patterns	FAC029	Faculty		00:12:00		
+1104	WS15	2	04:27 PM	04:39 PM	Vitiligo Without Surgery: Modern Therapeutic Approaches	FAC037	Faculty		00:12:00		
+1105	WS15	3	04:39 PM	04:51 PM	Stability of vitiligo-recent recommendations and limitations	FAC000	Faculty		00:12:00		
+1106	WS15	4	04:51 PM	05:03 PM	Vitiligo Surgery Masterclass: NCES Technique	FAC061	Faculty		00:12:00		
+1107	WS15	5	05:03 PM	05:15 PM	Vitiligo Surgery Masterclass: SSS Technique	FAC062	Faculty		00:12:00		
+1108	WS15	6	05:15 PM	05:27 PM	Vitiligo Surgery Masterclass: SBG Technique	FAC029	Faculty		00:12:00		
+1109	WS15	7	05:27 PM	05:39 PM	FUE in vitiligo surgery: precision grafting for resistant patches	FAC063	Faculty		00:12:00		
+1110	WS15	8	05:39 PM	05:51 PM	Complications of Vitiligo Surgery and Their Management	FAC064	Faculty		00:12:00		
+1112	WS15	9	05:51 PM	06:03 PM	Difficult Areas in Vitiligo Surgery (Lips, Fingers, Joints, Eyelids)	FAC065	Faculty		00:12:00		
+1113	WS15	10	06:03 PM	06:15 PM	Jodhpur technique	FAC066	Faculty		00:12:00		
+1114	WS16	1	04:15 PM	04:25 PM	Understanding Scars: Pathophysiology of Keloids & Hypertrophic Scars	FAC043	Faculty		00:10:00		
+1115	WS16	2	04:25 PM	04:35 PM	Keloid Masterclass: Prevention, Early Intervention & Recurrence Control	FAC075	Faculty		00:10:00		
+1116	WS16	3	04:35 PM	04:45 PM	Hypertrophic Scar Management: From Conservative Care to Surgery	FAC076	Faculty		00:10:00		
+1117	WS16	4	04:45 PM	04:55 PM	Intralesional Therapy Pearls: Steroids, 5-FU, Bleomycin & Beyond	FAC037	Faculty		00:10:00		
+1118	WS16	5	04:55 PM	05:05 PM	Laser Solutions for Scars: CO2, PDL & Combination Approaches	FAC015	Faculty		00:10:00		
+1119	WS16	6	05:05 PM	05:15 PM	Surgical Management of Keloids: Excision with Adjuvant Strategies	FAC064	Faculty		00:10:00		
+1120	WS16	7	05:15 PM	05:25 PM	Acne Scars to Surgical Scars: Advanced Revision Techniques	FAC056	Faculty		00:10:00		
+1121	WS16	8	05:25 PM	05:35 PM	Challenging Areas in Scar Management: Ear Lobes, Chest, Shoulder & Jawline	FAC077	Faculty		00:10:00		
+1122	WS16	9	05:35 PM	05:45 PM	Scar Remodeling Innovations: Endolift—Bridging the Gap Between EBD and Surgery	FAC078	Faculty		00:10:00		
+1123	WS16	10	05:45 PM	05:55 PM	Secrets of Success in Scar Treatment: Pearls, Pitfalls & Long-Term Results	FAC079	Faculty		00:10:00		
+1124	WS16	11	05:55 PM	06:05 PM	Evidence-Based Guidelines in Management of Keloids	FAC080	Faculty		00:10:00		
+1125	WS16	12	06:05 PM	06:15 PM	Pearls in Scar Management	FAC059	Faculty		00:10:00		
+1126	WS17	1	02:00 PM	02:10 PM	ANATOMY AND AGEING	FAC087	Faculty		00:10:00		
+1127	WS17	2	02:10 PM	02:20 PM	PATIENT EVALUATION AND PLANNING	FAC088	Faculty		00:10:00		
+1128	WS17	3	02:20 PM	02:35 PM	Video Demo – LASERS AND EBDS FOR NECK REJUVENATION	FAC089	Demo		00:15:00		
+1129	WS17	4	02:35 PM	02:50 PM	Video Demo – PEELS FOR NECK REJUVENATION	FAC025	Demo		00:15:00		
+1130	WS17	5	02:50 PM	03:05 PM	Video Demo – BOTULINUM TOXIN AND FILLERS	FAC090	Demo		00:15:00		
+1131	WS17	6	03:05 PM	03:20 PM	Video Demo – SKIN BOOSTERS AND BIOREMODELLERS	FAC091	Demo		00:15:00		
+1132	WS17	7	03:20 PM	03:35 PM	Video Demo – THREADS	FAC092	Demo		00:15:00		
+1133	WS17	8	03:35 PM	03:55 PM	PANEL DISCUSSION  - HIFU VS MNRF VS THREADS , COMBINATION STRATEGIES , DIFFICULT NECKS , COMBINATION PEARLS	FAC000	Panel		00:20:00		
+1134	WS18	1	02:00 PM	02:15 PM	UV Essentials: Foundations of Photobiology	FAC119	Faculty		00:15:00		
+1135	WS18	2	02:15 PM	02:30 PM	Choosing the Right Light: Phototherapy Spectrum & Modalities	FAC120	Faculty		00:15:00		
+1136	WS18	3	02:30 PM	02:45 PM	Beyond the Routine: Special Populations & Photoprotection	FAC303	Faculty		00:15:00		
+1137	WS18	4	02:45 PM	03:00 PM	Light in Action: Therapeutic Applications in Dermatology	FAC084	Faculty		00:15:00		
+1138	WS18	5	03:00 PM	03:15 PM	Emerging Frontiers: Advances & Challenging Cases	FAC121	Faculty		00:15:00		
+1139	WS18	6	03:15 PM	03:30 PM	Decoding Photosensitivity: Photopatch Testing	FAC122	Faculty		00:15:00		
+1140	WS18	7	03:30 PM	03:45 PM	When Light Goes Too Far: Adverse Effects & Management	FAC123	Faculty		00:15:00		
+1141	WS18	8	03:45 PM	04:00 PM	Clinical Pearls: Case Discussion & Expert Q&A	FAC119	Moderator		00:15:00		
+1142	WS19	1	04:15 PM	04:25 PM	Introduction to lip rejuvenation	FAC129	Faculty		00:10:00		
+1143	WS19	2	04:25 PM	04:40 PM	Anatomy and ageing	FAC130	Faculty		00:15:00		
+1144	WS19	3	04:40 PM	04:55 PM	Boosters	FAC131	Faculty		00:15:00		
+1145	WS19	4	04:55 PM	05:15 PM	Fillers	FAC129	Faculty		00:20:00		
+1146	WS19	5	05:15 PM	05:30 PM	Botulinum toxin	FAC132	Faculty		00:15:00		
+1147	WS19	6	05:30 PM	05:45 PM	Lip pigmentation	FAC133	Faculty		00:15:00		
+1148	WS19	7	05:45 PM	06:15 PM	Panel discussion	FAC129	Panel		00:30:00		
+1149	WS19	8	05:45 PM	06:15 PM	Panel discussion	FAC148	Panel		00:30:00		
+1150	WS19	9	05:45 PM	06:15 PM	Panel discussion	FAC211	Panel		00:30:00		
+1151	WS19	10	05:45 PM	06:15 PM	Panel discussion	FAC142	Panel		00:30:00		
+1152	WS19	11	05:45 PM	06:15 PM	Panel discussion	FAC099	Panel		00:30:00		
+1153	WS19	12	05:45 PM	06:15 PM	Panel discussion - moderator	FAC156	Panel		00:30:00		
+1154	WS2	1	09:00 AM	09:12 AM	Blood Clues: Turning Laboratory Data into Dermatological Diagnosis	FAC033	Faculty		00:12:00		
+1155	WS2	2	09:12 AM	09:24 AM	High Resolution USG For Nerve Examination	FAC034	Faculty		00:12:00		
+1156	WS2	3	09:24 AM	09:36 AM	Light as a Diagnostic Tool: Mastering Wood’s Lamp Examination	FAC035	Faculty		00:12:00		
+1157	WS2	4	09:36 AM	09:48 AM	Unlocking Urticaria: Maximizing the Value of ASST	FAC036	Faculty		00:12:00		
+1158	WS2	5	09:48 AM	10:00 AM	Hair Under the Lens: Unlocking the Secrets of Trichoscopy	FAC037	Faculty		00:12:00		
+1159	WS2	6	10:00 AM	10:12 AM	Swab, Stain, Solve: The Power of Dermatological Smears	FAC038	Faculty		00:12:00		
+1160	WS2	7	10:12 AM	10:24 AM	Unmasking Contact Allergy: From Patch to Diagnosis	FAC039	Faculty		00:12:00		
+1161	WS2	8	10:24 AM	10:36 AM	The Visual Stethoscope: Seeing Beyond the Naked Eye	FAC040	Faculty		00:12:00		
+1162	WS2	9	10:36 AM	10:48 AM	Zero Tolerance: Raising the Bar for Infection Control	FAC041	Faculty		00:12:00		
+1163	WS2	10	10:48 AM	11:00 AM	The Cutting Edge: Precision Skin Biopsy Techniques	FAC042	Faculty		00:12:00		
+1164	WS20	1	04:15 PM	04:20 PM	Glow Kickoff: Setting the Stage for Skin Transformation	FAC000	Faculty		00:05:00		
+1165	WS20	2	04:20 PM	04:30 PM	The Science Beneath the Surface: Foundations of Chemical Peels	FAC134	Faculty		00:10:00		
+1166	WS20	3	04:30 PM	04:40 PM	Choosing the right Peel The Peel Playbook: Precision in Patient & Peel Selection	FAC135	Faculty		00:10:00		
+1167	WS20	4	04:40 PM	04:50 PM	Special occasions peel	FAC125	Faculty		00:10:00		
+1168	WS20	5	04:50 PM	05:00 PM	Advanced peel strategies :From Acid to Artistry	FAC000	Faculty		00:10:00		
+1169	WS20	6	05:00 PM	05:10 PM	Beyond The face :Body peels	FAC136	Faculty		00:10:00		
+1170	WS20	7	05:10 PM	05:20 PM	Future aspects: What's New in Peels	FAC137	Faculty		00:10:00		
+1171	WS20	8	05:20 PM	05:30 PM	Combination of other procedures with peels for better outcomes	FAC099	Faculty		00:10:00		
+1172	WS20	9	05:30 PM	05:40 PM	Avoiding pitfalls When the Glow Fades: Managing Complications with Confidence	FAC000	Faculty		00:10:00		
+1173	WS20	10	05:40 PM	06:00 PM	Closing Reflections & Q&A (coordinators + All faculty)	FAC000	Faculty		00:20:00		
+1174	WS21	1	02:00 PM	02:15 PM	Anatomy, vascularity & physiology of intimate aging – skin mucosa and supporting structural shift	FAC000	Faculty		00:15:00		
+1175	WS21	2	02:15 PM	02:30 PM	Consultation – symptoms to solution: counselling with cultural sensitivity & clinical judgement – functional to aesthetic	FAC000	Faculty		00:15:00		
+1176	WS21	3	02:30 PM	02:45 PM	Energy based remodelling protocols and procedure details (video demonstration)	FAC000	Faculty		00:15:00		
+1177	WS21	4	02:45 PM	03:00 PM	HA and PRP based rejuvenation – restoration and regeneration techniques	FAC000	Faculty		00:15:00		
+1178	WS21	5	03:00 PM	03:15 PM	Intimate skin quality: managing pigmentation and texture safety	FAC000	Faculty		00:15:00		
+1179	WS21	6	03:15 PM	03:30 PM	Hormonal therapy and complication management pearls	FAC000	Faculty		00:15:00		
+1180	WS21	7	03:30 PM	03:45 PM	Holistic multiple modality approach and upcoming treatments like threads, microbiome management, targeted HRT, prasterone and more	FAC000	Faculty		00:15:00		
+1181	WS21	8	03:45 PM	04:00 PM	Q&A and panel discussion	FAC000	Panel		00:15:00		
+1182	WS23	1	04:15 PM	04:35 PM	Overview	FAC139	Faculty		00:20:00		
+1183	WS23	2	04:35 PM	04:55 PM	Anatomy	FAC019	Faculty		00:20:00		
+1184	WS23	3	04:55 PM	05:15 PM	Fillers and products	FAC140	Faculty		00:20:00		
+1185	WS23	4	05:15 PM	05:35 PM	Techniques and injection techniques	FAC141	Faculty		00:20:00		
+1186	WS23	5	05:35 PM	05:55 PM	Cases/Examples-Outcome	FAC142	Faculty		00:20:00		
+1187	WS23	6	05:55 PM	06:15 PM	Complications and management	FAC143	Faculty		00:20:00		
+1188	WS24	1	04:15 PM	04:45 PM	What's new in microblading	FAC297	Faculty		00:30:00		
+1189	WS24	2	04:45 PM	05:15 PM	Microshading - Ombre brows	FAC241	Faculty		00:30:00		
+1190	WS24	3	05:15 PM	05:45 PM	PMU do's and don’ts, complications and marketing tips for beginners	FAC101	Faculty		00:30:00		
+1191	WS24	4	05:45 PM	06:15 PM	Questions - Answers by delegates	FAC000	QA		00:30:00		
+1192	WS25	1	02:00 PM	02:10 PM	Periorbital Anatomy: The Foundation for Safe Rejuvenation	FAC144	Faculty		00:10:00		
+1193	WS25	2	02:10 PM	02:20 PM	The Ageing Periorbital Face: Assessment , What is Really Making The Eye look older?	FAC284	Faculty		00:10:00		
+1194	WS25	3	02:20 PM	02:30 PM	Periorbitalx Peels: Treating Pigmentation & Skin Quality	FAC145	Faculty		00:10:00		
+1195	WS25	4	02:30 PM	02:40 PM	Skin Boosters Around the Eye: Improving Skin Quality & Hydration	FAC124	Faculty		00:10:00		
+1196	WS25	5	02:40 PM	02:50 PM	Periorbital Fillers: Tear Trough & Midface	FAC041	Faculty		00:10:00		
+1197	WS25	6	02:50 PM	03:00 PM	PDRN/PN for Periorbital Rejuvenation: The Regenerative Approach	FAC302	Faculty		00:10:00		
+1198	WS25	7	03:00 PM	03:10 PM	Threads Around the Eye: Indications, Techniques & Limitations	FAC092	Faculty		00:10:00		
+1199	WS25	8	03:10 PM	03:20 PM	Energy-Based Periorbital Rejuvenation: Fractional, MNRF & HIFU	FAC149	Faculty		00:10:00		
+1200	WS25	9	03:20 PM	03:30 PM	The Lower Eyelid: Bags, Festoons & Surgical Correction	FAC150	Faculty		00:10:00		
+1201	WS25	10	03:30 PM	04:00 PM	EXPERT PANEL – “WHAT WOULD YOU DO?” Case-Based Decision Making in Periorbital Rejuvenation Dr Priti	FAC000	Panel		00:30:00		
+1202	WS26	1	02:00 PM	02:10 PM	Burns ,Blisters and scarring- when thermal injury goes beyond the expected endpoint	FAC000	Faculty		00:10:00		
+1203	WS26	2	02:11 PM	02:20 PM	PIH, hypopigmentation & paradoxical pigmentation- the challenge of treating skin of colour	FAC014	Faculty		00:09:00		
+1204	WS26	3	02:21 PM	02:30 PM	Unexpected hair & skin reactions-paradoxical hypertrichosis,acne/HSV reactivation	FAC026	Faculty		00:09:00		
+1205	WS26	4	02:31 PM	02:40 PM	Unwanted tissue changes- when contouring goes too far	FAC091	Faculty		00:09:00		
+1206	WS26	5	02:41 PM	02:50 PM	Nerve and ocular complications-the complications we must never miss	FAC050	Faculty		00:09:00		
+1207	WS26	6	02:51 PM	03:00 PM	combination treatments gone wrong- Lasers+RF+HIFU, avoiding	FAC018	Faculty		00:09:00		
+1208	WS26	9	03:24 PM	03:36 PM	Hyaluronic Fillers: Beware Points, Complications And Management	FAC153	Faculty		00:12:00		
+1209	WS26	10	03:36 PM	03:48 PM	Cracking the PIH Code : Science To Treatment	FAC154	Faculty		00:12:00		
+1210	WS26	8	03:12 PM	03:24 PM	Botulinium : Red Alerts & Its  Management	FAC152	Faculty		00:12:00		
+1211	WS26	7	03:00 PM	03:12 PM	From Depth To Damage: Mastering Safety In Chemical Peels	FAC151	Faculty		00:12:00		
+1212	WS26	11	03:48 PM	04:00 PM	Dos And Don't Of Avoiding Aesthetic Complications	FAC024	Faculty		00:12:00		
+1213	WS27	1	04:15 PM	04:25 PM	Overview	FAC166	Faculty		00:10:00		
+1214	WS27	2	04:25 PM	04:35 PM	Anatomy + Aging Changes	FAC167	Faculty		00:10:00		
+1215	WS27	3	04:35 PM	04:45 PM	Topical Treatments + Hand Care	FAC168	Faculty		00:10:00		
+1216	WS27	4	04:45 PM	04:55 PM	Chemical Peels for Hand Exfoliation + Rejuvenation	FAC169	Faculty		00:10:00		
+1217	WS27	5	04:55 PM	05:05 PM	Lasers for Rejuvenation of Hands	FAC170	Faculty		00:10:00		
+1218	WS27	6	05:05 PM	05:35 PM	Fillers + Volumizers for Volume Restoration with video demonstration	FAC171	Faculty		00:30:00		
+1219	WS27	7	05:35 PM	05:45 PM	Sclerotherapy for veins	FAC172	Faculty		00:10:00		
+1220	WS27	8	05:45 PM	05:55 PM	PRP + Microneedling	FAC023	Faculty		00:10:00		
+1221	WS27	9	05:55 PM	06:15 PM	Panel Discussion	FAC171	Faculty		00:20:00		
+1222	WS28	1	04:15 PM	04:25 PM	Introduction to Dermoscopy	FAC049	Faculty		00:10:00		
+1223	WS28	2	04:25 PM	04:40 PM	Inflammoscopy: Psoriasis vs. Eczema vs. Lichen Planus vs. DLE	FAC173	Faculty		00:11:00		
+1224	WS28	3	04:40 PM	04:50 PM	Entomodermoscopy	FAC040	Faculty		00:11:00		
+1225	WS28	4	04:50 PM	05:05 PM	Trichoscopy	FAC155	Faculty		00:13:00		
+1226	WS28	5	05:05 PM	05:15 PM	Onychoscopy	FAC074	Faculty		00:10:00		
+1227	WS28	6	05:15 PM	05:25 PM	Monitoring Treatment and Aesthetics Application	FAC174	Faculty		00:09:00		
+1228	WS28	7	05:25 PM	05:40 PM	Algorithmic vs. Chaos & Clues Approach for Pigmented Lesions	FAC175	Faculty		00:09:00		
+1229	WS28	8	05:40 PM	06:00 PM	"Panel Discussion: 1. Dermoscopy in Skin of Color: Global Phototype Variations. 2. Artificial Intelligence in Dermoscopy: Threat or Support? 3. Dermoscopy Pitfalls & Mimickers
+(Panelists: Dr Manas Chatterjee, Dr Yashmin Bhat, Dr Tejasvi Trilok Raj)"	FAC049	Moderator		00:29:00		
+1232	WS29	1	02:00 PM	02:12 PM	Assessment and unmasking of facial melanosis (dermoscopy, Woods lamp, biopsy SOS)	FAC155	Faculty		00:12:00		
+1233	WS29	2	02:12 PM	02:24 PM	Chemical peels – choosing the right peel for the right pigment	FAC156	Faculty		00:12:00		
+1234	WS29	3	02:24 PM	02:36 PM	Energy based devices: where do they fit in facial melanosis – laser and devices beyond the hype	FAC017	Faculty		00:12:00		
+1235	WS29	4	02:36 PM	02:48 PM	The new kid on the block – exosomes, PN, novel molecules	FAC157	Faculty		00:12:00		
+1236	WS29	5	02:48 PM	03:00 PM	Novel drug delivery tools for facial melanosis (microneedling, MNRF, smaller encapsulated molecules)	FAC020	Faculty		00:12:00		
+1237	WS29	6	03:00 PM	03:12 PM	Building algorithm for the difficult facial melanosis – refractory, recalcitrant, resistant cases	FAC158	Faculty		00:12:00		
+1238	WS29	7	03:12 PM	03:24 PM	Beyond the procedural management	FAC085	Faculty		00:12:00		
+1239	WS29	9	03:36 PM	03:48 PM	Case based video presentation of facial melanosis panel discussion	FAC157	Panel		00:12:00		
+1240	WS29	8	03:24 PM	03:36 PM	Case based video presentation of facial melanosis panel discussion	FAC159	Panel		00:12:00		
+1241	WS29	10	03:48 PM	04:00 PM	Q&A interactive session	FAC241	Moderator		00:12:00		
+1242	WS3	1	11:30 AM	11:42 AM	Basics of Pigmentary lasers + Laser Interaction & physics	FAC013	Faculty		00:11:00		
+1243	WS3	2	11:42 AM	11:54 AM	Q-Switched Lasers	FAC014	Faculty		00:11:00		
+1244	WS3	3	11:54 AM	12:05 PM	Picosecond Lasers + Combination Therapy	FAC015	Faculty		00:11:00		
+1245	WS3	4	12:05 PM	12:17 PM	Clinical Applications & innovative uses	FAC016	Faculty		00:11:00		
+1246	WS3	5	12:17 PM	12:29 PM	Complications of pigmentary lasers	FAC018	Faculty		00:11:00		
+1247	WS3	6	12:29 PM	12:41 PM	Tattoo removal: A to Z	FAC019	Faculty		00:11:00		
+1248	WS3	7	12:41 PM	01:30 PM	Live demo (49 min)	FAC000	Demo		00:14:00		
+1250	WS30	1	02:00 PM	02:15 PM	From Vision to Reality: Designing a High-Growth Dermatology Clinic Setup	FAC037	Faculty		00:15:00		
+1251	WS30	2	02:15 PM	02:30 PM	Patient Experience Excellence: From First Impression to Last Follow-Up	FAC160	Faculty		00:15:00		
+1252	WS30	3	02:30 PM	02:45 PM	SOP-Driven Clinics: The Secret to Scalability, Safety & Consistency	FAC032	Faculty		00:15:00		
+1253	WS30	4	02:45 PM	03:00 PM	Building a High-Performance Team: Training, KPIs & Accountability Systems	FAC161	Faculty		00:15:00		
+1254	WS30	5	03:00 PM	03:15 PM	Safety First: Infection Control, Emergency Preparedness & Risk Management	FAC162	Faculty		00:15:00		
+1255	WS30	6	03:15 PM	03:30 PM	In House Pharmacy Mastery: Setup, Systems &profitability	FAC097	Faculty		00:15:00		
+1256	WS30	7	03:30 PM	03:45 PM	Technology Integration in Practice: AI, EMR & Digital Dermatology Ecosystem	FAC147	Faculty		00:15:00		
+1257	WS30	8	03:45 PM	04:00 PM	The conversion formula - Turning consultation into procedures consistently	FAC163	Faculty		00:15:00		
+1258	WS31	1	04:15 PM	04:30 PM	The Perioral Unit: Anatomy, Aging, Assessment and Neuromodulation	FAC124	Faculty		00:15:00		
+1259	WS31	2	04:30 PM	04:45 PM	Perioral and Lip Fillers: Structural Design, Shaping and Facial Balance	FAC125	Faculty		00:15:00		
+1260	WS31	3	04:45 PM	05:00 PM	Perioral Pigmentation: History, Assessment and Multimodal Management	FAC031	Faculty		00:15:00		
+1261	WS31	4	05:00 PM	05:15 PM	Energy-Based Devices in Perioral Rejuvenation: Resurfacing to Remodelling	FAC126	Faculty		00:15:00		
+1262	WS31	5	05:15 PM	05:30 PM	Perioral Skin Quality: Hydration, Biostimulation and Collagen Remodelling	FAC127	Faculty		00:15:00		
+1263	WS31	6	05:30 PM	05:45 PM	Perioral Aesthetics: Complications, Prevention and Management	FAC128	Faculty		00:15:00		
+1264	WS31	7	05:45 PM	06:15 PM	Panel Discussion: Cases, Controversies and Complications	FAC000	Panel		00:30:00		
+1265	WS32	1	04:15 PM	04:30 PM	Managing Difficult Patients & Negative Reviews & Art of saying NO : Protecting Your Practice & Reputation	FAC030	Faculty		00:15:00		
+1266	WS32	2	04:30 PM	04:45 PM	Medico-Legal Mastery for Dermatologists	FAC164	Faculty		00:15:00		
+1267	WS32	3	04:45 PM	05:00 PM	Laser Mastery: Smart buying, Safe practice & maximum ROI	FAC015	Faculty		00:15:00		
+1268	WS32	4	05:00 PM	05:15 PM	Growth Without Gimmicks: Ethical Marketing Strategies That Actually Bring Patients	FAC083	Faculty		00:15:00		
+1269	WS32	5	05:15 PM	05:30 PM	Burnout-Proof Practice: Work-Life Balance Strategies for Dermatologists	FAC039	Faculty		00:15:00		
+1270	WS32	6	05:30 PM	05:45 PM	Tax Smart Dermatology Practice: Mastering GST, Income Tax & Compliance Without Stress	FAC165	Faculty		00:15:00		
+1271	WS32	7	05:45 PM	06:00 PM	The Dermatologist’s Wealth Blueprint: From Active Income to Financial Freedom	FAC100	Faculty		00:15:00		
+1272	WS4	1	11:30 AM	11:42 AM	Targeted Delivery: The Art of Intralesional Therapy	FAC081	Faculty		00:12:00		
+1273	WS4	2	11:42 AM	11:54 AM	Clear and Quick: Atraumatic Molluscum extraction	FAC082	Faculty		00:12:00		
+1274	WS4	3	11:54 AM	12:06 PM	Stepping Up: Mastering Corn Excision Techniques	FAC083	Faculty		00:12:00		
+1275	WS4	4	12:06 PM	12:18 PM	Freeze to Heal: The Art and Science of Cryotherapy	FAC084	Faculty		00:12:00		
+1276	WS4	5	12:18 PM	12:30 PM	Turning Warts Against Themselves: Mastering Autoinoculation	FAC016	Faculty		00:12:00		
+1277	WS4	6	12:30 PM	12:42 PM	Drop by Drop : The Art Of TCA CROSS In Acne Scars	FAC030	Faculty		00:12:00		
+1278	WS4	7	12:42 PM	12:54 PM	Micro-Interventions, Macro Results: Pinhole Ablation	FAC051	Faculty		00:12:00		
+1279	WS4	8	12:54 PM	01:06 PM	Beam of Precision: Advancing Laser Frenuloplasty	FAC085	Faculty		00:12:00		
+1280	WS4	9	01:06 PM	01:18 PM	Cut, Coagulate, Control: Precision RF in Practice	FAC086	Faculty		00:12:00		
+1281	WS4	10	01:18 PM	01:30 PM	Q & A	FAC000	Faculty		00:12:00		
+1282	WS5	1	02:00 PM	02:10 PM	Overview of Energy-Based Devices — RF, IPL, HIFU, MNRF mechanisms; Device Selection & Indications; Which device for which concern	FAC017	Faculty		00:10:00		
+1283	WS5	2	02:10 PM	02:20 PM	IPL & RF in Practice — Pigmentation, rejuvenation, tightening	FAC021	Faculty		00:10:00		
+1284	WS5	3	02:20 PM	02:30 PM	MNRF — how to optimise & utilise in day to day practice	FAC020	Faculty		00:10:00		
+1285	WS5	4	02:30 PM	02:40 PM	HIFU — from basics to advanced	FAC299	Faculty		00:10:00		
+1286	WS5	5	02:40 PM	02:50 PM	Combination Treatments — RF + Laser / HIFU + Fillers / Hybrid protocols	FAC230	Faculty		00:15:00		
+1287	WS5	6	02:50 PM	03:00 PM	Safety, Complications — Burns, fat loss, nerve issues + facial plan	FAC023	Faculty		00:15:00		
+1288	WS5	7	03:00 PM	03:10 PM	1470 diode Lift Laser technique	FAC024	Faculty		00:10:00		
+1289	WS5	9	03:20 PM	04:00 PM	Live Demo (40 min) — [Topic/Speaker TBC]	FAC000	Demo		00:10:00		
+1290	WS5	8	03:10 PM	03:20 PM	Body contouring devices — tips and tricks	FAC026	Faculty		00:10:00		
+1292	WS6	1	02:00 PM	02:12 PM	Energy in Action: Mastering Electrolysis and RF Techniques	FAC093	Faculty		00:12:00		
+1293	WS6	2	02:12 PM	02:24 PM	Second Chance for the Earlobe: Modern Repair Techniques	FAC056	Faculty		00:12:00		
+1294	WS6	3	02:24 PM	02:36 PM	Beyond Botox: The Art of Mesobotox in Aesthetic Dermatology	FAC094	Faculty		00:12:00		
+1295	WS6	4	02:36 PM	02:48 PM	Microneedling : Dermaroller /Dermapen	FAC095	Faculty		00:12:00		
+1296	WS6	5	02:48 PM	03:00 PM	Beyond the Scalpel: Modern Techniques in Circumcision	FAC096	Faculty		00:12:00		
+1297	WS6	6	03:00 PM	03:12 PM	Breaking Free: Precision Subcision for Acne Scars	FAC097	Faculty		00:12:00		
+1298	WS6	7	03:12 PM	03:24 PM	Vanishing Veins: Practical Pearls in Sclerotherapy	FAC098	Faculty		00:12:00		
+1299	WS6	8	03:24 PM	03:36 PM	Melt, Shape, Refine: Precision Lipolytic Treatments	FAC099	Faculty		00:12:00		
+1300	WS6	9	03:36 PM	03:48 PM	When Things Go Wrong: Mastering Dermatological Office Emergencies	FAC100	Faculty		00:12:00		
+1301	WS6	10	03:48 PM	04:00 PM	Laser Lip Rejuvenation : Beyond Pigmentation	FAC101	Faculty		00:12:00		
+1302	WS6	11	02:00 PM	04:00 PM	Chair Person - Office Procedure 3	FAC102	Chairperson		02:00:00		
+1303	WS6	12	02:00 PM	04:00 PM	Chair Person - Office Procedure 3	FAC103	Chairperson		02:00:00		
+1304	WS7	1	04:15 PM	04:25 PM	Resurfacing Fundamentals: Ablative vs. non-ablative + fractional concept	FAC027	Faculty		00:10:00		
+1329	WS7	2	04:25 PM	04:35 PM	CO2 vs. Er: YAG Lasers: Indications, depth control, clinical decisions	FAC028	Faculty		00:10:00		
+1330	WS7	3	04:35 PM	04:45 PM	Indications & Case Selection of resurfacing lasers: Acne scars, pores, wrinkles, pigmentation	FAC029	Faculty		00:10:00		
+1331	WS7	4	04:45 PM	04:55 PM	Parameter Optimization & Treatment Planning: Energy, density, passes, endpoints	FAC030	Faculty		00:10:00		
+1332	WS7	5	04:55 PM	05:05 PM	Pre/Post Care + Combination Therapies: CO2 + PRP / Exosomes / peels	FAC031	Faculty		00:10:00		
+1333	WS7	6	05:05 PM	05:15 PM	Complications - how to deal: PIH, infection, scarring + acne scar protocol	FAC032	Faculty		00:10:00		
+1334	WS7	7	05:15 PM	05:55 PM	Live demo - 40 mins	FAC000	Faculty		00:40:00		
+1335	WS8	1	04:15 PM	04:30 PM	Understanding best technique and site of biopsy in various dermatological disorders	FAC104	Faculty		00:15:00		
+1336	WS8	2	04:30 PM	04:50 PM	Dermatopathology in Pediatric Dermatology: Insights Through Case-Based Learning	FAC105	Faculty		00:20:00		
+1337	WS8	3	04:50 PM	05:05 PM	Histopathology in Tropical Dermatology: Lessons from Case-Based Exploration	FAC106	Faculty		00:15:00		
+1338	WS8	4	05:05 PM	05:20 PM	When histology misleads- Common diagnostic traps in Dermatopathology	FAC107	Faculty		00:15:00		
+1339	WS8	5	05:20 PM	06:05 PM	Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses	FAC111	Panelist		00:45:00		
+1340	WS8	5	05:20 PM	06:05 PM	Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses	FAC108	Moderator		00:45:00		
+1341	WS8	5	05:20 PM	06:05 PM	Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses	FAC109	Panelist		00:45:00		
+1342	WS8	5	05:20 PM	06:05 PM	Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses	FAC110	Panelist		00:45:00		
+1345	WS8	5	05:20 PM	06:05 PM	Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses	FAC112	Panelist		00:45:00		
+1347	WS8	5	05:20 PM	06:05 PM	Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses	FAC105	Panelist		00:45:00		
+1348	WS8	6	06:05 PM	06:35 PM	Selected slide viewing and discussion if time permits beyond 6:15 pm	FAC000	Faculty		00:30:00		
+1349	WS9	1	09:00 AM	09:12 AM	Mucocele : exploring surgical excision and sclerotherapy as a therapeutic options.	FAC043	Faculty		00:12:00		
+1350	WS9	2	09:12 AM	09:24 AM	Surgical Instruments in Dermatosurgery	FAC044	Faculty		00:12:00		
+1351	WS9	3	09:24 AM	09:36 AM	Local Anesthesia Techniques in Dermatosurgery	FAC045	Faculty		00:12:00		
+1352	WS9	4	09:36 AM	09:48 AM	Basic Suturing Techniques (Interrupted, Continuous, Mattress)	FAC046	Faculty		00:12:00		
+1353	WS9	5	09:48 AM	10:00 AM	Advanced Suturing Techniques (Subcuticular, Buried Sutures)	FAC004	Faculty		00:12:00		
+1354	WS9	6	10:00 AM	10:12 AM	Elliptical Excision: Planning and Technique	FAC005	Faculty		00:12:00		
+1367	WS9	7	10:12 AM	10:24 AM	Precision Mole Excision (Nevus Excision)	FAC047	Faculty		00:12:00		
+1368	WS9	8	10:24 AM	10:36 AM	Epidermoid Cyst Excision – Minimal Excision Technique	FAC048	Faculty		00:12:00		
+1369	WS9	9	10:36 AM	10:48 AM	Lipoma Excision and Defect Closure	FAC049	Faculty		00:12:00		
+1370	WS9	10	10:48 AM	11:00 AM	Ear lobe repair	FAC050	Faculty		00:12:00		
+1372	WS1	7	10:30 AM	11:00 AM	Live Demo (30 minutes)	FAC000	Demo				
+1374	WS28	9	06:00 PM	06:15 PM	Debate: Dermoscopy or Histopathology - Non-Invasive Precision vs. Definitive Diagnosis (Dr Sasi Atili & Dr Soumil Khare)	FAC000					
+1375	WS30										
+1376	WS33	1	04:15 PM	04:30 PM	Managing Difficult Patients & Negative Reviews & Art of saying NO : Protecting Your Practice & Reputation	FAC001	Faculty				
+1378	WS33	2	04:30 PM	04:45 PM	fdf a a;faf adfa fd fd; j;a jfas;ljf;asdjf ;sajf; sdajf;a j;dfj;a jf						

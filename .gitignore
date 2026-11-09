@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+*.log
+.env
+.env.local
+.env*.local
+.DS_Store
+Thumbs.db
+
+# local snapshots
+*.bak.*
+_task4_dump.txt
+_verify_task2.mjs
+public/pdfs/
