@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useModalDismiss } from './useModalDismiss';
 
 export default function ConfirmDeleteDialog({
   title,
@@ -19,8 +20,14 @@ export default function ConfirmDeleteDialog({
   onConfirm: () => Promise<void> | void;
   onCancel: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { handleBackdropClick } = useModalDismiss(dialogRef, {
+    onClose: onCancel,
+    disabled: busy,
+  });
 
   async function handleConfirm() {
     setBusy(true);
@@ -35,8 +42,15 @@ export default function ConfirmDeleteDialog({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4"
+      data-modal-backdrop="true"
+      onClick={handleBackdropClick}
+    >
+      <div
+        ref={dialogRef}
+        className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4"
+      >
         <div className="flex items-start gap-3">
           <div className="shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-700 text-xl font-bold">
             !

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
+import { useModalDismiss } from './useModalDismiss';
 
 export default function EditCoordinatorsModal({
   session,
@@ -14,20 +15,24 @@ export default function EditCoordinatorsModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [facultyList, setFacultyList] = useState<any[]>([]);
   const [searchFaculty, setSearchFaculty] = useState('');
   const [selectedRole, setSelectedRole] = useState('National');
   const [coordinators, setCoordinators] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load all faculty and initialize current coordinators
+  const { handleBackdropClick } = useModalDismiss(dialogRef, {
+    onClose,
+    disabled: isSaving,
+  });
+
   useEffect(() => {
     async function loadFaculty() {
       const { data } = await supabase.from('faculty').select('id, canonical_name, email').order('canonical_name');
       if (data) setFacultyList(data);
     }
     loadFaculty();
-    // The currentCoordinators prop includes the faculty join, so we can use it directly
     setCoordinators(currentCoordinators);
   }, [currentCoordinators]);
 
@@ -41,7 +46,6 @@ export default function EditCoordinatorsModal({
       alert("This faculty is already a coordinator for this session.");
       return;
     }
-    // Optimistically add to UI
     const newCoord = {
       session_id: session.id,
       faculty_id: faculty.id,
@@ -59,14 +63,12 @@ export default function EditCoordinatorsModal({
   async function handleSave() {
     setIsSaving(true);
 
-    // 1. Delete all existing coordinators for this session
     await supabase.from('session_coordinators').delete().eq('session_id', session.id);
 
-    // 2. Insert the new list of coordinators
     if (coordinators.length > 0) {
       const payload = coordinators.map(c => ({
         session_id: session.id,
-        faculty_id: c.faculty.id || c.faculty_id, // Handle both fresh and existing
+        faculty_id: c.faculty.id || c.faculty_id,
         role: c.role
       }));
 
@@ -85,8 +87,15 @@ export default function EditCoordinatorsModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      data-modal-backdrop="true"
+      onClick={handleBackdropClick}
+    >
+      <div
+        ref={dialogRef}
+        className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden"
+      >
         <div className="flex justify-between items-center p-5 border-b bg-gray-50">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Edit Coordinators</h2>
@@ -96,7 +105,6 @@ export default function EditCoordinatorsModal({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Current Coordinators List */}
           <div>
             <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Current Coordinators</h3>
             {coordinators.length === 0 ? (
@@ -120,7 +128,6 @@ export default function EditCoordinatorsModal({
 
           <hr className="border-gray-200" />
 
-          {/* Add New Coordinator */}
           <div>
             <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Add Coordinator</h3>
             
@@ -147,7 +154,6 @@ export default function EditCoordinatorsModal({
                   onChange={(e) => setSearchFaculty(e.target.value)}
                 />
                 
-                {/* Search Results Dropdown */}
                 {searchFaculty.length > 0 && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
                     {filteredFaculty.length === 0 ? (

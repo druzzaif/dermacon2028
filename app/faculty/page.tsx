@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
@@ -16,9 +16,6 @@ export default function FacultyDirectoryPage() {
   const [viewingProfile, setViewingProfile] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [countFilter, setCountFilter] = useState<CountFilter>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'topics' | 'type'>('name');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const [sessionCodesByFaculty, setSessionCodesByFaculty] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     setIsMounted(true);
@@ -30,35 +27,6 @@ export default function FacultyDirectoryPage() {
 
       if (error) console.error(error);
       else setFaculty(data || []);
-
-        try {
-          const { data: linkRows } = await supabase
-            .from('faculty_topics')
-            .select(`
-              faculty_id,
-              session_topics!inner (
-                conference_sessions!inner ( session_code )
-              )
-            `);
-          if (linkRows) {
-            const grouped: Record<string, Set<string>> = {};
-            for (const row of linkRows as any[]) {
-              const code = row.session_topics?.conference_sessions?.session_code;
-              if (!code) continue;
-              if (!grouped[row.faculty_id]) grouped[row.faculty_id] = new Set();
-              grouped[row.faculty_id].add(code);
-            }
-            const normalized: Record<string, string[]> = {};
-            for (const fid of Object.keys(grouped)) {
-              normalized[fid] = Array.from(grouped[fid]).sort((a, b) =>
-                a.localeCompare(b, undefined, { numeric: true })
-              );
-            }
-            setSessionCodesByFaculty(normalized);
-          }
-        } catch (e) {
-          console.warn('Could not load session codes for tooltip', e);
-        }
       setLoading(false);
     }
     fetchFaculty();
@@ -90,39 +58,18 @@ export default function FacultyDirectoryPage() {
   }
 
   const filteredFaculty = useMemo(() => {
-    const filtered = faculty.filter((doc) => {
+    return faculty.filter((doc) => {
       const q = searchTerm.toLowerCase();
       const matchesSearch =
         !q ||
         doc.canonical_name?.toLowerCase().includes(q) ||
         doc.email?.toLowerCase().includes(q) ||
-        doc.faculty_id?.toLowerCase().includes(q) ||
-        doc.phone?.toLowerCase().includes(q);
+        doc.faculty_id?.toLowerCase().includes(q);
       if (!matchesSearch) return false;
       const topicCount = doc.faculty_topic_counts?.[0]?.topic_count || 0;
       return matchesCount(topicCount, countFilter);
     });
-
-    // Stable client-side sort
-    const dir = sortDir === 'asc' ? 1 : -1;
-    filtered.sort((a, b) => {
-      if (sortBy === 'topics') {
-        const ta = a.faculty_topic_counts?.[0]?.topic_count || 0;
-        const tb = b.faculty_topic_counts?.[0]?.topic_count || 0;
-        if (ta !== tb) return (ta - tb) * dir;
-      } else if (sortBy === 'type') {
-        const ta = (a.is_faculty ? 1 : 0) + (a.is_coordinator ? 1 : 0);
-        const tb = (b.is_faculty ? 1 : 0) + (b.is_coordinator ? 1 : 0);
-        if (ta !== tb) return (ta - tb) * dir;
-      }
-      // Default / tiebreaker: name
-      return (a.canonical_name || '').localeCompare(b.canonical_name || '', undefined, {
-        numeric: true,
-        sensitivity: 'base',
-      }) * dir;
-    });
-    return filtered;
-  }, [faculty, searchTerm, countFilter, sortBy, sortDir]);
+  }, [faculty, searchTerm, countFilter]);
 
   if (!isMounted) return null;
 
@@ -175,34 +122,10 @@ export default function FacultyDirectoryPage() {
           <table className="w-full text-left border-collapse">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr className="text-slate-500 text-xs uppercase tracking-wider">
-                <th
-                  className="px-6 py-3 font-semibold cursor-pointer select-none hover:text-slate-800"
-                  onClick={() => {
-                    if (sortBy === 'name') setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-                    else { setSortBy('name'); setSortDir('asc'); }
-                  }}
-                >
-                  Doctor {sortBy === 'name' && (sortDir === 'asc' ? '▲' : '▼')}
-                </th>
+                <th className="px-6 py-3 font-semibold">Doctor</th>
                 <th className="px-6 py-3 font-semibold">Contact Info</th>
-                <th
-                  className="px-6 py-3 font-semibold text-center cursor-pointer select-none hover:text-slate-800"
-                  onClick={() => {
-                    if (sortBy === 'type') setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-                    else { setSortBy('type'); setSortDir('desc'); }
-                  }}
-                >
-                  Type {sortBy === 'type' && (sortDir === 'asc' ? '▲' : '▼')}
-                </th>
-                <th
-                  className="px-6 py-3 font-semibold text-center cursor-pointer select-none hover:text-slate-800"
-                  onClick={() => {
-                    if (sortBy === 'topics') setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-                    else { setSortBy('topics'); setSortDir('desc'); }
-                  }}
-                >
-                  Topics {sortBy === 'topics' && (sortDir === 'asc' ? '▲' : '▼')}
-                </th>
+                <th className="px-6 py-3 font-semibold text-center">Type</th>
+                <th className="px-6 py-3 font-semibold text-center">Topics</th>
                 <th className="px-6 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
@@ -236,7 +159,7 @@ export default function FacultyDirectoryPage() {
                     <tr
                       key={doc.id}
                       onClick={() => setViewingProfile(doc)}
-                      className={`hover:bg-slate-50 cursor-pointer transition-colors group ${doc.is_active === false ? 'opacity-60' : ''}`}
+                      className="hover:bg-slate-50 cursor-pointer transition-colors group"
                     >
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-3">
@@ -279,16 +202,7 @@ export default function FacultyDirectoryPage() {
                         ) : (
                           <div className="text-sm text-slate-400">--</div>
                         )}
-                        {doc.phone && {doc.phone && (
-                          <a
-                            href={	el:}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-xs text-slate-500 hover:text-blue-600 mt-0.5 inline-block transition-colors"
-                            title="Call"
-                          >
-                            {doc.phone}
-                          </a>
-                        )}}
+                        {doc.phone && <div className="text-xs text-slate-500 mt-0.5">{doc.phone}</div>}
                       </td>
 
                       <td className="px-6 py-3 text-center">

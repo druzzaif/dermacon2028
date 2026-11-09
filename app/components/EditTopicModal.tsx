@@ -80,6 +80,9 @@ export default function EditTopicModal({
   const [topicTitle, setTopicTitle] = useState(topic.topic_title || '');
   const [sequenceNo, setSequenceNo] = useState<string>(String(topic.sequence_no ?? 1));
   const [isSaving, setIsSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);

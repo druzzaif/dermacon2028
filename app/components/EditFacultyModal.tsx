@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useRef } from 'react';
 import { updateFaculty } from '../actions';
+import { useModalDismiss } from './useModalDismiss';
 
 type Faculty = {
   id: string;
@@ -38,17 +39,15 @@ export default function EditFacultyModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, []);
+  const { handleBackdropClick } = useModalDismiss(dialogRef, {
+    onClose,
+    disabled: isPending,
+  });
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -64,8 +63,15 @@ export default function EditFacultyModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      data-modal-backdrop="true"
+      onClick={handleBackdropClick}
+    >
+      <div
+        ref={dialogRef}
+        className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+      >
         <div className="flex justify-between items-center p-5 border-b shrink-0 bg-white z-10">
           <h2 className="text-xl font-semibold">
             Edit Faculty {faculty.canonical_name ? `- ${faculty.canonical_name}` : ''}
