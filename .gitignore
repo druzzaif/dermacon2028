@@ -22,3 +22,6 @@ tsconfig.tsbuildinfo
 
 # Project context dump (regenerate as needed)
 CONTEXT_DUMP.txt
+
+# actions.ts backups (surgical-edit safety net)
+*.bak_*
