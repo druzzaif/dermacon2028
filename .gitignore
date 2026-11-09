@@ -19,3 +19,6 @@ public/pdfs/
 # TypeScript incremental cache
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+# Project context dump (regenerate as needed)
+CONTEXT_DUMP.txt
