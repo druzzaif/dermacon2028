@@ -1,0 +1,288 @@
+id,canonical_name,email,phone,designation,is_active,created_at,first_name,last_name,faculty_id,country,alt_email,sessions_as_faculty,person_type,is_faculty,is_coordinator,google_confirmed,google_form_sync_date,google_email,google_phone,email_sent,email_sent_date,reminder_sent,whatsapp_sent
+003d5b71-335d-4923-ba99-aa8a14999b2d,Dr Shenaz Arsiwala,drshenaz@gmail.com,9833114856,,true,2026-11-08 17:17:30.083746,Dr Shenaz,Arsiwala,FAC026,IN,,,Faculty,true,false,false,,,,false,,false,false
+009b031f-10ab-49ce-b8ca-2b34ace3f986,Dr Pooja Patel,poojappatel2395@gmail.com,8306330281,,true,2026-11-08 17:26:20.329031,Dr Pooja,Patel,FAC301,IN,,,Coordinator,false,true,false,,,,false,,false,false
+00cab10b-a653-4042-b8c0-d7ff92dc5bb7,Dr Pradeep Kumari,drgahlotpradeep@gmail.com,9623050666,,true,2026-11-08 17:17:06.135174,Dr Pradeep,Kumari,FAC172,IN,,,Faculty,true,false,false,,,,false,,false,false
+01063f06-6335-4f23-bebd-dcdc2535d92d,Dr Tanvi Pal,tanvikant75@gmail.com,9971513416,,true,2026-11-08 17:17:20.040295,Dr Tanvi,Pal,FAC088,IN,,,Faculty,true,false,false,,,,false,,false,false
+01d55b2b-ad23-4033-8376-132ce302795f,Dr Mark Koh,mark.koh.ja@kkh.com.sg,+65 18002933297,,true,2026-11-08 17:17:17.199475,Dr Mark,Koh,FAC105,SG,,,Faculty,true,false,false,,,,false,,false,false
+03951030-59ad-4ca5-94ef-f9115bdf2d26,Dr Tejaswini S,winialways@gmail.com,9850398042,,true,2026-11-08 17:17:27.154346,Dr Tejaswini,S,FAC044,IN,,,Faculty,true,false,false,,,,false,,false,false
+03a0f3fa-73c8-4a9b-9505-226aa62ff322,Dr A.V. Kaleeswaran,kaleesderm@gmail.om,9442569301,,true,2026-11-08 17:26:20.789831,Dr A.V.,Kaleeswaran,FAC300,,,,Faculty,true,false,false,,,,false,,false,false
+057b9edd-b6fc-47a0-a48c-a814e8494820,Dr Sudesh Chaudhari,drsudesh_choudhary@yahoo.in,9825914404,,true,2026-11-08 17:17:17.725776,Dr Sudesh,Chaudhari,FAC102,IN,,,Faculty,true,false,false,,,,false,,false,false
+0898f5be-180a-48dc-b392-35cc3fec4395,Dr Vikram Rathore,dr-vsrathore30@yahoo.co.in,9830110726,,true,2026-11-08 17:17:15.72332,Dr Vikram,Rathore,FAC114,IN,,,Faculty,true,false,false,,,,false,,false,false
+08fc4d1e-768d-4a5c-8bc3-e77658781ea4,Dr Ranjan Raval,ranjanmb@yahoo.com,9327022606,,true,2026-11-08 17:17:08.464763,Dr Ranjan,Raval,FAC159,IN,,,Faculty,true,false,false,,,,false,,false,false
+0900904d-a850-49d0-9202-0961b06a9d48,Dr Rachita Dhurat,drrachitadhurat@gmail.com,9870390057,,true,2026-11-08 17:17:00.988001,Dr Rachita,Dhurat,FAC206,IN,,,,false,false,false,,,,false,,false,false
+0a288d45-e421-4060-b6c7-863063395f00,Dr Monisha Madhumita,drmonishamadhumita@gmail.com,8884440655,,true,2026-11-08 17:13:17.735427,Dr Monisha,Madhumita,FAC288,,,,,false,false,false,,,,false,,false,false
+0bcb5c76-020e-4c36-89f2-508f731987cc,Dr Pallavi Singh Oculoplastic,drpallavisingh.rpc@gmail.com,7600477030,,true,2026-11-08 17:17:10.165765,Dr Pallavi,Singh Oculoplastic,FAC150,IN,,,Faculty,true,false,false,,,,false,,false,false
+0be0b50a-a5e5-4e3e-a195-0f76c66273d3,Dr Avani Shah,avaninilen@gmail.com,9819827373,,true,2026-11-08 17:16:51.020995,Dr Avani,Shah,FAC267,IN,,,Coordinator,false,true,false,,,,false,,false,false
+0c40a6d9-ffd2-4432-b022-64b6e35c7699,Dr Hardik Pitroda,drhardikpitroda@gmail.com,9313975824,,true,2026-11-08 17:17:12.354795,Dr Hardik,Pitroda,FAC135,IN,,,Both,true,true,false,,,,false,,false,false
+0c4e2120-28d9-46b2-9708-ea603a8063a2,Dr Geeti Khullar,geetikhullar@yahoo.com,9592816474,,true,2026-11-08 17:17:17.391571,Dr Geeti,Khullar,FAC104,IN,,,Both,true,true,false,,,,false,,false,false
+0cb328e8-024b-4c2d-9802-81e9a0479ac5,Dr Sanjay Rajpara,sanjay.rajpara1@nhs.net,+44 2074673000,,true,2026-11-08 17:17:19.871612,Dr Sanjay,Rajpara,FAC089,UK,,,Faculty,true,false,false,,,,false,,false,false
+0cd966b1-1011-4c5c-8ba8-ec93e3d63149,Dr Khushbu Chauhan,khushbuchauhan37@gmail.com,8866879682,,true,2026-11-08 17:13:16.980304,Dr Khushbu,Chauhan,FAC291,IN,,,Coordinator,false,true,false,,,,false,,false,false
+0ddf1a67-f9a7-478b-a068-98762fbfb4a4,Dr Tejasvi Trilok Raj,ttejasvi@umich.edu,7346572717,,true,2026-11-08 17:17:05.666092,Dr Tejasvi,Trilok Raj,FAC175,IN,,,Faculty,true,false,false,,,,false,,false,false
+0e7c68db-f47b-4f58-ab45-df3743a03068,Dr Patrick Yesudian,p_yesudian@hotmail.com,+91 4428272526,,true,2026-11-08 17:16:59.809511,Dr Patrick,Yesudian,FAC214,IN,,,,false,false,false,,,,false,,false,false
+0ee6c12f-ab21-4ab3-a6cd-a69748d1d932,Dr Anirban Ghosh,dranirbanderma@gmail.com,9830419625,,true,2026-11-08 17:16:56.151608,Dr Anirban,Ghosh,FAC237,IN,,,Faculty,true,false,false,,,,false,,false,false
+0efa138f-5960-48bd-b81b-4d99451fca11,Dr Kavish Chouhan,kavish_chouhan@yahoo.com,8588861092,,true,2026-11-08 17:17:03.582948,Dr Kavish,Chouhan,FAC188,IN,,,Both,true,true,false,,,,false,,false,false
+0fdd7dea-6b55-4671-812a-a936a73f7a60,Dr Kajol Prithiani,kajolprithiani77@gmail.com,9137033333,,true,2026-11-08 17:16:53.687853,Dr Kajol,Prithiani,FAC250,IN,,,Coordinator,false,true,false,,,,false,,false,false
+11d7c233-f622-42d6-ac40-d673ad851c1e,Dr Kanchan Srivastava,drkanchanderma@gmail.com,7905175683,,true,2026-11-08 17:26:21.309134,Dr Kanchan,Srivastava,FAC297,IN,,,Faculty,true,false,false,,,,false,,false,false
+1387c337-7731-4191-83bd-5ca0efdf7359,Dr Shashank Bansod,challenge4u2@yahoo.co.in,7709488653,,true,2026-11-08 17:17:25.384523,Dr Shashank,Bansod,FAC055,IN,,,Faculty,true,false,false,,,,false,,false,false
+13941702-1368-4a86-96ab-5ef066615600,Dr Himanshu Gupta,dr.himanshu87@gmail.com,9958347966,,true,2026-11-08 17:17:08.298387,Dr Himanshu,Gupta,FAC160,IN,,,Faculty,true,false,false,,,,false,,false,false
+14ec54ba-a51e-4640-808a-4e65fb8a22a6,Dr Bianca Maria Piraccini,biancamaria.piraccini@unibo.it,+39 0512141111,,true,2026-11-08 17:17:01.496382,Dr Bianca,Maria Piraccini,FAC203,IT,,,,false,false,false,,,,false,,false,false
+15282868-a3e3-4a1c-8da6-d3fa2ae51214,Dr David Padukadan,davidpudukadan@gmail.com,9995104400,,true,2026-11-08 17:17:29.928629,Dr David,Padukadan,FAC027,IN,,,Faculty,true,false,false,,,,false,,false,false
+166d6c85-9543-4e95-9686-12c9d5a6c9e8,Dr Mansi Shah,mansishah41196@gmail.com,9429111891,,true,2026-11-08 17:17:21.165994,Dr Mansi,Shah,FAC081,IN,,,Both,true,true,false,,,,false,,false,false
+1696b8ab-36cb-4975-943c-5d497d05c59b,Dr Marc Roscher,practise@drroscher.com,+27 824158545,,true,2026-11-08 17:17:24.732668,Dr Marc,Roscher,FAC059,INTL,,,Faculty,true,false,false,,,,false,,false,false
+16c2d120-90a6-48c1-b268-013ee51a1221,Dr Dilip Kachawa,nupurkotwadia.13@gmail.com,9414130036,,true,2026-11-08 17:17:23.596777,Dr Dilip,Kachawa,FAC066,IN,,,Faculty,true,false,false,,,,false,,false,false
+1798006d-664a-452d-8864-18c523c9ff0f,Dr Rashmi Jindal,rashmijundak98@gmail.com,9639657109,,true,2026-11-08 17:16:55.831949,Dr Rashmi,Jindal,FAC239,IN,,,Faculty,true,false,false,,,,false,,false,false
+18f20de7-15f7-4847-b72f-593529623a18,Dr Falguni Shah,drphalgunishah@gmail.com,9820419899,,true,2026-11-08 17:17:13.787414,Dr Falguni,Shah,FAC126,IN,,,Faculty,true,false,false,,,,false,,false,false
+194bc3ce-1804-4e90-956d-2e736da73d04,Dr Diwaker Sharma,no-email-FAC292@placeholder.com,,,true,2026-11-08 17:26:22.46785,Dr Diwaker,Sharma,FAC292,IN,,,Coordinator,false,true,false,,,,false,,false,false
+19e88eb6-13e6-43e7-9ce8-0ac2375354ba,Dr Aarti Shah,dr.aarti29@gmail.com,,,true,2026-11-08 17:26:19.688383,Dr Aarti,Shah,FAC303,,,,Faculty,true,false,false,,,,false,,false,false
+1b667bf5-38a2-45fb-8584-cc90df196faa,Dr Karishma Balani,drkarishmabalani@yahoo.com,9890028380,,true,2026-11-08 17:16:59.044107,Dr Karishma,Balani,FAC219,IN,,,Faculty,true,false,false,,,,false,,false,false
+1b745087-bc0c-40cc-bbba-4e52844caed4,Dr Anju Methil,dranjumethil@gmail.com,9415049505,,true,2026-11-08 17:17:06.59762,Dr Anju,Methil,FAC169,IN,,,Faculty,true,false,false,,,,false,,false,false
+1cfc3b52-a3a0-40b7-b394-324c845dbd4c,Dr Dhananjay Prajapati,drdmprajapati@yahoo.com,9429725640,,true,2026-11-08 17:17:20.51864,Dr Dhananjay,Prajapati,FAC085,IN,,,Both,true,true,false,,,,false,,false,false
+1e278ea4-e013-4291-af0b-4564d0e0fe21,Dr Kazomi,kazomi33@gmail.com,9909907207,,true,2026-11-08 17:17:24.083939,Dr Kazomi,,FAC063,IN,,,Faculty,true,false,false,,,,false,,false,false
+1e7aac1b-b8ab-4615-bde9-3c494066f68a,Dr Biju Vasudevan,biju.deepa@rediffmail.com,9741290425,,true,2026-11-08 17:17:00.819034,Dr Biju,Vasudevan,FAC207,IN,,,Faculty,true,false,false,,,,false,,false,false
+1f4c4390-a146-4422-b37c-d87c3334cc86,Dr Munish Paul,munishnexus@gmail.com,9810225978,,true,2026-11-08 17:17:23.762035,Dr Munish,Paul,FAC065,IN,,,Faculty,true,false,false,,,,false,,false,false
+2087ae11-9ddf-4d43-9ec5-fe76a642d940,Dr Nilesh Goyal,getyoung@juvenis.in,9769998696,,true,2026-11-08 17:16:58.723271,Dr Nilesh,Goyal,FAC221,IN,,,Faculty,true,false,false,,,,false,,false,false
+21e39e0a-508f-4bd8-b17e-7949bcb02527,Dr Mikki Singh,mikkysingh@gmail.com,9686112504,,true,2026-11-08 17:17:04.719712,Dr Mikki,Singh,FAC181,IN,,,Faculty,true,false,false,,,,false,,false,false
+23422e31-cb7a-4cb8-ae56-e88558fca81e,Dr Pooja Koyani,koyanipooja@gmail.com,9687628362,,true,2026-11-08 17:16:55.20416,Dr Pooja,Koyani,FAC241,IN,,,Both,true,true,false,,,,false,,false,false
+2358b127-e5d2-46b0-a82b-9893ffce99c6,Dr Jaishree Sharad,jaishree19@gmail.com,8433899075,,true,2026-11-08 17:17:13.305295,Dr Jaishree,Sharad,FAC129,IN,,,Both,true,true,false,,,,false,,false,false
+23c06515-c1f5-4078-9735-26dfe41abce0,Dr Geetanjali Shetty,geetanjalishetty@yahoo.com,9819264666,,true,2026-11-08 17:17:06.908054,Dr Geetanjali,Shetty,FAC167,IN,,,Faculty,true,false,false,,,,false,,false,false
+23c5f6e0-83c5-4cd0-8f55-012f12c97a82,druzzaifv,druzzaifv@gmail.com,,,true,2026-11-08 17:13:12.29957,druzzaifv,,FAC304,,,,Coordinator,false,true,false,,,,false,,false,false
+25b62338-f05c-4779-9cce-d5be8d23c625,Dr Sharmila Patil,drsharmilapatil@gmail.com,8850635503,,true,2026-11-08 17:17:28.483232,Dr Sharmila,Patil,FAC036,IN,,,Both,true,true,false,,,,false,,false,false
+27604157-552c-4110-980a-d14b89f51cee,Dr Anil Dashore,dr.dashoreanil@gmail.com,9827274246,,true,2026-11-08 17:26:21.477356,Dr Anil,Dashore,FAC296,IN,,,Faculty,true,false,false,,,,false,,false,false
+2852b2df-eed8-4619-aa12-b1ac95c5cb5c,Dr Janak Thakkar,drjkthakkar@gmail.com,9998127171,,true,2026-11-08 17:17:07.544246,Dr Janak,Thakkar,FAC163,IN,,,Faculty,true,false,false,,,,false,,false,false
+2a9aa324-1ffb-4937-8262-87f8c53cb804,Dr Harish Prasad,harish.harris@gmail.com,9738389028,,true,2026-11-08 17:26:24.810939,Dr Harish,Prasad,FAC004,IN,,,Faculty,true,false,false,,,,false,,false,false
+2acd6726-ce45-4c42-b50e-c51af6af8884,Dr Dattatrey Sonwane,datta534@yahoo.com,9820012298,,true,2026-11-08 17:17:21.633274,Dr Dattatrey,Sonwane,FAC078,IN,,,Faculty,true,false,false,,,,false,,false,false
+2c01c998-f54b-49d3-b510-e2ae9719f327,Dr Chirag Desai,83chirag@gmail.com,9699925114,,true,2026-11-08 17:17:16.70159,Dr Chirag,Desai,FAC108,IN,,,Faculty,true,false,false,,,,false,,false,false
+2c03f515-e308-47a8-a75f-a4d633e92a48,Dr Dhanraj Chavan,drdhanrajchavan@gmail.com,8692999088,,true,2026-11-08 17:16:58.882669,Dr Dhanraj,Chavan,FAC220,IN,,,Faculty,true,false,false,,,,false,,false,false
+2c9440cb-e52f-4fda-a552-19637a45e1bc,Dr Neha Taneja,taneja.neha2908@gmail.com,9179179605,,true,2026-11-08 17:17:02.438011,Dr Neha,Taneja,FAC195,IN,,,Faculty,true,false,false,,,,false,,false,false
+2d26275e-5040-407e-923e-6e009cdf88c4,Dr Chetna Ramchandani,drchetnar@gmail.com,9820482818,,true,2026-11-08 17:17:04.870689,Dr Chetna,Ramchandani,FAC180,IN,,,Faculty,true,false,false,,,,false,,false,false
+2daddf4c-b92e-4666-9db6-ecdd05ef19b7,Dr Kanika Sahni,kanu.sah@gmail.com,8826470322,,true,2026-11-08 17:17:22.112646,Dr Kanika,Sahni,FAC075,IN,,,Faculty,true,false,false,,,,false,,false,false
+2dcc0d38-f1e7-4954-b728-a51004807c49,Dr Hema Pant,hemapant.delhi@gmail.com,9313052242,,true,2026-11-08 17:17:19.711458,Dr Hema,Pant,FAC090,IN,,,Both,true,true,false,,,,false,,false,false
+2dd2904f-3de5-404c-a899-e9b9ea670555,Dr Sheetanshu Kumar,kumar.sheetanshu@gmail.com,9914211066,,true,2026-11-08 17:17:33.157008,Dr Sheetanshu,Kumar,FAC006,IN,,,Faculty,true,false,false,,,,false,,false,false
+2fb129c9-65ae-4c01-a448-827b2b628979,Dr Snehal Sriram,snehalsriram@gmail.com,9920343427,,true,2026-11-08 17:17:09.691972,Dr Snehal,Sriram,FAC153,IN,,,Faculty,true,false,false,,,,false,,false,false
+2fe0d742-c9de-40bf-94d7-00504394ccfe,Dr Purva Bhambhani,drpurvabhambhani@gmail.com,8980008193,,true,2026-11-08 17:16:54.631786,Dr Purva,Bhambhani,FAC244,IN,,,Coordinator,false,true,false,,,,false,,false,false
+305b3202-7990-40a8-a6aa-97bfd0e56380,Dr Siddharth Bhatt,sidbhatt.noida@gmail.com,8469938871,,true,2026-11-08 17:13:17.896313,Dr Siddharth,Bhatt,FAC287,IN,,,,false,false,false,,,,false,,false,false
+328b8fb4-3f09-4c46-a68f-fa5120ca65c1,Dr Anuj Paul,anujannantpall@gmail.com,9871237300,,true,2026-11-08 17:17:30.907294,Dr Anuj,Paul,FAC020,IN,,,Faculty,true,false,false,,,,false,,false,false
+32c9595f-0863-45ab-88d7-20a797361cce,Dr Vishal Gupta,doctor.vishalgupta@gmail.com,9871213543,,true,2026-11-08 17:17:17.036554,Dr Vishal,Gupta,FAC106,IN,,,Faculty,true,false,false,,,,false,,false,false
+32eb40c9-917e-45da-93c0-69b71f3e0d65,Dr Jikisha Jain,jikisha9@icloud.com,9828321774,,true,2026-11-08 17:16:53.530038,Dr Jikisha,Jain,FAC251,IN,,,Coordinator,false,true,false,,,,false,,false,false
+3478c5f0-c91b-47fb-86a3-7228fd462ade,Dr Samipa Mukherjee,drsamipadermatology@gmail.com,9606780956,,true,2026-11-08 17:17:09.38666,Dr Samipa,Mukherjee,FAC155,IN,,,Both,true,true,false,,,,false,,false,false
+36861fb0-41ae-44aa-b388-237d3b099d10,Dr Satish Bhatia,dermdestination@gmail.com,9820413312,,true,2026-11-08 17:16:57.920051,Dr Satish,Bhatia,FAC226,IN,,,Faculty,true,false,false,,,,false,,false,false
+3806fec0-e956-42f2-8938-32f32e5d662c,Dr Kirti Shah,drkirtipshah@yahoo.in,9825651751,,true,2026-11-08 17:17:09.218819,Dr Kirti,Shah,FAC156,IN,,,Faculty,true,false,false,,,,false,,false,false
+3884aaa6-4432-4fd9-9c3a-6e80f7a9e187,Dr BL Jangid,drjangid@gmail.com,9899557272,,true,2026-11-08 17:17:03.076484,Dr BL,Jangid,FAC191,IN,,,Faculty,true,false,false,,,,false,,false,false
+391b18d7-edea-4d46-8cad-b930fdbfa384,Dr Avitus John,spdermacenter@yahoo.com,9894052372,,true,2026-11-08 17:17:31.373502,Dr Avitus,John,FAC017,IN,,,Faculty,true,false,false,,,,false,,false,false
+3961f88c-85a5-46c9-9927-a15994831e07,Dr Niranjana Raj,niranjana.ycdc@gmail.com,9620061409,,true,2026-11-08 17:17:03.765132,Dr Niranjana,Raj,FAC187,IN,,,Faculty,true,false,false,,,,false,,false,false
+3bf2ef64-6168-4dc1-8a21-804a0ee84012,Dr Rochelle Monteiro,rochelle.cheryl@gmail.com,9739315324,,true,2026-11-08 17:13:18.233692,Dr Rochelle,Monteiro,FAC285,IN,,,,false,false,false,,,,false,,false,false
+3c40c70b-f4f4-4085-866f-4a719d831edd,Dr Sushil Savant,sushilsavant786@gmail.com,9821385544,,true,2026-11-08 17:17:25.219626,Dr Sushil,Savant,FAC056,IN,,,Faculty,true,false,false,,,,false,,false,false
+3d2ba7a1-0195-43a5-945d-91828167e577,Dr Malavika Kohli,malavikakohli@gmail.com,9821024808,,true,2026-11-08 17:16:56.979837,Dr Malavika,Kohli,FAC232,IN,,,Both,true,true,false,,,,false,,false,false
+3fd64567-4cd0-4b01-9111-3bdfeb2c5f02,Dr Salim T,tsalim7@gmail.com,9447148288,,true,2026-11-08 17:17:26.174114,Dr Salim,T,FAC050,IN,,,Both,true,true,false,,,,false,,false,false
+40c085ff-7dff-4ea2-9be4-1be5ca4d9806,Dr Pallavi Sule,palkarpallavi@gmail.com,9869032700,,true,2026-11-08 17:17:19.534272,Dr Pallavi,Sule,FAC091,IN,,,Faculty,true,false,false,,,,false,,false,false
+41305630-6726-4ecb-aee2-ffd9b750d471,Dr John Watts,hairdj@live.in,9490727091,,true,2026-11-08 17:17:03.40994,Dr John,Watts,FAC189,IN,,,Faculty,true,false,false,,,,false,,false,false
+4152be65-91c1-4993-b0fa-decc7b3ac64c,Dr Rajeev Joshi,rsjdrs@gmail.com,9322276418,,true,2026-11-08 17:17:16.39192,Dr Rajeev,Joshi,FAC110,IN,,,,false,false,false,,,,false,,false,false
+41e3c68f-38dc-45f6-b064-cf4d76f32ae7,Dr Syed Mubashir,syedmubashir2006@gmail.com,9697343464,,true,2026-11-08 17:13:18.899003,Dr Syed,Mubashir,FAC003,IN,,,Coordinator,false,true,false,,,,false,,false,false
+41ff47c4-9123-4633-a398-1777f2cf9d5d,Dr Rajesh Nair,rajeshskincaremed@gmail.com,9037348618,,true,2026-11-08 17:16:55.991785,Dr Rajesh,Nair,FAC238,IN,,,Faculty,true,false,false,,,,false,,false,false
+42f17d81-bf3e-4169-b0b9-b12733f6407f,Dr Dhwani Shah (muskat),drdhwani21@gmail.com,9558893343,,true,2026-11-08 17:17:15.082816,Dr Dhwani,Shah (muskat),FAC118,IN,,,Faculty,true,false,false,,,,false,,false,false
+4324a05f-670f-4bcb-a9cc-17203e0168d2,Dr Abhay Talathi,abhay38@rediffmail.com,9769585491,,true,2026-11-08 17:17:12.996256,Dr Abhay,Talathi,FAC131,IN,,,Faculty,true,false,false,,,,false,,false,false
+43c116e7-bdd1-4424-acb2-4c80e954cab2,Dr Karthik Raja,skindoctorkartik@gmail.com,7550204515,,true,2026-11-08 17:17:29.128183,Dr Karthik,Raja,FAC032,IN,,,Faculty,true,false,false,,,,false,,false,false
+45369ea6-c3bc-4082-b77e-d3fdc7c2a14c,Dr Naveen Thomas,naveenthomas04@gmail.com,9731222763,,true,2026-11-08 17:17:04.238365,Dr Naveen,Thomas,FAC184,IN,,,Faculty,true,false,false,,,,false,,false,false
+47505e9e-e8c2-405c-8743-a2b05bce505e,Dr Sushil Tahiliani,drsushiltt@gmail.com,9820492415,,true,2026-11-08 17:17:22.766908,Dr Sushil,Tahiliani,FAC071,IN,,,Faculty,true,false,false,,,,false,,false,false
+47593ac4-4f18-47f7-9f5b-ca0330c7e271,Dr Yogesh Bhingradiya,yogeshbhingradia@gmail.com,9825058052,,true,2026-11-08 17:17:18.700197,Dr Yogesh,Bhingradiya,FAC096,IN,,,Both,true,true,false,,,,false,,false,false
+47d9b632-4dfe-48a6-8f5a-2f4183e1223f,Dr Ami Shah,dramishah1@gmail.com,9825425867,,true,2026-11-08 17:16:57.45827,Dr Ami,Shah,FAC229,IN,,,Both,true,true,false,,,,false,,false,false
+480140cf-9e35-47b1-ad15-e340d584ff6b,Dr Lidia Rudnicka,lidia.rudnicka@wum.edu.pl,+48 225081450,,true,2026-11-08 17:16:59.199548,Dr Lidia,Rudnicka,FAC218,PL,,,,false,false,false,,,,false,,false,false
+4868d2c6-1e0d-4f20-b30c-60246424900e,Dr Amit Bhatt,bhattamit31@gmail.com,9825635322,,true,2026-11-08 17:17:03.238823,Dr Amit,Bhatt,FAC190,IN,,,Faculty,true,false,false,,,,false,,false,false
+48ba1075-834d-4d29-9bc2-9d2838cd9479,Dr Neha Gogia Sachde,neha_gogia1@hotmail.com,9999961541,,true,2026-11-08 17:17:27.649276,Dr Neha,Gogia Sachde,FAC041,IN,,,Faculty,true,false,false,,,,false,,false,false
+49548795-f3f3-4108-9437-6183894cb565,Dr Savitha Somaiah,drsavithasomaiah@gmail.com,9880512166,,true,2026-11-08 17:17:22.431475,Dr Savitha,Somaiah,FAC073,IN,,,Faculty,true,false,false,,,,false,,false,false
+4a0d63dc-0e23-4fa3-bc6f-91b93a4f6a9f,Dr Surajit Goral,dragorai@gmail.com,9614506569,,true,2026-11-08 17:13:18.400098,Dr Surajit,Goral,FAC284,,,,,false,false,false,,,,false,,false,false
+4ab7100f-b899-4b64-a798-a81a30275873,Dr Manjot Marwah,drmanjotmarwah@hotmail.com,9805887798,,true,2026-11-08 17:17:20.201908,Dr Manjot,Marwah,FAC087,IN,,,Faculty,true,false,false,,,,false,,false,false
+4af6c801-020a-43f5-9650-77b44c04d5b7,Dr Dipak Kulkarni,drdipakkulkarni@gmail.com,9820436342,,true,2026-11-08 17:17:07.218249,Dr Dipak,Kulkarni,FAC165,IN,,,Faculty,true,false,false,,,,false,,false,false
+4dde0236-23c8-4f54-9672-501389059574,Dr Shikha Bansal,findshikha@gmail.com,9811800194,,true,2026-11-08 17:17:23.101749,Dr Shikha,Bansal,FAC069,IN,,,Faculty,true,false,false,,,,false,,false,false
+4e41b97e-131a-47ce-871c-5b3ab6b24ea1,Dr Prashant Agarwal,drprashantagarwal111@gmail.com,8890444433,,true,2026-11-08 17:17:03.935239,Dr Prashant,Agarwal,FAC186,IN,,,Faculty,true,false,false,,,,false,,false,false
+4ea1c5a0-0d70-40ec-aab9-0df93beb8e9a,Dr Priyanka Sutaria,skinexperts019@gmail.com,9099944211,,true,2026-11-08 17:17:30.409009,Dr Priyanka,Sutaria,FAC024,IN,,,Both,true,true,false,,,,false,,false,false
+4ec478e9-2215-40f0-9c0a-6ea6438373e4,Dr Yashmin Bhat,yasmeenasif76@gmail.com,9419040771,,true,2026-11-08 17:17:05.97919,Dr Yashmin,Bhat,FAC173,IN,,,Faculty,true,false,false,,,,false,,false,false
+4fb8309f-1adf-4a88-bc35-639a8ae592c9,Dr Bhavni Oberoi,bhavni.oberoi@gmail.com,7407424758,,true,2026-11-08 17:13:18.063956,Dr Bhavni,Oberoi,FAC286,IN,,,,false,false,false,,,,false,,false,false
+4fb94a4b-ca2f-43e8-9352-77cffd960abb,Dr Anshul Jain,dranshuljain08@gmail.com,7083401151,,true,2026-11-08 17:17:21.000169,Dr Anshul,Jain,FAC082,IN,,,Faculty,true,false,false,,,,false,,false,false
+523660ae-a299-4f20-b561-d83f493a08b2,Dr Dinesh Kumar,drdinesh1512@gmail.com,9786492927,,true,2026-11-08 17:13:14.482329,Dr Dinesh,Kumar,FAC299,,,,,false,false,false,,,,false,,false,false
+52c36531-4fe6-47ec-8d7d-12f3e192ef42,Dr Jay Modha,jaymodha78@gmail.com,8849052513,,true,2026-11-08 17:17:12.035545,Dr Jay,Modha,FAC137,IN,,,Both,true,true,false,,,,false,,false,false
+542ac331-7721-4687-8754-b0aecded65b4,Dr Sachin Varma,varmasachin@hotmail.com,9830202395,,true,2026-11-08 17:16:58.412228,Dr Sachin,Varma,FAC223,IN,,,Faculty,true,false,false,,,,false,,false,false
+5439e4d1-c769-4310-8a40-615a73637aef,Dr Nikhil Parmar,skinclinicsparsh@gmail.com,9825603054,,true,2026-11-08 17:17:18.532711,Dr Nikhil,Parmar,FAC097,IN,,,Both,true,true,false,,,,false,,false,false
+549b236a-a391-49ee-8ece-675fa5baa32b,Dr Jyotirmay Bharti,uman_jyoti@yahoo.co.in,9650434150,,true,2026-11-08 17:17:05.030531,Dr Jyotirmay,Bharti,FAC179,IN,,,Faculty,true,false,false,,,,false,,false,false
+56f946d6-ee6f-4bb6-88be-c81d6cf922b7,Dr Nayan Patel,patelnayan78.np@gmail.com,9925011309,,true,2026-11-08 17:16:52.543628,Dr Nayan,Patel,FAC258,IN,,,Coordinator,false,true,false,,,,false,,false,false
+576ddde6-8394-4841-a3cc-9b58708433bc,Dr Sachin Dhawan,sac_dhawan77@yahoo.co.in,9818880048,,true,2026-11-08 17:17:06.440619,Dr Sachin,Dhawan,FAC170,IN,,,Faculty,true,false,false,,,,false,,false,false
+5979f5ae-0035-4119-bbdd-344ac1a968fb,Dr Chander Grover,chandergroverkubba76@gmail.com,9818065653,,true,2026-11-08 17:17:22.264581,Dr Chander,Grover,FAC074,IN,,,Both,true,true,false,,,,false,,false,false
+5aa0d4c4-ebfa-44be-9f8f-30cb5ec5754d,Dr Bhavesh Devani,drbsdevani@gmail.com,9825358986,,true,2026-11-08 17:17:29.455198,Dr Bhavesh,Devani,FAC030,IN,,,Both,true,true,false,,,,false,,false,false
+5adc691b-c4f4-46f5-a1ef-63caf50953d7,Dr Prima Dalwadi,primadalwadi@gmail.com,7984241845,,true,2026-11-08 17:26:21.143321,Dr Prima,Dalwadi,FAC298,,,,Coordinator,false,true,false,,,,false,,false,false
+5b2af27f-1710-4573-a55b-c6d425bd332b,Dr Naisargi Patel,patelnaisargi48@gmail.com,9409531951,,true,2026-11-08 17:16:53.852259,Dr Naisargi,Patel,FAC249,IN,,,Coordinator,false,true,false,,,,false,,false,false
+5bed55b9-b120-404d-9954-25b4253d8a5d,Dr Nagendra Singh Beniwal,drbeniwalns@gmail.com,9540488611,,true,2026-11-08 17:17:26.657135,Dr Nagendra,Singh Beniwal,FAC047,IN,,,Faculty,true,false,false,,,,false,,false,false
+5cd6da7e-b9f6-45a7-b8d8-251404166d66,Dr Parag Talaviya,drparagtalavia@yahoo.com,9825466553,,true,2026-11-08 17:17:20.363551,Dr Parag,Talaviya,FAC086,IN,,,Faculty,true,false,false,,,,false,,false,false
+5d6d8b53-bc62-417c-8380-8e2a2107aecf,Dr Samatha,samathan.9@gmail.com,9206551111,,true,2026-11-08 17:17:06.751198,Dr Samatha,,FAC168,IN,,,Faculty,true,false,false,,,,false,,false,false
+5d90e4b9-4c03-4697-8964-db574fc44fcc,Dr Bhavini Lodaya,bhavinilodaya1204@gmail.com,9821079792,,true,2026-11-08 17:17:00.14612,Dr Bhavini,Lodaya,FAC212,IN,,,Faculty,true,false,false,,,,false,,false,false
+5ef92dca-9e54-4513-9b73-e1d625b1db36,Dr Drashti Devani,drdrashtidevani@gmail.com,8758040424,,true,2026-11-08 17:17:32.486226,Dr Drashti,Devani,FAC010,IN,,,Faculty,true,false,false,,,,false,,false,false
+5f830300-1771-4930-a905-8d1d82acc066,Dr Girish Shah,drgkshah54@yahoo.co.in,9820844525,,true,2026-11-08 17:17:32.99183,Dr Girish,Shah,FAC007,IN,,,Both,true,true,false,,,,false,,false,false
+60f25363-bf87-48d7-a4f0-aad479afe82e,Dr Ruaa Alharithy,alharithyruaa@gmail.com,+966 114670011,,true,2026-11-08 17:17:01.65353,Dr Ruaa,Alharithy,FAC202,SA,,,Faculty,true,false,false,,,,false,,false,false
+62edbdeb-8be6-4b86-ba09-ff444df5c3b5,Dr Shahnawaz Bashir,drmsb2000@gmail.com,8082228888,,true,2026-11-08 17:17:05.190516,Dr Shahnawaz,Bashir,FAC178,IN,,,Faculty,true,false,false,,,,false,,false,false
+63db21e3-0b54-48db-8091-8e938e6098c2,Dr Hamir Kambariya,harsh.kmb@gmail.com,9978306304,,true,2026-11-08 17:16:52.708856,Dr Hamir,Kambariya,FAC256,IN,,,Coordinator,false,true,false,,,,false,,false,false
+642387c2-dc40-4c2d-9cc3-22fd51633110,Dr Geeta Patel,drgeeta@skinworld.co.in,9825973103,,true,2026-11-08 17:16:57.768342,Dr Geeta,Patel,FAC227,IN,,,Coordinator,false,true,false,,,,false,,false,false
+65b0dad9-6d8c-42b8-b7ab-fb234a4cec8d,Dr Nitin Sethi,drnitinsethi@gmail.com,8284999700,,true,2026-11-08 17:17:11.401794,Dr Nitin,Sethi,FAC141,IN,,,Faculty,true,false,false,,,,false,,false,false
+675bafdc-e80d-418f-9248-e9526fd4c8c0,Dr Padma Surapenni,padmavathiderma@gmail.com,9848360000,,true,2026-11-08 17:16:57.29341,Dr Padma,Surapenni,FAC230,IN,,,Faculty,true,false,false,,,,false,,false,false
+684c82e7-5533-40e8-8e25-18d0d968e540,Dr Pradipsinh Parmar,parmarpradipsinhd@gmail.com,7201073928,,true,2026-11-08 17:16:54.306956,Dr Pradipsinh,Parmar,FAC246,IN,,,Coordinator,false,true,false,,,,false,,false,false
+68df446d-15ce-443e-bb9b-38e1695e5801,Dr Smit Thakkar,smit.smile0509@gmail.com,7878278782,,true,2026-11-08 17:16:51.706286,Dr Smit,Thakkar,FAC263,IN,,,Both,true,true,false,,,,false,,false,false
+6a4f6786-36a8-4d41-b4a1-bef420e6e67c,Dr Ashutosh Shah,ashutosh.apple@gmail.com,9879546805,,true,2026-11-08 17:17:11.731451,Dr Ashutosh,Shah,FAC139,IN,,,Faculty,true,false,false,,,,false,,false,false
+6a5c5232-93ff-4582-add6-80cc198c4d20,Dr S Pal Kishan Reddy,palkishanreddy2022@gmail.com,9164084638,,true,2026-11-08 17:17:04.0804,Dr S,Pal Kishan Reddy,FAC185,IN,,,Faculty,true,false,false,,,,false,,false,false
+6ab4439e-586b-4ccc-8bef-020f76b55480,Dr Samkit Shah,samkitshah1234@gmail.com,9712940837,,true,2026-11-08 17:17:29.61928,Dr Samkit,Shah,FAC029,IN,,,Both,true,true,false,,,,false,,false,false
+6b7a6958-6145-4571-aecc-bb06898c1a5c,Dr Ajara Sayyad,drtabassumsayyad@gmail.com,9022304400,,true,2026-11-08 17:17:02.916938,Dr Ajara,Sayyad,FAC192,IN,,,Faculty,true,false,false,,,,false,,false,false
+6bbef2b0-6273-4f8d-b54d-15b0fd62ed7e,Dr Indu Balani,drinduballani@gmail.com,9315035075,,true,2026-11-08 17:17:19.369569,Dr Indu,Balani,FAC092,IN,,,Both,true,true,false,,,,false,,false,false
+6d4b3094-11d6-4960-ab05-dc39d977a8cc,Dr Arth Koshia,dr.arthkoshia@gmail.com,9662229888,,true,2026-11-08 17:17:18.859929,Dr Arth,Koshia,FAC095,IN,,,Both,true,true,false,,,,false,,false,false
+6dc01e98-e29d-4fa2-a194-da12f8c5a677,Dr Shekhar Neema,shekharadvait@gmail.com,9830032821,,true,2026-11-08 17:17:00.652473,Dr Shekhar,Neema,FAC208,IN,,,,false,false,false,,,,false,,false,false
+6e639f95-572f-407b-bf4f-08e97a784e47,Dr Nausheen Khan,doc_nausheen@yahoo.com,9773613631,,true,2026-11-08 17:13:13.668318,Dr Nausheen,Khan,FAC302,IN,,,,false,false,false,,,,false,,false,false
+6ffca490-7bc6-4061-b283-316441864121,Dr Sowmya Dogiparthi,sowmy88688@gmail.com,9840753698,,true,2026-11-08 17:17:01.336515,Dr Sowmya,Dogiparthi,FAC204,IN,,,Faculty,true,false,false,,,,false,,false,false
+71faa0f9-37c5-440b-945f-2f387a10c42b,Dr Poojan Parikh,poojan47@yahoo.com,8141208582,,true,2026-11-08 17:16:53.356164,Dr Poojan,Parikh,FAC252,IN,,,Coordinator,false,true,false,,,,false,,false,false
+72185d41-e4ae-4962-a09a-8002022b7271,Dr Kinnera Boina,kinneraboina@gmail.com,9492234514,,true,2026-11-08 17:17:27.31678,Dr Kinnera,Boina,FAC043,IN,,,Faculty,true,false,false,,,,false,,false,false
+731dd1ad-8c18-4fa9-97ac-f4e6616f42ed,Dr Viral Desai,drviral@drviraldesai.com,9820292573,,true,2026-11-08 17:17:11.568376,Dr Viral,Desai,FAC140,IN,,,Faculty,true,false,false,,,,false,,false,false
+7320a5fb-1a03-44c1-9211-3d56d43547aa,Dr Elangbam Nelson Singh,smsderma2014@gmail.com,8302236044,,true,2026-11-08 17:16:56.469332,Dr Elangbam,Nelson Singh,FAC235,IN,,,Faculty,true,false,false,,,,false,,false,false
+7336920c-7ba7-43fd-ada2-c0db53e67b78,Dr Radha Subramanyam,radysubramaniyan@gmail.com,8056155501,,true,2026-11-08 17:17:29.291904,Dr Radha,Subramanyam,FAC031,IN,,,Faculty,true,false,false,,,,false,,false,false
+7437f6ce-6ac2-4ccb-b8e5-889ea9d6271e,Dr Rohit Batra,no-email-FAC266@placeholder.com,,,true,2026-11-08 17:16:51.184123,Dr Rohit,Batra,FAC266,IN,,,Coordinator,false,true,false,,,,false,,false,false
+749487d4-71b5-48d9-a740-8c9fa994a7f4,Dr Aniruddha Ghosh,dr.ani.ghosh@gmail.com,8697354467,,true,2026-11-08 17:26:24.475392,Dr Aniruddha,Ghosh,FAC002,IN,,,Faculty,true,false,false,,,,false,,false,false
+778f72c8-b07c-4385-80ca-7d0356cdd108,Dr Uzzaif Mansuri,druzzaif@gmail.com,9825878228,,true,2026-11-08 17:13:18.573037,Dr Uzzaif,Mansuri,FAC001,IN,,,Coordinator,false,true,false,,,,false,,false,false
+7971640c-8467-4f7e-82c3-0103e99eb11b,Dr Marina Landau,marinalandau@gmail.com,+972 99505151,,true,2026-11-08 17:16:56.80994,Dr Marina,Landau,FAC233,IL,,,,false,false,false,,,,false,,false,false
+7a55ad75-8dc2-49df-9285-f89743ab790f,Dr Sanjay Dubey,info@maharshivitiligo.com,9301307667,,true,2026-11-08 17:17:14.267051,Dr Sanjay,Dubey,FAC123,IN,,,Faculty,true,false,false,,,,false,,false,false
+7a8e61a7-77fc-4714-ab94-9d52c263a4ce,Dr Manu Jain,jainm@mskcc.org,1-646-888-6109,,true,2026-11-08 17:13:17.581627,Dr Manu,Jain,FAC289,US,,,,false,false,false,,,,false,,false,false
+7b1b1b9f-2d50-4603-b4ed-ae5269d7e77f,Dr Atul Kathed,atulgkathed@zohomail.in,9425948077,,true,2026-11-08 17:17:30.580934,Dr Atul,Kathed,FAC023,IN,,,Both,true,true,false,,,,false,,false,false
+7ba4ca46-6ebd-475c-b883-b6a13d035982,Dr Pooja Desai,poojadesai314@gmail.com,7874943691,,true,2026-11-08 17:17:12.191921,Dr Pooja,Desai,FAC136,IN,,,Both,true,true,false,,,,false,,false,false
+7bb832a0-e8c5-484c-9d2c-c02628527eee,Dr Madura C,maduradr@gmail.com,9632741998,,true,2026-11-08 17:17:24.893543,Dr Madura,C,FAC058,IN,,,Faculty,true,false,false,,,,false,,false,false
+7bfa8578-25bc-4c60-82ab-4bf175b19878,Dr Amit Shah,amitskin@rediffmail.com,9822267468,,true,2026-11-08 17:17:14.581354,Dr Amit,Shah,FAC121,IN,,,Faculty,true,false,false,,,,false,,false,false
+7c297488-eb2a-4b38-93d8-2a1137cbfa1a,Dr Meera Thomas,thomasmeera2@gmail.com,9894160892,,true,2026-11-08 17:17:16.553733,Dr Meera,Thomas,FAC109,IN,,,,false,false,false,,,,false,,false,false
+7c5663e1-47e3-4b86-8e30-4206a29f42a6,Dr Nikhil Singh,drnikhilsingh.derma@gmail.com,9520847220,,true,2026-11-08 17:16:58.24776,Dr Nikhil,Singh,FAC224,IN,,,Faculty,true,false,false,,,,false,,false,false
+7dc0758c-e327-444d-9264-8a4f466e55c2,Dr Vishalakshi Vishwanath,visha1967@gmail.com,9324086679,,true,2026-11-08 17:17:19.039646,Dr Vishalakshi,Vishwanath,FAC094,IN,,,Both,true,true,false,,,,false,,false,false
+7e5a726f-2b90-44b2-89f5-030cb30735f6,Dr Rutvi Pandya,rutvipandya96@gmail.com,9638372788,,true,2026-11-08 17:16:50.685533,Dr Rutvi,Pandya,FAC269,,,,Coordinator,false,true,false,,,,false,,false,false
+7f997640-d539-4973-b36d-c17251ea9278,Dr Sujai Suneetha,drsujai@gmail.com,9642890381,,true,2026-11-08 17:17:28.802496,Dr Sujai,Suneetha,FAC034,IN,,,Faculty,true,false,false,,,,false,,false,false
+81516d58-9685-494d-81a6-fa8e2d262cc4,Dr Rasya Dixit,dr.rasya@gmail.com,9449404650,,true,2026-11-08 17:16:59.974543,Dr Rasya,Dixit,FAC213,IN,,,Faculty,true,false,false,,,,false,,false,false
+82776243-5f3d-41dc-9eb3-a25186977876,Dr Smita Nagpal,nagpalsmita@gmail.com,9825721525,,true,2026-11-08 17:17:10.466653,Dr Smita,Nagpal,FAC148,IN,,,Faculty,true,false,false,,,,false,,false,false
+828b776d-a377-4279-b9a1-2d06125aba08,Dr Deepti Dhingra,deeptiidhingra@gmail.com,7095958333,,true,2026-11-08 17:17:10.936441,Dr Deepti,Dhingra,FAC144,IN,,,Faculty,true,false,false,,,,false,,false,false
+82c74af3-4332-4ada-85fa-2859ae552703,Dr Ankur Talwar,docankurtalwar@gmail.com,9621191111,,true,2026-11-08 17:17:08.14269,Dr Ankur,Talwar,FAC161,IN,,,Faculty,true,false,false,,,,false,,false,false
+82f86ba6-a0f9-4fa6-881a-a755d301e1c4,Dr Neeraj Pandey,neerajdermaklinic@gmail.com,9415049505,,true,2026-11-08 17:17:07.981118,Dr Neeraj,Pandey,FAC162,IN,,,Faculty,true,false,false,,,,false,,false,false
+83a5473e-8ec8-49a2-8081-5b3083134c32,Dr Rickson Pereira,dr.rickson@gmail.com,9833183554,,true,2026-11-08 17:17:00.315006,Dr Rickson,Pereira,FAC211,IN,,,Faculty,true,false,false,,,,false,,false,false
+841f28dc-1cc2-449a-9679-8fff393587c3,Dr Ramon Grimalt,ramongrimalt@ub.edu,+34 934308003,,true,2026-11-08 17:16:59.360588,Dr Ramon,Grimalt,FAC217,ES,,,,false,false,false,,,,false,,false,false
+847504cb-8e73-47d1-8f7f-25e5740b1100,Dr Ekta Sahu,no-email-FAC294@placeholder.com,9920591779,,true,2026-11-08 17:26:21.820802,Dr Ekta,Sahu,FAC294,IN,,,Faculty,true,false,false,,,,false,,false,false
+84c61f2a-ceca-464e-b15b-becfd080f26a,Dr Narmada Matang,narmadamatang@gmail.com,9920997433,,true,2026-11-08 17:17:15.88362,Dr Narmada,Matang,FAC113,IN,,,Faculty,true,false,false,,,,false,,false,false
+853ad3f5-4339-41ea-895e-ca17358ce29b,Dr Saurabh Kapadia,drsaurabhkapadia@yahoo.com,9824261031,,true,2026-11-08 17:17:31.214478,Dr Saurabh,Kapadia,FAC018,IN,,,Both,true,true,false,,,,false,,false,false
+87425719-d27f-4307-95ec-a4925456a08c,Dr Gulhima Arora,gulhima@gmail.com,8826041678,,true,2026-11-08 17:17:01.969403,Dr Gulhima,Arora,FAC198,IN,,,Both,true,true,false,,,,false,,false,false
+884a6215-5ffb-469f-b76c-0c16e1e592cf,Dr Soni Nanda,soninanda1975@gmail.com,9999365658,,true,2026-11-08 17:17:22.608289,Dr Soni,Nanda,FAC072,IN,,,Faculty,true,false,false,,,,false,,false,false
+888397bb-ae03-4363-9889-055f1d142459,Dr Jagdish Sakhiya,j_sakhiya@yahoo.com,8155900010,,true,2026-11-08 17:17:10.618092,Dr Jagdish,Sakhiya,FAC147,IN,,,Faculty,true,false,false,,,,false,,false,false
+88b2d76f-627e-4927-964d-437c3e52c5ee,Dr Kailash Bhatia,drbhatiakailash@yahoo.co.in,9977094350,,true,2026-11-08 17:17:20.680802,Dr Kailash,Bhatia,FAC084,IN,,,Both,true,true,false,,,,false,,false,false
+88f65a86-ecf8-43b7-b8c9-a644b21acc03,Dr Megha Tandon,tan.megha1993@gmail.com,7408417111,,true,2026-11-08 17:17:02.755666,Dr Megha,Tandon,FAC193,IN,,,Faculty,true,false,false,,,,false,,false,false
+890f95c5-b5a4-4604-ad3c-9b0f84a4b3c9,Dr Vinay Keshavmurthy,doctrvk@gmail.com,8872993222,,true,2026-11-08 17:17:26.336353,Dr Vinay,Keshavmurthy,FAC049,IN,,,Faculty,true,false,false,,,,false,,false,false
+89a24737-4afd-4f7d-b8b8-26f6bd7260fc,Dr Narendra Patwardhan,ngpatwardhan@gmail.com,9822057712,,true,2026-11-08 17:16:59.665553,Dr Narendra,Patwardhan,FAC215,IN,,,Faculty,true,false,false,,,,false,,false,false
+89a5711c-a709-4284-9cce-fa15dc8d21b4,Dr Gopika Patel,gopipatel14496@gmail.com,9724546909,,true,2026-11-08 17:16:52.205278,Dr Gopika,Patel,FAC260,IN,,,Coordinator,false,true,false,,,,false,,false,false
+8a13c337-a959-481c-9503-b5bc5e91f95f,Dr Akshay Vetal,akkiii5858@gmail.com,9011332224,,true,2026-11-08 17:17:25.693674,Dr Akshay,Vetal,FAC053,IN,,,Faculty,true,false,false,,,,false,,false,false
+8aadd1dc-09f7-49ec-9695-c447d3dbc6d3,Dr Amrendra Kumar,dr.amrendra07@gmail.com,9899716441,,true,2026-11-08 17:17:02.277702,Dr Amrendra,Kumar,FAC196,IN,,,Faculty,true,false,false,,,,false,,false,false
+8b4f3913-b8b2-4a01-ba23-93819b39d764,Dr Indu Kumari,aishh.drindu@gmail.com,8860910544,,true,2026-11-08 17:17:26.497438,Dr Indu,Kumari,FAC048,IN,,,Faculty,true,false,false,,,,false,,false,false
+8c8e4485-d6fa-49a4-bb15-8022617add68,Dr Sanjay Mittal,drsanjay2580@gmail.com,9887760645,,true,2026-11-08 17:17:27.97128,Dr Sanjay,Mittal,FAC039,IN,,,Faculty,true,false,false,,,,false,,false,false
+8cf93fa6-f752-410e-a907-b8597e78b919,Dr Kautuk Patel,patelkautukaiims1@gmail.com,9898367406,,true,2026-11-08 17:16:53.996464,Dr Kautuk,Patel,FAC248,IN,,,Coordinator,false,true,false,,,,false,,false,false
+8e043118-835c-4c61-89fa-081d15677e6a,Dr Pankaj Chaturvedi,drpankaj@medlinks.in,9971228888,,true,2026-11-08 17:16:57.141608,Dr Pankaj,Chaturvedi,FAC231,IN,,,Both,true,true,false,,,,false,,false,false
+8e04f37d-a806-460e-a30f-96ca3de5ea04,Dr Amit Kerure,amikerure@gmail.com,9619766139,,true,2026-11-08 17:17:02.600924,Dr Amit,Kerure,FAC194,IN,,,Faculty,true,false,false,,,,false,,false,false
+8ec31226-1d5a-46c3-bd6b-b5c1268e3e13,Dr Dhyey Shah,dr.dhyeyshah@gmail.com,7203839839,,true,2026-11-08 17:17:27.484349,Dr Dhyey,Shah,FAC042,IN,,,Faculty,true,false,false,,,,false,,false,false
+9033cafa-f7e2-4d00-9591-c1e75be8fa6a,Dr Sanjeev Aurangabadkar,draurangabadkar@gmail.com,9618090000,,true,2026-11-08 17:17:31.848602,Dr Sanjeev,Aurangabadkar,FAC014,IN,,,Both,true,true,false,,,,false,,false,false
+90eddb8b-c25d-4964-a0bd-7bf0917d5929,Dr Niti Khunger,drkhungerniti@gmail.com,9013440484,,true,2026-11-08 17:17:25.849439,Dr Niti,Khunger,FAC052,IN,,,Both,true,true,false,,,,false,,false,false
+9173b5b3-3cf4-4b68-8a32-e9aa95bc6b61,Dr Anurag Tiwari,anurag@hotmail.com,9826023923,,true,2026-11-08 17:17:32.82931,Dr Anurag,Tiwari,FAC008,IN,,,Faculty,true,false,false,,,,false,,false,false
+92f3c366-3c71-4a0a-b159-ef2a7f7d3ac4,Dr Rahul Pillai,rahul.pillai@dermacode.in,9847166999,,true,2026-11-08 17:17:30.735629,Dr Rahul,Pillai,FAC021,IN,,,Faculty,true,false,false,,,,false,,false,false
+93c8f68b-41c8-4d07-8ae0-454925fa06e0,Dr Kashish Kalra,drkashishkalramd@gmail.com,9650141323,,true,2026-11-08 17:17:15.404075,Dr Kashish,Kalra,FAC116,IN,,,Faculty,true,false,false,,,,false,,false,false
+93efb348-1102-4e5b-9e9c-df54d960439f,Dr Sadhana Deshmukh,drsadhanad@yahoo.com,9819057671,,true,2026-11-08 17:17:12.685045,Dr Sadhana,Deshmukh,FAC133,IN,,,Faculty,true,false,false,,,,false,,false,false
+95a04656-a7ab-4bae-98c0-002c3b8c87c4,Dr Neha Shukla,ns140786@gmail.com,9766014730,,true,2026-11-08 17:17:05.343947,Dr Neha,Shukla,FAC177,IN,,,Both,true,true,false,,,,false,,false,false
+975c6dfe-a736-44ef-9b4b-3a156dae2079,Dr Shyam Makadiya,shyammakadiya04@gmail.com,9428250804,,true,2026-11-08 17:17:19.199744,Dr Shyam,Makadiya,FAC093,IN,,,Faculty,true,false,false,,,,false,,false,false
+97686396-3d2a-4a08-a928-d177251b85dc,Dr Radhika Kopikar,dr.radhikatrivedi@gmail.com,9769636788,,true,2026-11-08 17:17:32.327511,Dr Radhika,Kopikar,FAC011,IN,,,Faculty,true,false,false,,,,false,,false,false
+98441d79-3fb6-4956-adf0-f7a09e3e51a3,Dr Foram Pathak,drforampathak@gmail.com,9712966889,,true,2026-11-08 17:16:54.791375,Dr Foram,Pathak,FAC243,IN,,,Coordinator,false,true,false,,,,false,,false,false
+98810861-2a6d-4e5d-851c-63d6f20a0ea1,Dr Hiral Patel,drhiral21@gmail.com,8141609161,,true,2026-11-08 17:17:18.217348,Dr Hiral,Patel,FAC099,IN,,,Both,true,true,false,,,,false,,false,false
+994be52a-9d08-4080-aa02-5efd0a48deb0,Dr Govind,govindmittal@gmail.com,9844479263,,true,2026-11-08 17:17:26.826287,Dr Govind,,FAC046,IN,,,Faculty,true,false,false,,,,false,,false,false
+99b4bab3-1f0d-4dc7-8cab-df5b38b3e2ed,Dr Venkataram Mysore,mnvenkataram@gmail.com,9845363520,,true,2026-11-08 17:17:21.317158,Dr Venkataram,Mysore,FAC080,IN,,,Faculty,true,false,false,,,,false,,false,false
+99e6e8ea-6348-41a9-8f05-c2c9ee22b08f,Dr Ginni Chhabria,chhabriaginni@gmail.com,8878608000,,true,2026-11-08 17:17:30.246913,Dr Ginni,Chhabria,FAC025,IN,,,Faculty,true,false,false,,,,false,,false,false
+9a16a9cc-782e-4dae-86aa-6d336930086f,Dr Suruchi Garg,gargsuruchi01@gmail.com,9914253530,,true,2026-11-08 17:13:16.291034,Dr Suruchi,Garg,FAC295,IN,,,,false,false,false,,,,false,,false,false
+9a1bdfd5-803f-4277-b1fc-3c14523b6c11,Dr Karthik Ram,drkarthikram@gmail.com,8939784777,,true,2026-11-08 17:17:11.086753,Dr Karthik,Ram,FAC143,IN,,,Faculty,true,false,false,,,,false,,false,false
+9a504898-f744-49be-a72e-15366d030da6,Dr Shivang Patel,drshivangpatel@gmail.com,9033761231,,true,2026-11-08 17:17:10.775455,Dr Shivang,Patel,FAC145,IN,,,Both,true,true,false,,,,false,,false,false
+9a5a7495-b1de-4bd4-9824-e3d8308c6f65,Dr Isha Arora,drishaarora@gmail.com,9899773384,,true,2026-11-08 17:16:58.082395,Dr Isha,Arora,FAC225,IN,,,Faculty,true,false,false,,,,false,,false,false
+9ad157b2-de2c-4132-be57-9dab72e8b54e,Dr Vineet Relhan,vineetrelhan@gmail.com,9910086636,,true,2026-11-08 17:17:22.934775,Dr Vineet,Relhan,FAC070,IN,,,Faculty,true,false,false,,,,false,,false,false
+9b5f3db9-7128-48e8-8b40-ef445004ddb6,Dr Vishal Gaurav,mevishalgaurav@gmail.com,9555124075,,true,2026-11-08 17:17:23.275925,Dr Vishal,Gaurav,FAC068,IN,,,Faculty,true,false,false,,,,false,,false,false
+9bd34558-68b7-4df2-a03b-359a0b8122fb,Dr Manish Gautam,no-email-FAC270@placeholder.com,,,true,2026-11-08 17:16:50.539655,Dr Manish,Gautam,FAC270,,,,Coordinator,false,true,false,,,,false,,false,false
+9c1339c0-029e-4d92-a0d2-d1a9917efafc,Dr Sahil Mrigpuri,sahil57mrigpuri@gmail.com,8872551999,,true,2026-11-08 17:17:32.664939,Dr Sahil,Mrigpuri,FAC009,IN,,,Faculty,true,false,false,,,,false,,false,false
+9c1f7d17-f511-4395-9385-11fa34966c98,Dr Shilpa K,shilpakvinod@gmail.com,9886553646,,true,2026-11-08 17:17:26.986378,Dr Shilpa,K,FAC045,IN,,,Faculty,true,false,false,,,,false,,false,false
+9cf79705-6614-4862-8185-30ff9e35a9e0,Dr B S Chandrasekhar,cacs0312@hotmail.com,9740091155,,true,2026-11-08 17:17:31.68859,Dr B,S Chandrasekhar,FAC015,IN,,,Both,true,true,false,,,,false,,false,false
+9f445f8b-6549-4dbe-89bc-848e435f6d82,Dr Meghana Gupta,dr_meghna8@yahoo.co.in,9873496734,,true,2026-11-08 17:17:12.84331,Dr Meghana,Gupta,FAC132,IN,,,Faculty,true,false,false,,,,false,,false,false
+a0466b9f-431b-471a-aa42-76a7228de14e,Dr Nishi Trivedi,nishi.trivedi04@gmail.com,9429100286,,true,2026-11-08 17:16:51.532405,Dr Nishi,Trivedi,FAC264,IN,,,,false,false,false,,,,false,,false,false
+a0d9284f-be36-4cbe-983c-62819e105cb6,Dr Ruru Pamela,ruripamela@gmail.com,,,true,2026-11-08 17:13:16.630567,Dr Ruru,Pamela,FAC293,,,,,false,false,false,,,,false,,false,false
+a2832f71-3187-48ed-b16a-99f81738f732,Dr Nehal Pandya,nehal9496@gmail.com,9428475001,,true,2026-11-08 17:17:17.552081,Dr Nehal,Pandya,FAC103,IN,,,Faculty,true,false,false,,,,false,,false,false
+a369cab9-1871-4308-bd21-e80f78e5c18a,Dr Nilesh Katrodiya,patelnil27@gmail.com,9879456118,,true,2026-11-08 17:16:52.389332,Dr Nilesh,Katrodiya,FAC259,IN,,,Coordinator,false,true,false,,,,false,,false,false
+a3b6d43e-a509-42ae-be5b-b50e9b21421a,Dr Col Anuj Bhatnagar,anuj1872@yahoo.co.in,7875674990,,true,2026-11-08 17:17:14.420176,Dr Col,Anuj Bhatnagar,FAC122,IN,,,Faculty,true,false,false,,,,false,,false,false
+a4a16f2f-722b-43ae-8b06-15a8cc261deb,Dr Aseem Sharma,aseemsharma082@gmail.com,9920868737,,true,2026-11-08 17:17:13.152452,Dr Aseem,Sharma,FAC130,IN,,,Both,true,true,false,,,,false,,false,false
+a4af4060-d226-4e20-b6d9-ac32df562a92,Dr Ruchir Shah,rmb311@gmail.com,9978241941,,true,2026-11-08 17:16:51.865642,Dr Ruchir,Shah,FAC262,IN,,,Both,true,true,false,,,,false,,false,false
+a4e3dc08-f586-489f-848c-21dd1fd1898e,Dr Saurabh Singh,saurabhdoc@yahoo.co.in,9968024250,,true,2026-11-08 17:13:19.230223,Dr Saurabh,Singh,FAC005,IN,,,,false,false,false,,,,false,,false,false
+a555fa9e-3027-4e90-9cad-af8bbd3b7975,Dr Neetu Rajdeo,neeturajdeo@yahoo.co.in,9869171262,,true,2026-11-08 17:17:08.765744,Dr Neetu,Rajdeo,FAC157,IN,,,Both,true,true,false,,,,false,,false,false
+ac9c0a46-23fd-4fb4-b48e-96de13d92377,Dr Manas Chatterjee,drmanaschatterjee@gmail.com,8697709387,,true,2026-11-08 17:17:05.826594,Dr Manas,Chatterjee,FAC174,IN,,,Faculty,true,false,false,,,,false,,false,false
+ad5678ee-9495-41cf-b4b4-dbf5f1037c2b,Dr Atula Gupta,atula.gupta81@gmail.com,9650629040,,true,2026-11-08 17:17:32.177332,Dr Atula,Gupta,FAC012,IN,,,,false,false,false,,,,false,,false,false
+ad932317-f841-45ba-b88f-ab903646d5a5,Dr Jay Gupte,jaygupte@gmail.com,9820012298,,true,2026-11-08 17:17:21.795366,Dr Jay,Gupte,FAC077,IN,,,Faculty,true,false,false,,,,false,,false,false
+add71dfa-5517-4fb0-baea-7aba0e24c971,Dr Piyush Borkhatariya,drpiyush2008@gmail.com,9426954367,,true,2026-11-08 17:17:31.533536,Dr Piyush,Borkhatariya,FAC016,IN,,,Both,true,true,false,,,,false,,false,false
+adf9960c-ceff-4b60-b09b-358267597534,Dr Subhra Dhar,subhra.dhar@gmail.com,9830138083,,true,2026-11-08 17:17:16.070568,Dr Subhra,Dhar,FAC112,IN,,,,false,false,false,,,,false,,false,false
+ae935692-70a8-4a76-ba6f-7105223674a0,Dr Suken Dashore,shukenadashore@gmail.com,8390283462,,true,2026-11-08 17:17:31.06065,Dr Suken,Dashore,FAC019,IN,,,Faculty,true,false,false,,,,false,,false,false
+af604bdb-6db1-4817-94f8-f3e0fde15d79,Dr Ritu Sureja,rbsureja@gmail.com,9925544332,,true,2026-11-08 17:16:54.156392,Dr Ritu,Sureja,FAC247,IN,,,Coordinator,false,true,false,,,,false,,false,false
+b1f5925e-1da4-4393-bc7c-8ccf7846be82,Dr Ismail Sheikh,dermis1@gmail.com,7028080600,,true,2026-11-08 17:16:56.305252,Dr Ismail,Sheikh,FAC236,IN,,,Faculty,true,false,false,,,,false,,false,false
+b3b307e8-68da-4c22-be63-0bd570e62c6f,Dr Punit Saraogi,drpunitsaraogi@gmail.com,9833300156,,true,2026-11-08 17:17:04.566389,Dr Punit,Saraogi,FAC182,IN,,,Faculty,true,false,false,,,,false,,false,false
+b3ec34c5-6a00-46dd-9784-fe7586b191b8,Dr Subodh Sirur,subodh.sirur@yahoo.com,9821066407,,true,2026-11-08 17:17:07.385046,Dr Subodh,Sirur,FAC164,IN,,,Faculty,true,false,false,,,,false,,false,false
+b4bf3dab-fa5e-4392-bb47-0a89f9ead0b1,Dr Bansari Hirpara,bansihirapara261992@gmail.com,8320415536,,true,2026-11-08 17:16:55.670228,Dr Bansari,Hirpara,FAC240,IN,,,,false,false,false,,,,false,,false,false
+b5ef6117-6057-4a11-8d63-b62e81b6e624,Dr Soumil Khare,soumilji@gmail.com,9739387890,,true,2026-11-08 17:17:05.504842,Dr Soumil,Khare,FAC176,IN,,,,false,false,false,,,,false,,false,false
+b8cfa46e-0f48-478b-82b4-b3a714dfe845,Dr Ankit Bharti,drankithbharti@gmail.com,7600418578,,true,2026-11-08 17:17:16.229976,Dr Ankit,Bharti,FAC111,IN,,,,false,false,false,,,,false,,false,false
+b8e13bb0-f40e-42b1-8dba-de9998a68dd6,Dr Tejanshu Dalal,tejansu.dalal.td@gmail.com,9601155050,,true,2026-11-08 17:16:50.859938,Dr Tejanshu,Dalal,FAC268,IN,,,Coordinator,false,true,false,,,,false,,false,false
+b9300f62-85de-47d9-9474-77daff5933be,Dr Dipti Ghia,deepti.ghia@gmail.com,9892758778,,true,2026-11-08 17:17:24.406789,Dr Dipti,Ghia,FAC061,IN,,,Both,true,true,false,,,,false,,false,false
+b9e3e580-bfbd-45d6-a575-2e7741249945,Dr Koushik Lahiri,doctorlahiri@gmail.com,6289621199,,true,2026-11-08 17:17:24.570749,Dr Koushik,Lahiri,FAC060,IN,,,,false,false,false,,,,false,,false,false
+bc7ff54c-0b3a-4979-9bad-997d57206859,Dr Rupa Shah,rtshah68@gmail.com,9824253202,,true,2026-11-08 17:17:08.616751,Dr Rupa,Shah,FAC158,IN,,,Both,true,true,false,,,,false,,false,false
+bdb0270b-ea66-4672-b519-da6adc446f9b,Dr Gurjot Marwah,drgurjotmarwah@gmail.com,7400455554,,true,2026-11-08 17:17:15.244468,Dr Gurjot,Marwah,FAC117,IN,,,Both,true,true,false,,,,false,,false,false
+be6c2cb6-dec7-41fc-ab43-920d221950bb,Dr Gaurav Patel,drgbpatel@gmail.com,9228867675,,true,2026-11-08 17:17:18.040729,Dr Gaurav,Patel,FAC100,IN,,,Both,true,true,false,,,,false,,false,false
+c17e91e1-2d83-45ef-853e-e0be14fa4df3,Dr Sandeep Arora,aroraderma@gmail.com,9910411635,,true,2026-11-08 17:17:01.159349,Dr Sandeep,Arora,FAC205,IN,,,Faculty,true,false,false,,,,false,,false,false
+c28f2053-70d5-4528-b87f-94f9397e57e4,Dr Hitalkumar Patel,skinconsultation@gmail.com,9824601777,,true,2026-11-08 17:17:10.31108,Dr Hitalkumar,Patel,FAC149,IN,,,Both,true,true,false,,,,false,,false,false
+c458a543-8904-4151-9e4d-bcbe316e0c1c,Dr Siddhi Patel,siddhipatel7453@gmail.com,9537895494,,true,2026-11-08 17:17:07.063308,Dr Siddhi,Patel,FAC166,IN,,,Both,true,true,false,,,,false,,false,false
+c68075f2-410f-49a4-a0db-679efa892ca4,Dr Priya Agarwal,dreamderm2016@gmail.com,8511501507,,true,2026-11-08 17:17:12.521429,Dr Priya,Agarwal,FAC134,IN,,,Both,true,true,false,,,,false,,false,false
+c6c46b55-e0c4-40f8-a1c4-7e603c620d1d,Dr Jigna Padhiyar,dr.jignapadhiyar@gmail.com,8799417752,,true,2026-11-08 17:17:28.143912,Dr Jigna,Padhiyar,FAC038,IN,,,Both,true,true,false,,,,false,,false,false
+c7845bc4-5c1b-4acd-bd9d-5748a1ddbcb5,Dr Maya Vedamurthy,mayavedamurthy@yahoo.com,9840062115,,true,2026-11-08 17:17:11.880687,Dr Maya,Vedamurthy,FAC138,IN,,,,false,false,false,,,,false,,false,false
+c9ff1fc3-88a6-4385-a005-dfd4aa41df0d,Dr Kaksha Shah,kakshashah89@yahoo.co.in,9157307111,,true,2026-11-08 17:16:52.035116,Dr Kaksha,Shah,FAC261,IN,,,,false,false,false,,,,false,,false,false
+cc6c1b92-3eea-4663-9902-fbbc811db9c4,Dr Sapna Parekh,sapna1622@gmail.com,9665154116,,true,2026-11-08 17:17:09.842453,Dr Sapna,Parekh,FAC152,IN,,,Faculty,true,false,false,,,,false,,false,false
+cc7c0c8a-f784-44b6-8860-6b61eba1868c,Dr Anchal Jindal,drjindal28@gmail.com,9727056303,,true,2026-11-08 17:16:53.204955,Dr Anchal,Jindal,FAC253,IN,,,Coordinator,false,true,false,,,,false,,false,false
+ccd36289-9687-49e2-b0ba-656446ce6c31,Dr C R Srinivas,srini_cr_1955@rediffmail.com,+91 4222570170,,true,2026-11-08 17:17:14.921675,Dr C,R Srinivas,FAC119,IN,,,Faculty,true,false,false,,,,false,,false,false
+cfec71a1-f914-4b79-8b24-4ccf44236dfe,Dr Nandita Patel,drnanditapatel@gmail.com,9730840004,,true,2026-11-08 17:17:26.01147,Dr Nandita,Patel,FAC051,IN,,,Both,true,true,false,,,,false,,false,false
+d2af943b-8554-44b5-92cf-84aa053c4e7e,Dr Kalpana Sarangi,drkalpanads@gmail.com,9820188903,,true,2026-11-08 17:16:57.609433,Dr Kalpana,Sarangi,FAC228,IN,,,Faculty,true,false,false,,,,false,,false,false
+d317694f-5c35-4653-88c3-042bd56a834b,Dr Carlos Wambier,carlos_wambier@brown.edu,+1 401 444 4000,,true,2026-11-08 17:17:01.80726,Dr Carlos,Wambier,FAC199,US,,,,false,false,false,,,,false,,false,false
+d320bc1a-6b16-4043-885b-d95ead175f4e,Dr Khyati Vasavada,drkhyativasavada@gmail.com,9727779166,,true,2026-11-08 17:16:54.958916,Dr Khyati,Vasavada,FAC242,IN,,,Coordinator,false,true,false,,,,false,,false,false
+d3233b00-68a4-45c8-8f30-35c495d86fd4,Dr Ameesha Mahajan,drameeshamahajan@gmail.com,9855037777,,true,2026-11-08 17:17:17.890707,Dr Ameesha,Mahajan,FAC101,IN,,,Faculty,true,false,false,,,,false,,false,false
+d5834413-9066-4b2d-aa78-21ed72a77afe,Dr Rodrigo Pirmez,rodrigopirmez@gmail.com,+55 2125379976,,true,2026-11-08 17:16:59.504627,Dr Rodrigo,Pirmez,FAC216,BR,,,,false,false,false,,,,false,,false,false
+d5daa55e-dc37-456d-a307-5c4154e19c40,Dr Nitin Chhatraliya,iadvlgsb2024@gmail.com,9427493314,,true,2026-11-08 17:16:54.468648,Dr Nitin,Chhatraliya,FAC245,IN,,,Coordinator,false,true,false,,,,false,,false,false
+d744791b-1174-41d5-b5d5-d228005002fd,Dr Priyanka Dhanotia,dhanotia.priyanka@gmail.com,9617223226,,true,2026-11-08 17:17:09.543927,Dr Priyanka,Dhanotia,FAC154,IN,,,Faculty,true,false,false,,,,false,,false,false
+d75042ba-b415-44df-9d2d-46f08fe25f99,Dr Anastasia Georgievskaya,nastya@haut.ai,(807) 698-8400,,true,2026-11-08 17:13:17.144522,Dr Anastasia,Georgievskaya,FAC290,Canada,,,,false,false,false,,,,false,,false,false
+d7aed1c4-0fa2-4380-9b51-86a90b3d92c3,Dr Rajat Kandhari,rkandhari@gmail.com,9811603070,,true,2026-11-08 17:17:06.289048,Dr Rajat,Kandhari,FAC171,IN,,,Both,true,true,false,,,,false,,false,false
+d7fa2002-e110-4408-b51e-e2dca1698c33,Dr Ojas Kulkarni,ojasdkulkarni@gmail.com,9820437842,,true,2026-11-08 17:17:21.481768,Dr Ojas,Kulkarni,FAC079,IN,,,Faculty,true,false,false,,,,false,,false,false
+d8480b0a-b2e8-40b7-80ae-9f129ea7f70b,Dr Dhwani Vakta Shah,dhwanivakta@gmail.com,9879193322,,true,2026-11-08 17:16:53.026977,Dr Dhwani,Vakta Shah,FAC254,IN,,,Coordinator,false,true,false,,,,false,,false,false
+d873ddaa-8879-404e-95a0-5219ef91098d,Dr Manjari Garg,manjarigarg2985@gmail.com,9584478408,,true,2026-11-08 17:17:10.006427,Dr Manjari,Garg,FAC151,IN,,,Faculty,true,false,false,,,,false,,false,false
+d97cff7d-981c-4a9d-ae67-d9140506161f,Dr Nitin Jain,drnitinjain@gmail.com,8446886007,,true,2026-11-08 17:16:58.563749,Dr Nitin,Jain,FAC222,IN,,,Faculty,true,false,false,,,,false,,false,false
+da88a3c3-70aa-4903-aaf5-9697d11dfbce,Dr Gaurang Krishna,drgaurang@medlinks.in,9999148940,,true,2026-11-08 17:17:00.489788,Dr Gaurang,Krishna,FAC209,IN,,,,false,false,false,,,,false,,false,false
+db4a79cd-b1af-40e4-9ca5-2fffbe5a8d70,Dr Priti Shenai,drpritishenai@gmail.com,9819407072,,true,2026-11-08 17:17:14.112717,Dr Priti,Shenai,FAC124,IN,,,Both,true,true,false,,,,false,,false,false
+dc07a997-6af9-4cd1-a8e7-0e95704627cf,Dr Madhulika Mhatre,mhatremadhulika@gmail.com,9819023420,,true,2026-11-08 17:17:24.252341,Dr Madhulika,Mhatre,FAC062,IN,,,Faculty,true,false,false,,,,false,,false,false
+ddc8da06-0dbb-4e67-b1c1-d19a622e2a19,Dr Sujala Saradhya,drsujalasa@gmail.com,9900280192,,true,2026-11-08 17:17:18.367777,Dr Sujala,Saradhya,FAC098,IN,,,Faculty,true,false,false,,,,false,,false,false
+df638303-6133-4e53-9b49-8a68a38cbcf6,Dr Gautam Vekariya,gautamvekariya28@gmail.com,9825494648,,true,2026-11-08 17:16:52.870717,Dr Gautam,Vekariya,FAC255,IN,,,Coordinator,false,true,false,,,,false,,false,false
+e0579069-d29e-41ae-91ed-5e6eb83037c2,Dr Hita Mehta,hitamehta88@gmail.com,9429503188,,true,2026-11-08 17:17:27.812664,Dr Hita,Mehta,FAC040,IN,,,Both,true,true,false,,,,false,,false,false
+e2422e9c-975e-4d04-bf8a-64214b187526,Dr Sindhu Sivaram,sindhushivaram84@gmail.com,8861482186,,true,2026-11-08 17:17:04.397843,Dr Sindhu,Sivaram,FAC183,IN,,,Faculty,true,false,false,,,,false,,false,false
+e2b7e2fd-7463-4046-b604-941354130055,Dr Raghunath Reddy,raghuderma@gmail.com,9845007154,,true,2026-11-08 17:17:21.959899,Dr Raghunath,Reddy,FAC076,IN,,,Faculty,true,false,false,,,,false,,false,false
+e33d20d0-9dc6-43b3-9d7a-55ea311485d9,Dr Shilpi Kheterpal,khetars@ccf.org,+1 216 444 2200,,true,2026-11-08 17:17:02.114977,Dr Shilpi,Kheterpal,FAC197,US,,,,false,false,false,,,,false,,false,false
+e3b68c74-5179-40d5-81c3-8d1b9c2be94b,Dr Anil Ganjoo,drganjoo1965@gmail.com,9811066584,,true,2026-11-08 17:17:32.016799,Dr Anil,Ganjoo,FAC013,IN,,,Faculty,true,false,false,,,,false,,false,false
+e5040c8e-e1da-40cf-b1ac-2b3aab761151,TBD (To Be Determined),no-email-FAC000@placeholder.com,,,true,2026-11-08 19:31:47.411266,TBD,,FAC000,,,,Coordinator,false,true,false,,,,false,,false,false
+e60d2548-a189-4ac0-8367-c997ea248236,Dr Krina Patel,no-email-FAC271@placeholder.com,,,true,2026-11-08 17:16:50.370012,Dr Krina,Patel,FAC271,,,,,false,false,false,,,,false,,false,false
+e6b8b1b9-cd62-4534-9677-3b4b34220bb2,Dr Madhuri Agarwal,adrmadhu@hotmail.com,9892680908,,true,2026-11-08 17:17:13.950055,Dr Madhuri,Agarwal,FAC125,IN,,,Both,true,true,false,,,,false,,false,false
+e6dfa73b-d8e2-4461-b859-fb49bcf6ce4e,Dr Somesh Gupta,someshgupta@aiims.edu,9868899120,,true,2026-11-08 17:17:23.916929,Dr Somesh,Gupta,FAC064,IN,,,Both,true,true,false,,,,false,,false,false
+e9173a6a-9dd9-4d8a-ab1c-85c87114a1c1,Dr Nitin Barde,nitinbarde@gmail.com,9822584422,,true,2026-11-08 17:17:23.441817,Dr Nitin,Barde,FAC067,IN,,,Faculty,true,false,false,,,,false,,false,false
+eb40258f-7ea1-4fc0-97b3-ee4f19c7e14c,Dr Ishad Agarwal,ishad1984@gmail.com,8100622846,,true,2026-11-08 17:16:56.623496,Dr Ishad,Agarwal,FAC234,IN,,,Coordinator,false,true,false,,,,false,,false,false
+eb6df934-5964-47ef-8407-87c32d71b5f4,Dr Farida Modi,faridamodi@gmail.com,9821426648,,true,2026-11-08 17:17:13.462277,Dr Farida,Modi,FAC128,IN,,,Faculty,true,false,false,,,,false,,false,false
+f1d042c6-917e-4a9a-bb7d-687b3cbab5e8,Dr Monal Sadhwani,monal181192@yahoo.co.in,9860678751,,true,2026-11-08 17:17:28.964394,Dr Monal,Sadhwani,FAC033,IN,,,Both,true,true,false,,,,false,,false,false
+f249d451-c939-42f4-aaaa-90573985116f,Dr Vijay Nagdev,dr.vijaynagdev@gmail.com,7020215821,,true,2026-11-08 17:17:14.758259,Dr Vijay,Nagdev,FAC120,IN,,,Faculty,true,false,false,,,,false,,false,false
+f608345e-0837-4ab9-9703-8896c6d9fa8a,Dr Rashmi Mahajan,rsoodmahajan@gmail.com,9227676607,,true,2026-11-08 17:17:28.648729,Dr Rashmi,Mahajan,FAC035,IN,,,Faculty,true,false,false,,,,false,,false,false
+f6ee101b-e5e9-47f0-97dc-3df43dd26465,Dr Sasi Atili,skattili@gmail.com,7674823911,,true,2026-11-08 17:17:16.861973,Dr Sasi,Atili,FAC107,IN,,,Faculty,true,false,false,,,,false,,false,false
+f7dba40a-d150-4da7-8cc1-f0d4edc45d6e,Dr Malhar Shah,drmalharshah@gmail.com,7698009828,,true,2026-11-08 17:16:51.371291,Dr Malhar,Shah,FAC265,IN,,,Coordinator,false,true,false,,,,false,,false,false
+f8074771-acf4-4dd2-8099-d6f77b39b78d,Dr Subhransu Pattnaik,subhransu.pattnaik03@gmail.com,7751090993,,true,2026-11-08 17:17:28.307738,Dr Subhransu,Pattnaik,FAC037,IN,,,Faculty,true,false,false,,,,false,,false,false
+f8f49fce-2a50-497d-83e7-ae1c3df1473c,Dr Nishita Ranka,drnishitaranka@gmail.com,9769398063,,true,2026-11-08 17:17:15.562752,Dr Nishita,Ranka,FAC115,IN,,,Faculty,true,false,false,,,,false,,false,false
+fabfae34-2455-45e1-bb0f-b5584fc29c34,Dr Amit Luthra,amit_skin01@yahoo.com,9810062254,,true,2026-11-08 17:17:11.243661,Dr Amit,Luthra,FAC142,IN,,,Faculty,true,false,false,,,,false,,false,false
+fb1c8077-baed-445e-a2a1-623d660d5ac3,Dr Adit M Garg,adit.mohan.garg@gmail.com,8174906767,,true,2026-11-08 17:17:25.050812,Dr Adit,M Garg,FAC057,IN,,,Faculty,true,false,false,,,,false,,false,false
+fb6e6caf-0be5-4144-88f5-16e5edda9c15,Dr Mohammad Razmi,dr.razmi.t@gmail.com,8437633800,,true,2026-11-08 17:17:25.533147,Dr Mohammad,Razmi,FAC054,IN,,,Faculty,true,false,false,,,,false,,false,false
+fbf7dcc9-41f2-4628-b93e-37ec85c2870a,Dr Jayesh Sanariya,sanariyajayesh@gmail.com,9879460038,,true,2026-11-08 17:17:20.844685,Dr Jayesh,Sanariya,FAC083,IN,,,Both,true,true,false,,,,false,,false,false
+fe7ddb33-b1f0-40e1-b6ed-69980a5d1c7a,Dr Nidhi Tandon,nidhisinghtandon@gmail.com,8795967000,,true,2026-11-08 17:17:13.613166,Dr Nidhi,Tandon,FAC127,IN,,,Faculty,true,false,false,,,,false,,false,false
+fe88d48b-65ea-45c3-a22b-0825ff5fa4f4,Dr Ajay Sharma,ajay_cosmos@rediffmail.com,9837269005,,true,2026-11-08 17:17:29.770579,Dr Ajay,Sharma,FAC028,IN,,,Faculty,true,false,false,,,,false,,false,false

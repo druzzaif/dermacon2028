@@ -1,0 +1,449 @@
+id,session_id,topic_title,start_time,end_time,sequence_no,created_at
+00768482-c04d-4fcb-96f6-d4b58bdc0587,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Gender-specific vectors,,,11,2026-11-08 21:14:24.410089+00
+01a221b3-d2c5-474c-baf4-910462533066,437f89e3-571e-4347-9649-527f1952673c,"Q&A Panel Discussion, Holistic Approach/AI Integration",12:30:00,13:00:00,10,2026-11-08 21:13:52.07678+00
+01d46d79-d270-45ff-a332-201480492400,43e0cf1f-69e6-46ba-b118-b85ac26fefa5,"PMU do's and don’ts, complications and marketing tips for beginners",17:15:00,17:45:00,3,2026-11-08 21:15:29.893935+00
+021cf7e2-f896-41ea-a3d0-76bce162fa77,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,"Practice Integration and Patient Conversion, Pricing and Package Creation",16:50:00,17:00:00,18,2026-11-08 21:14:03.109458+00
+024286f7-2d66-45b4-9011-ccd85b8dcc30,437f89e3-571e-4347-9649-527f1952673c,Neck,11:18:00,11:34:00,6,2026-11-08 21:13:50.720836+00
+024ca4d4-8b20-4d53-8cc5-f801fd233834,496d7566-86b8-4ce5-b449-6dabdb17b817,Periorbital Fillers: Tear Trough & Midface,14:40:00,14:50:00,5,2026-11-08 21:15:31.795257+00
+03c2bbca-68ba-40b0-9450-767602d1f8d6,8ca12b32-767e-4339-bcb6-327f7c64f38f,"Indications & Case Selection of resurfacing lasers: Acne scars, pores, wrinkles, pigmentation",16:35:00,16:45:00,3,2026-11-08 21:16:05.919529+00
+03c9193d-8205-4678-85cf-a8c0b25145e4,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,Science and application in skin and wound healing,14:45:00,15:00:00,4,2026-11-08 21:14:04.978253+00
+04131e6d-39d9-42a1-95e0-a68bd6be65b7,6f552dc5-34ce-4d47-b282-f4c315a13d87,Advance Thread Lift Cases: Challenges and Real-World Decisions,17:00:00,17:15:00,12,2026-11-08 21:13:56.90478+00
+0636b5ed-51e9-4ce2-a3f3-682c4e5308ba,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Nail Tumors, Video-Based: Nail fold and nail bed tumors",15:00:00,15:10:00,7,2026-11-08 21:14:58.948513+00
+0693d0ac-d962-4b50-8bbe-548b05809b04,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,"Laser Solutions for Scars: CO2, PDL & Combination Approaches",16:55:00,17:05:00,5,2026-11-08 21:15:05.199216+00
+07849a12-57fd-492b-9156-fdf2917cb01a,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Boosters Versus Biomodulators,15:10:00,15:20:00,8,2026-11-08 21:13:59.809197+00
+0790f9fb-64f6-4534-b4a4-5784c1c3a724,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,AI integration/digital advancements,,,16,2026-11-08 21:14:26.363051+00
+07d7b844-28fa-4ad4-b110-b74b28c087be,d2ba5fc5-4f95-413a-a2c5-626d9797c842,From OPD consultation to OT Table- How to counsel the patient and investigate.,14:20:00,14:30:00,3,2026-11-08 21:14:27.662652+00
+09e6ff64-0ba9-479b-aeec-6fd2481bf61c,e3ae70e4-00dc-4d68-9b3d-b27686022701,Entomodermoscopy,16:40:00,16:50:00,3,2026-11-08 21:15:40.805689+00
+0aaa836c-e80c-4068-89e9-baa5a56856cb,de0be288-6953-41b8-8feb-994aa2d58b73,Video demo of PLLA,11:45:00,12:00:00,8,2026-11-08 21:14:34.505615+00
+0ac30436-2f2c-4391-b3d6-1a04ed68c42e,496d7566-86b8-4ce5-b449-6dabdb17b817,Skin Boosters Around the Eye: Improving Skin Quality & Hydration,14:30:00,14:40:00,4,2026-11-08 21:15:31.475221+00
+0ad87c5a-9942-47ca-8930-2a123d9b01be,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Complications & Pearls, Complications expected, immediate, short-term, long-term, how to prevent them, Pearls for safe nail surgery",15:30:00,15:40:00,10,2026-11-08 21:14:59.940149+00
+0be44178-b1dc-4e69-a6d0-253e8e4d9c86,31ae9c07-80de-4788-aa13-3714734c0a21,When histology misleads- Common diagnostic traps in Dermatopathology,17:05:00,17:20:00,4,2026-11-08 21:16:08.484064+00
+0bfce6c5-e5ef-4649-8d6b-faf061589307,46281f53-703d-4d4f-9106-78a2e835b2d9,"Safety First: Infection Control, Emergency Preparedness & Risk Management",15:00:00,15:15:00,5,2026-11-08 21:15:49.483033+00
+0c17c924-702e-47c7-85d0-1116ea9c8ac2,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Vascular anatomy (15 min),,,3,2026-11-08 21:14:21.777464+00
+0c3426e3-306b-4333-a096-312b625300aa,124d951f-7166-47c7-8927-c49d72a7216f,"UNCONVENTIONAL INDICATIONS OF MONO THREADS- EYEBROW, NOSE, FOREHEAD, UNDEREYE, GLABELLA, NASOLABIAL THREADS, SCALP)",10:35:00,10:55:00,5,2026-11-08 21:14:37.441342+00
+0c7c7f4a-7351-4799-b3b2-73c27d8d3bf6,d2ba5fc5-4f95-413a-a2c5-626d9797c842,From Diagnosis to Growth- Integration Genomic Analysis into Clinical Practice,16:50:00,17:05:00,15,2026-11-08 21:14:31.558634+00
+0ca77ce8-1c05-434c-b7b5-a655366fc695,bab50726-332e-439e-8a6a-8452cf0605e0,Role in Dermatology - Aesthetic Indications (Video Demonstration),10:15:00,10:30:00,3,2026-11-08 21:14:40.674516+00
+0d20a355-feee-4595-b7a3-18f6fccd1327,7dde630c-995f-44f5-b28f-20fd5fc98252,Introduction to lip rejuvenation,16:15:00,16:25:00,1,2026-11-08 21:15:14.455238+00
+0d6c506e-f52f-40ba-ba39-11f86eceb10d,31ae9c07-80de-4788-aa13-3714734c0a21,Selected slide viewing and discussion if time permits beyond 6:15 pm,18:05:00,18:35:00,6,2026-11-08 21:16:10.995466+00
+0f583875-5f3b-416c-a003-b3bf2422fead,84e2f3d8-bece-4ee6-b243-d9256da758e8,Punch Elevation & Punch Excision for Ice Pick and Boxcar Scars,15:12:00,15:24:00,7,2026-11-08 21:14:55.682793+00
+10780005-edfc-4dbd-9784-997a7b14e300,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,Current status,15:45:00,16:00:00,8,2026-11-08 21:14:06.274751+00
+10be9094-e622-4e95-af7e-5de5181179a0,46281f53-703d-4d4f-9106-78a2e835b2d9,"Technology Integration in Practice: AI, EMR & Digital Dermatology Ecosystem",15:30:00,15:45:00,7,2026-11-08 21:15:50.12727+00
+118a91dc-0d01-49d6-957b-a1343d18cf05,8ca12b32-767e-4339-bcb6-327f7c64f38f,"CO2 vs. Er: YAG Lasers: Indications, depth control, clinical decisions",16:25:00,16:35:00,2,2026-11-08 21:16:05.610283+00
+11c1d541-2bf6-40ee-a3f5-7d02fc312233,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,"Difficult Areas in Vitiligo Surgery (Lips, Fingers, Joints, Eyelids)",17:51:00,18:03:00,9,2026-11-08 21:15:03.253723+00
+11cd7ac4-d22a-425f-8640-777bded5a18f,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Baby Glow – Video Demo,15:30:00,15:40:00,10,2026-11-08 21:14:00.461932+00
+122c5712-e84c-46d5-aec1-a067cb705197,bab50726-332e-439e-8a6a-8452cf0605e0,Growth Factors/Peptides -My experience with it (Video Demonstration),10:45:00,11:00:00,5,2026-11-08 21:14:41.331462+00
+1296fdfe-a296-421a-96ad-a94665df03f2,496d7566-86b8-4ce5-b449-6dabdb17b817,EXPERT PANEL – “WHAT WOULD YOU DO?” Case-Based Decision Making in Periorbital Rejuvenation Dr Priti,15:30:00,16:00:00,10,2026-11-08 21:15:33.394269+00
+13a85d56-5108-48d7-b645-52b4f432ab4e,a344d969-36e7-468b-a730-1362a2902bed,"Different neurotoxins, dilutions (reconstitution), Diffusion, dose equivalence, storage, Markings, Critical danger zones, complication-prone areas",09:45:00,10:00:00,2,2026-11-08 21:14:08.578078+00
+144c15b7-9223-4515-8023-803eb2b9ed15,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,Acne Scars to Surgical Scars: Advanced Revision Techniques,17:15:00,17:25:00,7,2026-11-08 21:15:05.848782+00
+14dbdbca-c1c3-4aea-a1ff-506bf7ded234,0b57af14-1071-48b4-b95f-16fb5fb41624,Energy based remodelling protocols and procedure details (video demonstration),14:30:00,14:45:00,3,2026-11-08 21:15:25.409712+00
+154030bd-0530-4818-a21f-ebaba15394f7,c2b505d2-809b-43ae-a050-fefacdb1c9d3,Audience Interaction  20 min,15:40:00,16:00:00,11,2026-11-08 21:15:00.269461+00
+155e84c4-7753-43d4-9065-e4e4e12690fe,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,Understanding Scars: Pathophysiology of Keloids & Hypertrophic Scars,16:15:00,16:25:00,1,2026-11-08 21:15:03.896332+00
+1648aea9-b9d7-45fe-b85f-d247e8670f16,4340f692-216f-42c9-b38c-855c0b80aa8b,Chair Person - Office Procedure 3,14:00:00,16:00:00,11,2026-11-08 21:16:04.624916+00
+184a2376-8bd3-4ae7-9d22-807de587c431,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI for laser treatment planning,14:04:00,14:12:00,10,2026-11-08 21:14:52.063299+00
+184b4cac-546d-405b-acfa-1fa66d855528,84e2f3d8-bece-4ee6-b243-d9256da758e8,Surgical Excision: From Planning to Perfect Closure,14:36:00,14:48:00,4,2026-11-08 21:14:54.665509+00
+184ddb11-daf0-4f84-af20-b252c92ebf5b,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,"Intralesional Therapy Pearls: Steroids, 5-FU, Bleomycin & Beyond",16:45:00,16:55:00,4,2026-11-08 21:15:04.856285+00
+189c1ad9-8937-4665-8589-18c7fd272afc,437f89e3-571e-4347-9649-527f1952673c,Product Selection/Layering: Understanding G Prime. Needle vs. Cannula (When/Why),10:15:00,10:30:00,2,2026-11-08 21:13:49.3863+00
+191f59ae-b0f7-4cd9-8ff2-8faf7d39447b,561d65fe-e6c5-4ad9-b172-69b58d203470,Video Demo – THREADS,15:20:00,15:35:00,7,2026-11-08 21:15:10.575255+00
+19481d89-17d8-4165-bed1-df9e666e2309,099bd763-c618-4721-97cc-26c72436c47b,Chemical peels – choosing the right peel for the right pigment,14:12:00,14:24:00,2,2026-11-08 21:15:43.047211+00
+19623ddf-a28f-420a-b57b-caf3eecd19cc,de0be288-6953-41b8-8feb-994aa2d58b73,"Collagen Banking: Prevent Ageing Rather Than Treat It; when to start, ideal patients, treatment interval and outcomes",10:00:00,10:15:00,3,2026-11-08 21:14:32.869804+00
+19b5ffdd-7c54-4f2d-b969-b58f99e47111,4340f692-216f-42c9-b38c-855c0b80aa8b,Energy in Action: Mastering Electrolysis and RF Techniques,14:00:00,14:12:00,1,2026-11-08 21:16:01.368771+00
+19bc1ab0-8ff4-4ca3-b681-a196364eea53,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Introduction to the Workshop,14:00:00,14:10:00,1,2026-11-08 21:13:57.557298+00
+1b189e30-6e4a-4d68-8bda-345949a9c420,d2ba5fc5-4f95-413a-a2c5-626d9797c842,"Video Demonstration of Hairline Designing in males, Females and Transgenders",14:40:00,14:55:00,5,2026-11-08 21:14:28.320054+00
+1bad90fe-a540-4726-9e7d-1ec0537feda0,f0e2998a-eaec-41f9-806b-b2ba4636b448,Light's On : Utility of Lasers and EBDs for Hair Regeneration,10:45:00,11:00:00,7,2026-11-08 21:14:15.665891+00
+1bb03c89-30fe-470b-baa5-d7f857ca7b2f,099bd763-c618-4721-97cc-26c72436c47b,"Assessment and unmasking of facial melanosis (dermoscopy, Woods lamp, biopsy SOS)",14:00:00,14:12:00,1,2026-11-08 21:15:42.730338+00
+1bb0f211-745e-42d2-814f-09265687ac4c,bab50726-332e-439e-8a6a-8452cf0605e0,Biofillers,11:15:00,11:25:00,7,2026-11-08 21:14:41.979827+00
+1c9af597-485a-4023-8b7f-33f39128f02c,78baaf69-1db1-4b62-ba53-70939ca7572e,Q & A,13:18:00,13:30:00,10,2026-11-08 21:15:58.141305+00
+1d63c6c9-1c0d-44a3-9b34-e7a2ba63d465,f63ee231-303d-4394-96bf-42449639fdda,The Science Beneath the Surface: Foundations of Chemical Peels,16:20:00,16:30:00,2,2026-11-08 21:15:21.855105+00
+1db61279-ea62-42ae-be4c-b3e158b13606,e3ae70e4-00dc-4d68-9b3d-b27686022701,Inflammoscopy: Psoriasis vs. Eczema vs. Lichen Planus vs. DLE,16:25:00,16:40:00,2,2026-11-08 21:15:40.493467+00
+1e056c71-8aad-416e-92c9-18196f5d6684,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,Nerve and ocular complications-the complications we must never miss,14:41:00,14:50:00,5,2026-11-08 21:15:35.004749+00
+1e3d0cfa-3513-4f4e-a900-fc4af8f6cb88,a344d969-36e7-468b-a730-1362a2902bed,Individualized treatment goals,,,10,2026-11-08 21:14:11.12925+00
+1e9025bc-7902-40bd-840c-a5e73660be49,6f552dc5-34ce-4d47-b282-f4c315a13d87,Patient Selection for Threads,14:30:00,14:45:00,3,2026-11-08 21:13:53.068616+00
+203ea497-4584-447f-bd1d-45d2e4a80cc0,84e2f3d8-bece-4ee6-b243-d9256da758e8,Acne scars 2030 : Emerging concepts and changing paradigms.,14:12:00,14:24:00,2,2026-11-08 21:14:54.013119+00
+20fb5b40-c5b6-4a7d-9727-1a70537fcb27,124d951f-7166-47c7-8927-c49d72a7216f,COST JUSTIFYING RESULTS,11:55:00,12:15:00,9,2026-11-08 21:14:38.734318+00
+214d6dfc-2d7b-49f8-98e8-e222d2a21b89,78baaf69-1db1-4b62-ba53-70939ca7572e,Freeze to Heal: The Art and Science of Cryotherapy,12:06:00,12:18:00,4,2026-11-08 21:15:56.225265+00
+22f34bf2-5fd9-4910-b76f-ccec960d74ad,a344d969-36e7-468b-a730-1362a2902bed,Dilution-based variations,,,12,2026-11-08 21:14:11.781732+00
+2308ed47-7e7d-45f3-b6b5-10339e950e0f,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,New Meso Hyal Products,16:20:00,16:30:00,15,2026-11-08 21:14:02.105094+00
+23e1ea28-f59d-49ab-a330-a7a0989b89e6,0b57af14-1071-48b4-b95f-16fb5fb41624,HA and PRP based rejuvenation – restoration and regeneration techniques,14:45:00,15:00:00,4,2026-11-08 21:15:25.722414+00
+23ed3fae-3753-4850-aee8-b7042772be58,78baaf69-1db1-4b62-ba53-70939ca7572e,Targeted Delivery: The Art of Intralesional Therapy,11:30:00,11:42:00,1,2026-11-08 21:15:55.278757+00
+23f83530-cf05-4a8c-83a5-9c68901e4529,31ae9c07-80de-4788-aa13-3714734c0a21,Understanding best technique and site of biopsy in various dermatological disorders,16:15:00,16:30:00,1,2026-11-08 21:16:07.531698+00
+246e9500-2c96-47e8-914e-8ad8866bfbcb,6f552dc5-34ce-4d47-b282-f4c315a13d87,Complication Management from Dimpling to Asymmetry,16:30:00,16:45:00,10,2026-11-08 21:13:56.228778+00
+247b7f01-010c-4c2e-bff3-4b645662128e,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,From Depth To Damage: Mastering Safety In Chemical Peels,15:00:00,15:12:00,7,2026-11-08 21:15:36.610588+00
+2623e98a-ab83-4311-aa4b-c8ea00dcf703,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Planning Nail Surgery: Before you pick the scalpel, Applied Surgical anatomy, Patient pre-requisites, Indications and Contraindications, Anesthesia and tourniquet, Instrument selection, Post-op Dressing",14:00:00,14:10:00,1,2026-11-08 21:14:56.998136+00
+270cfc2c-3817-421f-bb22-f6e98edf5c92,78baaf69-1db1-4b62-ba53-70939ca7572e,Beam of Precision: Advancing Laser Frenuloplasty,12:54:00,13:06:00,8,2026-11-08 21:15:57.49959+00
+273ebcbd-deca-4ce8-b98b-7f46eb104ec3,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,Evidence-Based Guidelines in Management of Keloids,17:55:00,18:05:00,11,2026-11-08 21:15:07.431364+00
+286513dc-2162-4a81-87a7-d878c54543d6,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Safe Donor Zone: Donor Area Planning and Extraction Techniques,14:55:00,15:15:00,6,2026-11-08 21:14:28.639768+00
+28cac027-0a3b-4c67-b96a-162e2bf96312,a344d969-36e7-468b-a730-1362a2902bed,Area-wise dosing principles,,,8,2026-11-08 21:14:10.488556+00
+297530f9-c37d-4dd7-9c65-6ed093e06bd5,124d951f-7166-47c7-8927-c49d72a7216f,COMBINATION WITH OTHER ANTI AGING MODALITIES,10:55:00,11:15:00,6,2026-11-08 21:14:37.771567+00
+29a95c85-e7db-422d-860d-8893d55a6918,7dde630c-995f-44f5-b28f-20fd5fc98252,Panel discussion,17:45:00,18:15:00,10,2026-11-08 21:15:17.368418+00
+29dc3eca-ecfa-428e-9466-7cdc62af0333,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Neck and Hand Rejuvenation,15:00:00,15:10:00,7,2026-11-08 21:13:59.489573+00
+29f26d2a-7225-4b5b-8abf-de88f8614034,099bd763-c618-4721-97cc-26c72436c47b,Case based video presentation of facial melanosis panel discussion,15:36:00,15:48:00,9,2026-11-08 21:15:44.973548+00
+2a4a4b63-cf92-4398-94dc-5fbfa782f76c,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,Beyond the Routine: Special Populations & Photoprotection,14:30:00,14:45:00,3,2026-11-08 21:15:12.463368+00
+2a53ef24-e73d-4878-baf5-e0350e2fb44c,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,The Visual Stethoscope: Seeing Beyond the Naked Eye,10:24:00,10:36:00,8,2026-11-08 21:15:20.567671+00
+2ab130fc-801d-4aa4-ae2e-9324b7769553,437f89e3-571e-4347-9649-527f1952673c,"Complications (Prevent/Manage), Acute, Delayed Onset",12:10:00,12:30:00,9,2026-11-08 21:13:51.738709+00
+2baac753-58a2-4ad0-82db-736a7cea0851,a2855bfd-adb7-4d31-a07e-7b26b0245325,"Evidence Checkpoint: PRP in Dermatology - Critical appraisal of RCTs/meta-analyses in AGA, acne scars, melasma, skin rejuvenation. Setting the Stage: Biology of Regeneration",09:00:00,09:15:00,1,2026-11-08 21:14:44.611607+00
+2baf8a97-d099-4330-87b4-a32b5108ce5f,f63ee231-303d-4394-96bf-42449639fdda,Closing Reflections & Q&A (coordinators + All faculty),17:40:00,18:00:00,10,2026-11-08 21:15:24.437949+00
+2bc4e3fd-b333-45a9-8326-387040deab29,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Q&APanel discussion,,,17,2026-11-08 21:14:26.684298+00
+2bc7877d-74fe-4b92-a933-669ad6be91a9,6f552dc5-34ce-4d47-b282-f4c315a13d87,"The Science of Modern Thread Lifting: Evolution of Thread Designs, Anchoring Mechanism and Structural Innovation",14:45:00,15:00:00,4,2026-11-08 21:13:53.410877+00
+2c3d1195-3c5b-4a16-8906-718ff39de5e6,4340f692-216f-42c9-b38c-855c0b80aa8b,"Melt, Shape, Refine: Precision Lipolytic Treatments",15:24:00,15:36:00,8,2026-11-08 21:16:03.66874+00
+2d53c0b8-2101-4285-b6fc-2a13c287281f,4340f692-216f-42c9-b38c-855c0b80aa8b,Microneedling : Dermaroller /Dermapen,14:36:00,14:48:00,4,2026-11-08 21:16:02.371302+00
+2e1c9781-1e92-420b-af0f-3f3c48786975,7dde630c-995f-44f5-b28f-20fd5fc98252,Panel discussion,17:45:00,18:15:00,9,2026-11-08 21:15:17.057165+00
+2ec378db-e7e6-4541-a522-ab77b5e8ac9e,84e2f3d8-bece-4ee6-b243-d9256da758e8,Morphology guided monothreads therapy,14:00:00,14:12:00,1,2026-11-08 21:14:53.682623+00
+2f72a1b7-5d0c-483e-9be2-8a144f3c88ed,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Restylane Vital – Video Demo,15:40:00,15:50:00,11,2026-11-08 21:14:00.791457+00
+312bc78f-4eae-4ddd-a683-ecba026c7d6d,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Nail Matrix Tumors, Video Based: tumors localized in the matrix region",15:10:00,15:20:00,8,2026-11-08 21:14:59.280121+00
+32a2513e-2b0d-4070-a811-541bb84714af,91457a77-8282-4dc0-bd65-7fec24aac38c,"Advanced Suturing Techniques (Subcuticular, Buried Sutures)",11:50:00,12:00:00,3,2026-11-08 21:14:47.850308+00
+32f2424a-0ef3-42d5-93cb-20f611f750ca,e8a6555b-fa2d-448a-b369-b38527a7c3de,Elliptical Excision: Planning and Technique,10:00:00,10:12:00,6,2026-11-08 21:16:12.947822+00
+32f39770-1deb-4c34-9084-f2db6e41d734,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,Vitiligo Surgery Masterclass: NCES Technique,16:51:00,17:03:00,4,2026-11-08 21:15:01.609996+00
+339ef7f4-eb86-4b01-a7d6-8b7ee167c5e2,5c8a73de-0371-4a47-a58b-8f4c8b40ccae,"Complications: Recognition, prevention, management, Site-wise, Asymmetry, Functional issues, Over/undercorrection, Immunogenicity",16:30:00,17:30:00,5,2026-11-08 21:14:20.486693+00
+34d72559-76e2-4e33-ad73-b9ee46c5c46e,a344d969-36e7-468b-a730-1362a2902bed,Gender/ethnic considerations,,,6,2026-11-08 21:14:09.85164+00
+34ea9198-9bcb-44c6-aaf4-521651367d86,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,The evolution of nano- and micro-fat grafting techniques,16:45:00,16:55:00,12,2026-11-08 21:14:07.614899+00
+34ec05a6-9efc-46a0-8814-c8b3f8ba1bda,496d7566-86b8-4ce5-b449-6dabdb17b817,Periorbitalx Peels: Treating Pigmentation & Skin Quality,14:20:00,14:30:00,3,2026-11-08 21:15:31.163275+00
+35e5dc39-3e8d-430b-92ad-d15dc0da15bc,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI in clinical practice: personalized patient education,12:00:00,12:20:00,1,2026-11-08 21:14:49.161358+00
+369187b6-7f32-4829-b1e1-c58b08aad757,f63ee231-303d-4394-96bf-42449639fdda,Avoiding pitfalls When the Glow Fades: Managing Complications with Confidence,17:30:00,17:40:00,9,2026-11-08 21:15:24.114923+00
+36f99e1e-359a-482b-9af0-c2f4c10a3df2,e3ae70e4-00dc-4d68-9b3d-b27686022701,Introduction to Dermoscopy,16:15:00,16:25:00,1,2026-11-08 21:15:40.157342+00
+37960158-3165-480d-8740-08d24ae66b94,de0be288-6953-41b8-8feb-994aa2d58b73,Video demo of PCL,12:15:00,12:30:00,10,2026-11-08 21:14:35.166172+00
+37c66ceb-ac85-4bbe-a069-5f815bea71d0,099bd763-c618-4721-97cc-26c72436c47b,Beyond the procedural management,15:12:00,15:24:00,7,2026-11-08 21:15:44.66106+00
+397edac5-58db-4941-a225-ea185ce26c68,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,Transition and contingency buffer,14:20:00,14:40:00,12,2026-11-08 21:14:52.69879+00
+39f19e12-3a7e-4b0b-b0a8-ba1eebabf57f,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,Vitiligo Surgery Masterclass: SSS Technique,17:03:00,17:15:00,5,2026-11-08 21:15:01.93179+00
+3a31fcf3-6fb6-4464-aacb-174ac228ca3f,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI-assisted clinical diagnosis: decision support and triage,12:44:00,12:59:00,4,2026-11-08 21:14:50.125819+00
+3b765517-7791-4bc3-b876-037c8631109b,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Beyond the Procedure: Nurturing New growth- Post-operative Care After Hair Restoration,16:00:00,16:10:00,11,2026-11-08 21:14:30.253544+00
+3b869351-dfe0-4216-b96c-8cea3abf1a86,e8a6555b-fa2d-448a-b369-b38527a7c3de,Surgical Instruments in Dermatosurgery,09:12:00,09:24:00,2,2026-11-08 21:16:11.672566+00
+3c21ccdf-b2ef-424d-b541-e542eb49df1e,7dde630c-995f-44f5-b28f-20fd5fc98252,Botulinum toxin,17:15:00,17:30:00,5,2026-11-08 21:15:15.75331+00
+3c9887f3-70a2-48d2-86dd-025e559b06cf,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Body Hair Transplant,15:30:00,15:40:00,8,2026-11-08 21:14:29.282892+00
+3cd54ebf-b64e-4dee-ac89-8ddc524e19e7,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Lasers for Rejuvenation of Hands,16:55:00,17:05:00,5,2026-11-08 21:15:38.560909+00
+3ce65602-da1c-48f3-8251-81ffaa6b05c5,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,SKINVIVE – Video Demo,15:20:00,15:30:00,9,2026-11-08 21:14:00.135662+00
+3d071432-7901-4ec1-bb24-ac34ad16be41,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,Scar Remodeling Innovations: Endolift—Bridging the Gap Between EBD and Surgery,17:35:00,17:45:00,9,2026-11-08 21:15:06.781085+00
+3e00a02c-f114-45c4-83bb-627ef29d5b27,46281f53-703d-4d4f-9106-78a2e835b2d9,"SOP-Driven Clinics: The Secret to Scalability, Safety & Consistency",14:30:00,14:45:00,3,2026-11-08 21:15:48.847006+00
+3e01be12-b0eb-453a-8608-a07cc368bf1d,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Danger zones,,,5,2026-11-08 21:14:22.427053+00
+3e60623e-9f38-4915-8779-d9db658c21ef,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,Light as a Diagnostic Tool: Mastering Wood’s Lamp Examination,09:24:00,09:36:00,3,2026-11-08 21:15:18.964672+00
+3f1f036c-bfca-4f52-9c4f-80588f469c0d,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Needle vs cannula (when/why),,,9,2026-11-08 21:14:23.744481+00
+3f42281e-9660-400c-ab6e-45d93b4795f2,f0e2998a-eaec-41f9-806b-b2ba4636b448,Cocktails for Your Scalp: The Art and Science of Mesotherapy,10:00:00,10:10:00,3,2026-11-08 21:14:14.365435+00
+404f9841-3d3b-4ef4-9b86-f75bea6295d4,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,The Cutting Edge: Precision Skin Biopsy Techniques,10:48:00,11:00:00,10,2026-11-08 21:15:21.219743+00
+40a1f497-dd04-4c52-8c7d-eb5e6b56d01c,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Setting Up Hair Transplant Practice for Beginners,14:00:00,14:10:00,1,2026-11-08 21:14:27.004712+00
+410acd4f-e843-4534-8d14-40e4db5ff60a,e3b6f75e-0fa3-4d1e-973a-a183072ec850,"The Perioral Unit: Anatomy, Aging, Assessment and Neuromodulation",16:15:00,16:30:00,1,2026-11-08 21:15:50.775718+00
+41609472-fd91-4806-b666-3a64914444d7,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Product selection,,,6,2026-11-08 21:14:22.754139+00
+41c4af59-6b2f-4578-a4fc-3bef77c11f00,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI for aging identification and anti-aging assessment,13:56:00,14:04:00,9,2026-11-08 21:14:51.739361+00
+42210117-2b3e-4484-8aca-a213dd17e00e,4340f692-216f-42c9-b38c-855c0b80aa8b,Breaking Free: Precision Subcision for Acne Scars,15:00:00,15:12:00,6,2026-11-08 21:16:03.002757+00
+4361b4c4-44e3-4a1e-a626-b4ffb54175b9,31ae9c07-80de-4788-aa13-3714734c0a21,Histopathology in Tropical Dermatology: Lessons from Case-Based Exploration,16:50:00,17:05:00,3,2026-11-08 21:16:08.170834+00
+43c16b73-78ae-4fc0-94fe-f6a473a7bf11,c92b696e-64c5-4350-b8bf-d0cb50b187d7,Tattoo removal: A to Z,12:29:00,12:41:00,6,2026-11-08 21:15:47.545167+00
+4419d1dd-f536-4b06-8565-35c5a67cfac0,c2de6c3e-8932-437b-9bb5-9be30e2c8738,"IPL & RF in Practice — Pigmentation, rejuvenation, tightening",14:10:00,14:20:00,2,2026-11-08 21:15:58.778782+00
+443e0a87-2550-492d-9687-84ab2cda02dd,a2855bfd-adb7-4d31-a07e-7b26b0245325,"Frontiers of Regeneration: Future Advancements & Advanced Uses - Exosomes & secretome therapy, PRP bio-enhancement, nanofat + PRF, scaffold engineering, AI-guided personalization, stem-cell interface",10:00:00,10:15:00,5,2026-11-08 21:14:45.890825+00
+44ba7b08-4f7e-4b8c-bc42-5b9e103c51b2,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Fillers + Volumizers for Volume Restoration with video demonstration,17:05:00,17:35:00,6,2026-11-08 21:15:38.881652+00
+44e109ce-3d25-456e-a1b6-f03858d3a5da,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,"Hyaluronic Fillers: Beware Points, Complications And Management",15:24:00,15:36:00,9,2026-11-08 21:15:35.6337+00
+45b2f919-3c21-4f1f-9e1c-c56da3eabd8b,c785df25-82ad-4e71-ab96-ce4c7301fccd,Anatomy,16:35:00,16:55:00,2,2026-11-08 21:15:27.679321+00
+45d3f471-d090-41c7-9e09-d4bd19be33b6,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,Light in Action: Therapeutic Applications in Dermatology,14:45:00,15:00:00,4,2026-11-08 21:15:12.779936+00
+461578cf-c5c1-48fc-9f08-b991966df6a8,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Advancing Skills in Hair Transplantation: Training Opportunities for Practitioners,14:10:00,14:20:00,2,2026-11-08 21:14:27.334123+00
+48b96f9d-b8c0-479f-b077-196004f7981a,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,The power of tiny fat grafts in regenerative aesthetics,16:35:00,16:45:00,11,2026-11-08 21:14:07.29097+00
+49207228-d05e-44a8-9c7a-4ee358ff3560,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,Dos And Don't Of Avoiding Aesthetic Complications,15:48:00,16:00:00,11,2026-11-08 21:15:36.938574+00
+4924081d-687a-447a-aa06-7cc432e23f18,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,The science behind it,14:15:00,14:30:00,2,2026-11-08 21:14:04.354897+00
+49746e3c-6a46-4841-82f7-e5e170a73a58,e8a6555b-fa2d-448a-b369-b38527a7c3de,"Advanced Suturing Techniques (Subcuticular, Buried Sutures)",09:48:00,10:00:00,5,2026-11-08 21:16:12.632924+00
+49b16fe9-4f4d-48e6-859c-d3258d1133f1,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,Their potential applications in dermatology,14:30:00,14:45:00,3,2026-11-08 21:14:04.66651+00
+4a0a65e6-c08b-4d1d-b927-9594d195d3f3,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Panel discussion,17:05:00,17:30:00,16,2026-11-08 21:14:31.898578+00
+4ad5a16f-aead-4001-979b-7917bd071fc8,561d65fe-e6c5-4ad9-b172-69b58d203470,Video Demo – BOTULINUM TOXIN AND FILLERS,14:50:00,15:05:00,5,2026-11-08 21:15:09.934204+00
+4b622df6-e421-4f62-a4ce-003dc874a8f7,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Ligaments (15 min),,,4,2026-11-08 21:14:22.096744+00
+4b652d82-7b6d-44fd-ac86-54132f43c6f4,4340f692-216f-42c9-b38c-855c0b80aa8b,Chair Person - Office Procedure 3,14:00:00,16:00:00,12,2026-11-08 21:16:04.941085+00
+4c501079-b481-4e5a-ada5-68a337faec86,46281f53-703d-4d4f-9106-78a2e835b2d9,"In House Pharmacy Mastery: Setup, Systems &profitability",15:15:00,15:30:00,6,2026-11-08 21:15:49.793449+00
+4c6c06d7-ce29-40ec-80b6-00d694e589d7,6f552dc5-34ce-4d47-b282-f4c315a13d87,Q & A Expert Insight,17:15:00,18:00:00,13,2026-11-08 21:13:57.225008+00
+4d3f5f00-14d4-4f6e-98b0-c80889857272,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,Unmasking Contact Allergy: From Patch to Diagnosis,10:12:00,10:24:00,7,2026-11-08 21:15:20.258026+00
+4e0602ac-ed3c-44b2-8966-c99ffa082977,31ae9c07-80de-4788-aa13-3714734c0a21,Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses,17:20:00,18:05:00,5,2026-11-08 21:16:09.457646+00
+4e07d6e8-cd16-440e-b5f6-5743910b1acb,e3b6f75e-0fa3-4d1e-973a-a183072ec850,Energy-Based Devices in Perioral Rejuvenation: Resurfacing to Remodelling,17:00:00,17:15:00,4,2026-11-08 21:15:51.728828+00
+4e6dde3a-6240-4842-9d2b-24e7175c477c,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,Panel discussion,14:40:00,14:50:00,13,2026-11-08 21:14:53.037929+00
+4ea0fd6c-0b04-467b-b163-4964e5836caf,e3ae70e4-00dc-4d68-9b3d-b27686022701,Trichoscopy,16:50:00,17:05:00,4,2026-11-08 21:15:41.120327+00
+4f4a96ed-2de8-40d7-9203-527efebe0dc0,496d7566-86b8-4ce5-b449-6dabdb17b817,"Energy-Based Periorbital Rejuvenation: Fractional, MNRF & HIFU",15:10:00,15:20:00,8,2026-11-08 21:15:32.763118+00
+4f8cf930-e752-41ff-a650-b86280ff4307,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,"Panel Discussion, Case-Based Discussion – Full Face Planning, Q&A, Rapid Fire Expert Pearls",17:00:00,17:30:00,19,2026-11-08 21:14:03.441305+00
+4fbf0f74-4bab-443f-b4c2-c7066fe8b3bf,9e14b3d8-d5cc-48f8-8134-98d4fae6c243,"Tax Smart Dermatology Practice: Mastering GST, Income Tax & Compliance Without Stress",17:30:00,17:45:00,6,2026-11-08 21:15:54.641524+00
+500dc94e-e42a-4ff4-945e-3fd0c6be1e38,588dc806-baa4-4f81-a88d-696aa135150b,Laser Physics + Hair Biology: Selective Photothermolysis & Hair Cycle Relevance,09:00:00,09:15:00,1,2026-11-08 21:14:42.96301+00
+502ce6c6-88d8-4eeb-a692-0b2d296f586c,f0e2998a-eaec-41f9-806b-b2ba4636b448,Decoding the Hairloss: Polynucleotides at play !,10:20:00,10:30:00,5,2026-11-08 21:14:15.019272+00
+50abf634-e7de-4b5c-bb8a-1449114fba6b,e8a6555b-fa2d-448a-b369-b38527a7c3de,Precision Mole Excision (Nevus Excision),10:12:00,10:24:00,7,2026-11-08 21:16:13.270023+00
+50eb351e-7417-4fe0-bf85-dbe017a4fc60,124d951f-7166-47c7-8927-c49d72a7216f,"WHY THREADS, WHEN THREADS, WHERE THREADS, WHEN TO REPEAT ?",10:15:00,10:35:00,4,2026-11-08 21:14:37.10951+00
+532b8437-5872-436f-a7d1-40cbe40743f2,7dde630c-995f-44f5-b28f-20fd5fc98252,Panel discussion,17:45:00,18:15:00,7,2026-11-08 21:15:16.403942+00
+53ffe12f-ffa4-4927-b21f-e031327db56b,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,Complications of Vitiligo Surgery and Their Management,17:39:00,17:51:00,8,2026-11-08 21:15:02.932719+00
+56e6c35c-f1c7-4396-a089-b9ddceeecbba,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,Decoding Photosensitivity: Photopatch Testing,15:15:00,15:30:00,6,2026-11-08 21:15:13.461667+00
+594fe3e7-9ffd-437d-a9d0-c95e9db40ca3,124d951f-7166-47c7-8927-c49d72a7216f,"HISTORY, EVOLUTION, FUN FACTS AND DIFFERENT TYPES OF THREADS AND THREAD MATERIALS",09:35:00,09:55:00,2,2026-11-08 21:14:36.470257+00
+596a16c6-a24b-4a1f-b01f-30d14c6ed4c4,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Fat compartments (15 min),,,2,2026-11-08 21:14:21.4624+00
+598a84ec-b71a-4f18-a1f4-d6d7bd8477cf,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,Stability of vitiligo-recent recommendations and limitations,16:39:00,16:51:00,3,2026-11-08 21:15:01.285637+00
+59ee7966-1e17-4124-816b-8af57cfe0019,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,When Light Goes Too Far: Adverse Effects & Management,15:30:00,15:45:00,7,2026-11-08 21:15:13.795845+00
+5b5db4d0-762a-4699-ae7b-3cc797940996,5c8a73de-0371-4a47-a58b-8f4c8b40ccae,"Dilution, reconstitution, diffusion, Danger zones/complications, Shift from upper to lower face/neck, Planning, mapping, dosing strategies",15:00:00,15:30:00,3,2026-11-08 21:14:19.84633+00
+5be3a454-2b8d-4245-a14f-99a17796cfc7,6f552dc5-34ce-4d47-b282-f4c315a13d87,"Advance Techniques for Lips, Nose",15:45:00,16:10:00,8,2026-11-08 21:13:55.278153+00
+5c4b3d62-369c-4b2f-a083-4c4e610cc3b5,84e2f3d8-bece-4ee6-b243-d9256da758e8,Combination Approach in Complex Acne Scars: Surgery + Energy Devices,15:36:00,15:48:00,9,2026-11-08 21:14:56.337191+00
+5d20a183-d670-4d12-aa5f-de229daa2906,c785df25-82ad-4e71-ab96-ce4c7301fccd,Complications and management,17:55:00,18:15:00,6,2026-11-08 21:15:28.948764+00
+5e1c9a5a-c0be-4c33-bfe3-e2cc6ec5bb41,84e2f3d8-bece-4ee6-b243-d9256da758e8,Regenerative Therapies: Rebuilding Skin from Within,15:00:00,15:12:00,6,2026-11-08 21:14:55.357736+00
+5e45c2e3-06d0-42f9-a915-af46e8387a97,e8a6555b-fa2d-448a-b369-b38527a7c3de,"Basic Suturing Techniques (Interrupted, Continuous, Mattress)",09:36:00,09:48:00,4,2026-11-08 21:16:12.311944+00
+5eebc822-997a-414a-b892-f2a01dac16bb,0b57af14-1071-48b4-b95f-16fb5fb41624,Hormonal therapy and complication management pearls,15:15:00,15:30:00,6,2026-11-08 21:15:26.364795+00
+5f230b79-4605-46db-ac50-4cea05f44bc2,f0e2998a-eaec-41f9-806b-b2ba4636b448,From Belly to Bald Spots - The promising journey of  Fat-Derived Stem Cells,11:00:00,11:15:00,8,2026-11-08 21:14:15.991159+00
+5fd8c48e-a636-4c46-a545-1dfbb40f8a53,8ca12b32-767e-4339-bcb6-327f7c64f38f,Pre/Post Care + Combination Therapies: CO2 + PRP / Exosomes / peels,16:55:00,17:05:00,5,2026-11-08 21:16:06.563197+00
+610d2f0f-29e0-452b-af84-2179f630c094,6f552dc5-34ce-4d47-b282-f4c315a13d87,Upcoming Trends with Thread Lift and Combination Treatment Protocol,16:45:00,17:00:00,11,2026-11-08 21:13:56.555049+00
+631a6521-65e7-4642-b91e-86178145582a,f63ee231-303d-4394-96bf-42449639fdda,Beyond The face :Body peels,17:00:00,17:10:00,6,2026-11-08 21:15:23.150282+00
+63333b49-3c4c-4bfb-bdcb-a93ef351f8f9,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,Future directions,16:00:00,16:15:00,9,2026-11-08 21:14:06.587227+00
+64641250-a481-4286-bb71-a20d5456a5a5,91457a77-8282-4dc0-bd65-7fec24aac38c,"Basic Suturing Techniques (Interrupted, Continuous, Mattress)",11:40:00,11:50:00,2,2026-11-08 21:14:47.521837+00
+64a42882-9d31-4215-91fd-0d2237ae8271,561d65fe-e6c5-4ad9-b172-69b58d203470,"PANEL DISCUSSION  - HIFU VS MNRF VS THREADS , COMBINATION STRATEGIES , DIFFICULT NECKS , COMBINATION PEARLS",15:35:00,15:55:00,8,2026-11-08 21:15:10.904428+00
+64fb4ad9-9776-43a8-8552-e0d30ac64a38,a2855bfd-adb7-4d31-a07e-7b26b0245325,"Complications - Complications, regulatory issues, consensus gaps + quick decision-making guide",10:30:00,10:45:00,7,2026-11-08 21:14:46.548649+00
+656fa825-b887-4072-821f-39496f710eee,a344d969-36e7-468b-a730-1362a2902bed,"Complications, Site-wise complications, Asymmetry/functional issues, Overcorrection vs undercorrection, Resistance/immunogenicity",12:00:00,13:00:00,16,2026-11-08 21:14:13.094348+00
+65fe89b3-ee5a-4588-bbd6-ed3a50a3347b,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,USG-guided techniques,,,14,2026-11-08 21:14:25.410163+00
+664940f6-320b-4c38-a7f7-0f1a59f04a80,f63ee231-303d-4394-96bf-42449639fdda,Future aspects: What's New in Peels,17:10:00,17:20:00,7,2026-11-08 21:15:23.466387+00
+66d1d751-ef04-479f-a81f-d03959d4655b,e8a6555b-fa2d-448a-b369-b38527a7c3de,Epidermoid Cyst Excision – Minimal Excision Technique,10:24:00,10:36:00,8,2026-11-08 21:16:13.595546+00
+66d3e835-6167-4d32-bdef-abd3608e161e,7dde630c-995f-44f5-b28f-20fd5fc98252,Panel discussion - moderator,17:45:00,18:15:00,12,2026-11-08 21:15:18.016852+00
+67e430d0-1b1b-4693-ac28-bd959eeae205,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Saypha,16:30:00,16:40:00,16,2026-11-08 21:14:02.441391+00
+69b54a1c-ba87-40d0-b340-fd1539e5149b,78baaf69-1db1-4b62-ba53-70939ca7572e,Drop by Drop : The Art Of TCA CROSS In Acne Scars,12:30:00,12:42:00,6,2026-11-08 21:15:56.866381+00
+6ac32496-f5ca-436f-8cca-0c3c49c481e9,e3ae70e4-00dc-4d68-9b3d-b27686022701,Monitoring Treatment and Aesthetics Application,17:15:00,17:25:00,6,2026-11-08 21:15:41.764838+00
+6ad336a9-1068-42b6-a48c-3c6c6144feee,f63ee231-303d-4394-96bf-42449639fdda,Choosing the right Peel The Peel Playbook: Precision in Patient & Peel Selection,16:30:00,16:40:00,3,2026-11-08 21:15:22.173827+00
+6b0a24f2-2208-4c5c-a2ec-17a6ab52b1cf,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,Blood Clues: Turning Laboratory Data into Dermatological Diagnosis,09:00:00,09:12:00,1,2026-11-08 21:15:18.330878+00
+6c520029-b97b-46db-86d7-646c2976d9d4,7dde630c-995f-44f5-b28f-20fd5fc98252,Panel discussion,17:45:00,18:15:00,8,2026-11-08 21:15:16.72929+00
+6c551f18-c34b-4671-aaf3-b3cb4df82885,f0e2998a-eaec-41f9-806b-b2ba4636b448,Androgenetic Alopecia - Current Understanding,09:30:00,09:45:00,1,2026-11-08 21:14:13.733367+00
+6d148e55-d0aa-40b3-a2dd-b16dfea9552b,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,Clinical Pearls: Case Discussion & Expert Q&A,15:45:00,16:00:00,8,2026-11-08 21:15:14.117162+00
+6d760a26-e65d-4e2e-8b74-5d84c8867109,78baaf69-1db1-4b62-ba53-70939ca7572e,"Micro-Interventions, Macro Results: Pinhole Ablation",12:42:00,12:54:00,7,2026-11-08 21:15:57.187093+00
+6dff5a52-1f7c-43db-89cd-04658e9be54f,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,UV Essentials: Foundations of Photobiology,14:00:00,14:15:00,1,2026-11-08 21:15:11.51068+00
+6f3532d2-d358-4be4-ba7c-4172b75e58b5,31ae9c07-80de-4788-aa13-3714734c0a21,Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses,17:20:00,18:05:00,5,2026-11-08 21:16:10.656885+00
+6fa25d72-4dcb-43fa-94c5-589459deb078,f0e2998a-eaec-41f9-806b-b2ba4636b448,Filling the Gaps- The Era of Hair Fillers (SPONSORED),12:00:00,12:10:00,13,2026-11-08 21:14:17.599713+00
+705831f8-4563-49ec-ac62-6e4b22337346,c2de6c3e-8932-437b-9bb5-9be30e2c8738,MNRF — how to optimise & utilise in day to day practice,14:20:00,14:30:00,3,2026-11-08 21:15:59.094901+00
+70c1bd85-4169-4df9-b176-3ae83a2a7e16,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Overview,16:15:00,16:25:00,1,2026-11-08 21:15:37.259961+00
+71b636a9-780b-4f3a-b94f-5c965befba8a,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI in aesthetic dermatology – Part 1: AI nurse and personalized skincare,13:49:00,13:56:00,8,2026-11-08 21:14:51.41848+00
+720eb93e-2110-4efe-a824-0d455e0a257d,a344d969-36e7-468b-a730-1362a2902bed,"(Upper face: Frontalis, corrugators, procerus, orbicularis oculi) Face anatomy video (?cadaveric),",09:30:00,09:45:00,1,2026-11-08 21:14:08.26094+00
+722d0348-94be-4e24-b9d3-743b8352d0ab,e8a6555b-fa2d-448a-b369-b38527a7c3de,Lipoma Excision and Defect Closure,10:36:00,10:48:00,9,2026-11-08 21:16:13.937145+00
+7265cea9-e73e-4f37-870c-75ab3ae11fd9,d2ba5fc5-4f95-413a-a2c5-626d9797c842,"Hair Restoration in Special situations (Cicatricial alopecia, facial hair restoration and other indications)",16:10:00,16:20:00,12,2026-11-08 21:14:30.578216+00
+72f5b29f-c755-46b9-a7f2-6e5d53d3563b,099bd763-c618-4721-97cc-26c72436c47b,Case based video presentation of facial melanosis panel discussion,15:24:00,15:36:00,8,2026-11-08 21:15:45.29242+00
+735fad88-b1e4-4655-b51d-84daacebbb6b,588dc806-baa4-4f81-a88d-696aa135150b,"Complications & Management: Burns, PIH, Paradoxical Hair Growth",10:00:00,10:15:00,5,2026-11-08 21:14:42.62918+00
+746ad601-3291-4f31-a6b2-424b4ccf78f8,46281f53-703d-4d4f-9106-78a2e835b2d9,The conversion formula - Turning consultation into procedures consistently,15:45:00,16:00:00,8,2026-11-08 21:15:50.448719+00
+747f1879-9574-4eae-ad5c-f1165c37ad80,91457a77-8282-4dc0-bd65-7fec24aac38c,Hands On Workshop on Silicone Model,12:00:00,13:30:00,5,2026-11-08 21:14:48.49176+00
+74b526d3-f0fd-4b39-9bc4-05d08384fffe,124d951f-7166-47c7-8927-c49d72a7216f,INTRODUCTION TO WORKSHOP,09:30:00,09:35:00,1,2026-11-08 21:14:35.821303+00
+74dd8cd3-3a8c-47ed-ab28-6b9efbd40545,91457a77-8282-4dc0-bd65-7fec24aac38c,Needle Handling and Knot Tying Techniques,11:30:00,11:40:00,1,2026-11-08 21:14:47.201207+00
+757f51f0-7ea5-462b-9f45-cc1876305887,a2855bfd-adb7-4d31-a07e-7b26b0245325,"Comparative Biologics: PRP vs GFC vs I-PRF - Indication-based selection, kinetics, scaffold vs liquid systems, personalization strategies",09:45:00,10:00:00,4,2026-11-08 21:14:45.57141+00
+75f93bbb-cb27-4c6f-9dee-268002e30112,4340f692-216f-42c9-b38c-855c0b80aa8b,Beyond Botox: The Art of Mesobotox in Aesthetic Dermatology,14:24:00,14:36:00,3,2026-11-08 21:16:02.045021+00
+784732eb-4647-4eb0-a394-da291d641011,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Skin Anatomy and Injection Planes and Science Behind Skin Boosters,14:10:00,14:20:00,2,2026-11-08 21:13:57.878235+00
+788dd7e8-6c1c-48b7-b409-53666a4cfcd7,5c8a73de-0371-4a47-a58b-8f4c8b40ccae,"Video demo: Lower 1/3 face, neck, Neck anatomy, Neck anatomy, Lips anatomy, DAO, masseters, mentalis, temporalis",14:00:00,14:40:00,1,2026-11-08 21:14:19.209686+00
+795a4959-32a9-43f1-8897-5b125921c8b9,a2855bfd-adb7-4d31-a07e-7b26b0245325,"GFC Technology & PRF (I-PRF) - Mechanistic insights, cytokine profiling vs PRP, reproducibility, clinical endpoints & Fibrin matrix dynamics, sustained release kinetics, angiogenesis modulation",09:30:00,09:45:00,3,2026-11-08 21:14:45.260595+00
+79ab95f4-6381-4d7b-8fa3-2a367c703a7c,124d951f-7166-47c7-8927-c49d72a7216f,PANEL DISCUSSION - CASE BASED DISCUSSION -  FULL FACE PLANNING,12:15:00,12:55:00,10,2026-11-08 21:14:39.049107+00
+79d7d15b-8efe-4337-b986-14b724b68076,9b304322-c36c-4e50-bee9-53fb91439e69,fdf a a;faf adfa fd fd; j;a jfas;ljf;asdjf ;sajf; sdajf;a j;dfj;a jf,16:30:00,16:45:00,2,2026-11-08 21:16:15.525684+00
+7a7695c5-26d7-474e-ba41-f69ff3bf8a87,a344d969-36e7-468b-a730-1362a2902bed,"Injection techniques (depth, angle, placement)",,,11,2026-11-08 21:14:11.452327+00
+7b32288b-52d2-454a-ab10-41ed8ea5f600,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,Hair Restoration  and Latest evidence-based results,15:00:00,15:15:00,5,2026-11-08 21:14:05.305788+00
+7bd07a88-0770-4388-ae88-2ee30cc634b2,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,Choosing the Right Light: Phototherapy Spectrum & Modalities,14:15:00,14:30:00,2,2026-11-08 21:15:11.850162+00
+7bf0727c-79ae-4535-8a28-bb510d11b745,f0e2998a-eaec-41f9-806b-b2ba4636b448,"Biomimicry in Trichology : Evolution of QR678 NEO, PREO, ZEO (SPONSORED)",12:30:00,12:40:00,16,2026-11-08 21:14:18.572961+00
+7cdc82da-5ef6-4f9e-9bf7-0aea293620a3,de0be288-6953-41b8-8feb-994aa2d58b73,"Sequencing Biostimulators with Fillers, Toxins and EBDs",10:30:00,11:00:00,5,2026-11-08 21:14:33.531497+00
+7d17a890-6db9-4bb7-a747-738c1c96e82b,c92b696e-64c5-4350-b8bf-d0cb50b187d7,Clinical Applications & innovative uses,12:05:00,12:17:00,4,2026-11-08 21:15:46.905925+00
+7d6e25bc-7a06-4a94-882a-13a05a0451ca,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,Uses in FR/scars/soft tissue defects,15:30:00,15:45:00,7,2026-11-08 21:14:05.939794+00
+7d84ea27-87bf-4570-b1b3-510448c11c8c,a344d969-36e7-468b-a730-1362a2902bed,"Live video demo: Upper face, Glabella, Forehead lines, Crow's feet",11:00:00,12:00:00,15,2026-11-08 21:14:12.753762+00
+7dcb3043-f22f-4e6e-b9d8-d69263bd8eac,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,"AI clinic workflow: documentation, clinical scribe and staff SOP assistant",12:32:00,12:44:00,3,2026-11-08 21:14:49.804999+00
+7e1d43d6-075d-4dbb-b04b-569ece243f5f,31ae9c07-80de-4788-aa13-3714734c0a21,Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses,17:20:00,18:05:00,5,2026-11-08 21:16:09.125601+00
+7e5be77d-8ad6-43e7-9045-2d3476b4224c,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,Unwanted tissue changes- when contouring goes too far,14:31:00,14:40:00,4,2026-11-08 21:15:34.67267+00
+7ec67577-791d-48ff-975f-04190f96c153,099bd763-c618-4721-97cc-26c72436c47b,Q&A interactive session,15:48:00,16:00:00,10,2026-11-08 21:15:45.608423+00
+7ee26057-cc90-4bea-9ce2-3e2e52a17d4a,91457a77-8282-4dc0-bd65-7fec24aac38c,Hands On Workshop on Silicone Model,12:00:00,13:30:00,6,2026-11-08 21:14:48.829486+00
+808aa81f-de3c-4df9-a80a-70543daaf69d,8ca12b32-767e-4339-bcb6-327f7c64f38f,Resurfacing Fundamentals: Ablative vs. non-ablative + fractional concept,16:15:00,16:25:00,1,2026-11-08 21:16:05.277591+00
+80ac4b54-8cb5-45a7-bbaf-d69d58285a86,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Chemical Peels for Hand Exfoliation + Rejuvenation,16:45:00,16:55:00,4,2026-11-08 21:15:38.235735+00
+80cb8f13-c215-4dca-8515-4bc9a0552a10,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,FUE in vitiligo surgery: precision grafting for resistant patches,17:27:00,17:39:00,7,2026-11-08 21:15:02.572226+00
+826c5b40-3d45-4bd5-a442-ae74812d6b07,78baaf69-1db1-4b62-ba53-70939ca7572e,Turning Warts Against Themselves: Mastering Autoinoculation,12:18:00,12:30:00,5,2026-11-08 21:15:56.547295+00
+829a058f-072c-4ce4-a0d5-26f0a32c587d,a344d969-36e7-468b-a730-1362a2902bed,Contraindications/precautions,,,7,2026-11-08 21:14:10.168003+00
+830899a4-8c1b-4d19-9d88-04b730b11dba,c2de6c3e-8932-437b-9bb5-9be30e2c8738,"Safety, Complications — Burns, fat loss, nerve issues + facial plan",14:50:00,15:00:00,6,2026-11-08 21:16:00.064833+00
+8332d08b-4b7a-44b2-be63-9e160eb7591f,496d7566-86b8-4ce5-b449-6dabdb17b817,Periorbital Anatomy: The Foundation for Safe Rejuvenation,14:00:00,14:10:00,1,2026-11-08 21:15:30.519069+00
+84d4e5dc-7a70-43e5-97af-197215b85f9d,e3ae70e4-00dc-4d68-9b3d-b27686022701,Debate: Dermoscopy or Histopathology - Non-Invasive Precision vs. Definitive Diagnosis (Dr Sasi Atili & Dr Soumil Khare),18:00:00,18:15:00,9,2026-11-08 21:16:14.894563+00
+8510bf2d-ae67-4962-acd7-808c493e11a5,4340f692-216f-42c9-b38c-855c0b80aa8b,Second Chance for the Earlobe: Modern Repair Techniques,14:12:00,14:24:00,2,2026-11-08 21:16:01.689663+00
+8582bf5f-79bd-4bfa-8e5d-990a4694d5c1,f0e2998a-eaec-41f9-806b-b2ba4636b448,From Face to Follicle- The Evolving story of Botulinum Toxin,11:30:00,11:40:00,10,2026-11-08 21:14:16.651041+00
+864d348a-3bca-4829-9e3f-f9b37c0a8e87,0b57af14-1071-48b4-b95f-16fb5fb41624,Q&A and panel discussion,15:45:00,16:00:00,8,2026-11-08 21:15:27.014839+00
+86f4fb85-1143-4fd9-8379-e79a63049da9,124d951f-7166-47c7-8927-c49d72a7216f,"PINCH, PULL OR PUSH - ANATOMY - FAT COMPARTMENTS, RETAINING LIGAMENTS AND SMAS",09:55:00,10:15:00,3,2026-11-08 21:14:36.79241+00
+88c1d8cb-eb1a-4a47-8f02-0b4bbf1a4c09,a2855bfd-adb7-4d31-a07e-7b26b0245325,Q/A,10:45:00,11:00:00,8,2026-11-08 21:14:46.872824+00
+89728e33-2dc5-43e4-abbc-88a7231de617,496d7566-86b8-4ce5-b449-6dabdb17b817,"The Lower Eyelid: Bags, Festoons & Surgical Correction",15:20:00,15:30:00,9,2026-11-08 21:15:33.070496+00
+8a8c9637-b6ee-46ee-b82c-d81aec82dd97,9e14b3d8-d5cc-48f8-8134-98d4fae6c243,Growth Without Gimmicks: Ethical Marketing Strategies That Actually Bring Patients,17:00:00,17:15:00,4,2026-11-08 21:15:54.011152+00
+8aba8277-c0a0-4e93-8471-602d91be734c,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,"Swab, Stain, Solve: The Power of Dermatological Smears",10:00:00,10:12:00,6,2026-11-08 21:15:19.937184+00
+8b73439c-0880-4245-9637-6c90b8c0619d,a344d969-36e7-468b-a730-1362a2902bed,Q&APanel discussion,13:00:00,13:30:00,17,2026-11-08 21:14:13.413926+00
+8bd4f63e-d782-498c-b729-b796c3c48326,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Undereye and Perioral Skin Boosters,14:50:00,15:00:00,6,2026-11-08 21:13:59.170754+00
+8c988f8e-cd31-467d-bda7-71bd8a658842,a344d969-36e7-468b-a730-1362a2902bed,Strategies to minimize diffusion,,,14,2026-11-08 21:14:12.42716+00
+8cb3e52c-3e90-48ca-9dfe-c9314f0d6038,e3b6f75e-0fa3-4d1e-973a-a183072ec850,"Perioral Aesthetics: Complications, Prevention and Management",17:30:00,17:45:00,6,2026-11-08 21:15:52.374289+00
+8cd88e12-526d-4bfc-9617-16cbcb97c810,43e0cf1f-69e6-46ba-b118-b85ac26fefa5,What's new in microblading,16:15:00,16:45:00,1,2026-11-08 21:15:29.272792+00
+8d5a5fe2-e552-45c6-9c60-ddae1a5cb8f1,d2ba5fc5-4f95-413a-a2c5-626d9797c842,The Implantation Saga : An Overview of Techniques,15:50:00,16:00:00,10,2026-11-08 21:14:29.923086+00
+8f740dbe-f0e4-4ff4-9fc8-6342d094668a,4340f692-216f-42c9-b38c-855c0b80aa8b,Vanishing Veins: Practical Pearls in Sclerotherapy,15:12:00,15:24:00,7,2026-11-08 21:16:03.34177+00
+8ffecddd-1121-49f0-a60b-d0965607187a,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,Vitiligo Without Surgery: Modern Therapeutic Approaches,16:27:00,16:39:00,2,2026-11-08 21:15:00.957524+00
+9046c726-76d3-4706-a086-7f9cee1a35fd,0b57af14-1071-48b4-b95f-16fb5fb41624,Consultation – symptoms to solution: counselling with cultural sensitivity & clinical judgement – functional to aesthetic,14:15:00,14:30:00,2,2026-11-08 21:15:25.08282+00
+919f5a72-99a2-4ec9-8821-94ff4de5b688,561d65fe-e6c5-4ad9-b172-69b58d203470,ANATOMY AND AGEING,14:00:00,14:10:00,1,2026-11-08 21:15:08.088526+00
+92016059-cc81-4569-8c9b-70fdf8571c8f,099bd763-c618-4721-97cc-26c72436c47b,"Building algorithm for the difficult facial melanosis – refractory, recalcitrant, resistant cases",15:00:00,15:12:00,6,2026-11-08 21:15:44.328595+00
+92ca01ad-3552-4bf4-88d9-55034b74f693,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Long Hair Transplant,15:15:00,15:30:00,7,2026-11-08 21:14:28.959601+00
+92df7dbb-41ef-4727-a5c7-faab610241a6,c92b696e-64c5-4350-b8bf-d0cb50b187d7,Q-Switched Lasers,11:42:00,11:54:00,2,2026-11-08 21:15:46.265601+00
+93594676-9f49-4fc8-bb7e-fe06fd19aa5e,bab50726-332e-439e-8a6a-8452cf0605e0,"Regenerative Medicine for Skin Health-
+Have we finally found the fountain of youth?",09:30:00,09:45:00,1,2026-11-08 21:14:39.693535+00
+938dd886-33c0-4b4a-b9f5-28a94b67c564,46281f53-703d-4d4f-9106-78a2e835b2d9,From Vision to Reality: Designing a High-Growth Dermatology Clinic Setup,14:00:00,14:15:00,1,2026-11-08 21:15:48.207486+00
+93c025fd-aff4-47fa-bcd0-360ee7084636,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI in clinical research,13:14:00,13:29:00,6,2026-11-08 21:14:50.774041+00
+953aabeb-b6ac-41be-9e10-0294fa6decba,f0e2998a-eaec-41f9-806b-b2ba4636b448,Beyond PRP : Unleashing the Power of Meta Cell Technology (SPONSORED),12:20:00,12:30:00,15,2026-11-08 21:14:18.248411+00
+95caaee3-94a7-418c-a993-23d225215d8c,a344d969-36e7-468b-a730-1362a2902bed,Muscle strength/pattern analysis,,,5,2026-11-08 21:14:09.535628+00
+9613f9b3-d7d7-4f30-ba7f-ec44ff217220,561d65fe-e6c5-4ad9-b172-69b58d203470,Video Demo – SKIN BOOSTERS AND BIOREMODELLERS,15:05:00,15:20:00,6,2026-11-08 21:15:10.254531+00
+961bc995-4210-4a7c-95ab-d3bcfc4b24a5,7dde630c-995f-44f5-b28f-20fd5fc98252,Anatomy and ageing,16:25:00,16:40:00,2,2026-11-08 21:15:14.781477+00
+96769cb8-f332-45aa-abd9-3114add2a518,f63ee231-303d-4394-96bf-42449639fdda,Special occasions peel,16:40:00,16:50:00,4,2026-11-08 21:15:22.504567+00
+96b55f2d-3449-4b6f-b384-c8e950c6f97c,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Artificial Intelligence in hair Transplant,16:35:00,16:50:00,14,2026-11-08 21:14:31.239068+00
+987bf6bf-1d7b-47d9-8294-248ed250cce1,c2de6c3e-8932-437b-9bb5-9be30e2c8738,"Overview of Energy-Based Devices — RF, IPL, HIFU, MNRF mechanisms; Device Selection & Indications; Which device for which concern",14:00:00,14:10:00,1,2026-11-08 21:15:58.458288+00
+9920ee97-0d05-4cd0-a8d5-97573d314d8c,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,GLP-1 Face protocol,,,12,2026-11-08 21:14:24.735397+00
+9d15b2d0-4c93-4fd6-90a6-f95a86621400,e3ae70e4-00dc-4d68-9b3d-b27686022701,Onychoscopy,17:05:00,17:15:00,5,2026-11-08 21:15:41.441447+00
+9d61c96b-8639-44ee-8cc4-19b37c0cdc90,43e0cf1f-69e6-46ba-b118-b85ac26fefa5,Microshading - Ombre brows,16:45:00,17:15:00,2,2026-11-08 21:15:29.578801+00
+9da7d0cb-5a78-4802-ae49-63dcff58c584,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,PRP + Microneedling,17:45:00,17:55:00,8,2026-11-08 21:15:39.523568+00
+9e3f53b2-adbe-46af-bd68-6e9de81b4ed7,f63ee231-303d-4394-96bf-42449639fdda,Glow Kickoff: Setting the Stage for Skin Transformation,16:15:00,16:20:00,1,2026-11-08 21:15:21.540165+00
+a0a79463-c53d-41cc-afc8-70bed20a7b6a,4340f692-216f-42c9-b38c-855c0b80aa8b,When Things Go Wrong: Mastering Dermatological Office Emergencies,15:36:00,15:48:00,9,2026-11-08 21:16:03.977189+00
+a3200597-4fb6-485b-8ada-ee50989a8f50,f0e2998a-eaec-41f9-806b-b2ba4636b448,The Scalp as a Canvas: The Art and Science of Scalp Micropigmentation,11:50:00,12:00:00,12,2026-11-08 21:14:17.283274+00
+a5572568-724c-4f00-92ca-0d1f600a8fe9,46281f53-703d-4d4f-9106-78a2e835b2d9,"Building a High-Performance Team: Training, KPIs & Accountability Systems",14:45:00,15:00:00,4,2026-11-08 21:15:49.170314+00
+a6ef1d2c-35e7-40da-9ca0-3f299c612a6c,124d951f-7166-47c7-8927-c49d72a7216f,INTRODUCTION TO WORKSHOP,09:30:00,09:35:00,1,2026-11-08 21:14:36.142452+00
+a74adf95-5e58-42e7-9394-17c3d80aa7af,a2855bfd-adb7-4d31-a07e-7b26b0245325,"PRP Under the Microscope: Science, Systems & Standardization - Centrifugation variables, leukocyte-rich vs poor PRP, activation pathways, dose-response relationships",09:15:00,09:30:00,2,2026-11-08 21:14:44.933071+00
+a80e0d9b-2202-4100-90bf-445d9436842f,6f552dc5-34ce-4d47-b282-f4c315a13d87,Anatomy-Driven Vector Planning for Safe and Effective Thread Outcomes,14:00:00,14:15:00,1,2026-11-08 21:13:52.404494+00
+a8579ffb-e439-4432-9c2d-c3cd138010cf,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Topical Treatments + Hand Care,16:35:00,16:45:00,3,2026-11-08 21:15:37.9063+00
+a937c0f1-ffe6-4377-ac74-4387d8fa6566,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Nail Lasers, Video-based: Various lasers useful in nail, indications and contraindications, what to expect",15:20:00,15:30:00,9,2026-11-08 21:14:59.612502+00
+a9b3c8c2-f366-45d7-bcbb-cd80ac2aa4eb,c2de6c3e-8932-437b-9bb5-9be30e2c8738,HIFU — from basics to advanced,14:30:00,14:40:00,4,2026-11-08 21:15:59.419023+00
+aa4f8586-adda-4878-96df-0e34490dd7dd,e3ae70e4-00dc-4d68-9b3d-b27686022701,Algorithmic vs. Chaos & Clues Approach for Pigmented Lesions,17:25:00,17:40:00,7,2026-11-08 21:15:42.09491+00
+abcaef20-bb74-422d-bb78-1c113d34199a,5c8a73de-0371-4a47-a58b-8f4c8b40ccae,Panel discussion - Dr Pankaj Chaturvedi,17:30:00,18:00:00,6,2026-11-08 21:14:20.822932+00
+ac8485d6-80bb-46c7-b64b-fb7c7ea7cf4c,f0e2998a-eaec-41f9-806b-b2ba4636b448,The New Hero of Hair Growth - Exosomes  : Hype or the Real Deal?,10:30:00,10:45:00,6,2026-11-08 21:14:15.334607+00
+acf67cfe-f7fb-491a-b11c-fb1b1e3606a1,099bd763-c618-4721-97cc-26c72436c47b,"The new kid on the block – exosomes, PN, novel molecules",14:36:00,14:48:00,4,2026-11-08 21:15:43.697739+00
+ad907c84-ea38-4a7c-882c-9baf82e3547b,561d65fe-e6c5-4ad9-b172-69b58d203470,Video Demo – PEELS FOR NECK REJUVENATION,14:35:00,14:50:00,4,2026-11-08 21:15:09.327131+00
+adbaf5db-4f24-4988-a4c3-1265218a4450,4340f692-216f-42c9-b38c-855c0b80aa8b,Laser Lip Rejuvenation : Beyond Pigmentation,15:48:00,16:00:00,10,2026-11-08 21:16:04.305721+00
+ae0073fa-b51e-4d6b-b062-0439860d282a,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,"Top 10 Mistakes in Skin Boosters, Wrong Techniques, Wrong Patients",16:40:00,16:50:00,17,2026-11-08 21:14:02.779232+00
+ae879cef-1095-4b9d-8723-6223d5ac1578,bab50726-332e-439e-8a6a-8452cf0605e0,PN/PDRN -The trending kid on social media - will it live up to its expectations? (Video Demonstration),10:30:00,10:45:00,4,2026-11-08 21:14:41.005216+00
+affdafbb-6761-4791-a76a-a7778470e89a,de0be288-6953-41b8-8feb-994aa2d58b73,"Interactive patient case discussion   Case 1: GLP-1 / major weight-loss face
+Case 2: Young patient with early laxity Case 3: Thin ageing face with volume loss
+Case 4: Heavy face with jowls",12:30:00,13:00:00,11,2026-11-08 21:14:35.492234+00
+b0ba9313-4829-4687-81d5-43f43c57ea5d,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,Hypertrophic Scar Management: From Conservative Care to Surgery,16:35:00,16:45:00,3,2026-11-08 21:15:04.540612+00
+b3062ef8-0e07-4859-9135-d09c94a85cc0,0b57af14-1071-48b4-b95f-16fb5fb41624,"Holistic multiple modality approach and upcoming treatments like threads, microbiome management, targeted HRT, prasterone and more",15:30:00,15:45:00,7,2026-11-08 21:15:26.699542+00
+b31032ea-2773-4eee-bc22-2dfa9cb5be76,437f89e3-571e-4347-9649-527f1952673c,"Area-Wise Injection Techniques: Eyebrow/Orbital Rim, Forehead",10:30:00,10:46:00,3,2026-11-08 21:13:49.718756+00
+b32f957c-838f-430b-97e0-5391d306860e,4340f692-216f-42c9-b38c-855c0b80aa8b,Beyond the Scalpel: Modern Techniques in Circumcision,14:48:00,15:00:00,5,2026-11-08 21:16:02.686067+00
+b3638ebd-69fe-4ac6-a2ad-870f911a8f9a,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,Hair Under the Lens: Unlocking the Secrets of Trichoscopy,09:48:00,10:00:00,5,2026-11-08 21:15:19.61118+00
+b3b2e1c8-a80b-42d8-a595-e6dc701a1844,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,How these factors impact skin health,14:00:00,14:15:00,1,2026-11-08 21:14:04.026769+00
+b6dad8dc-2fce-45dc-9d0e-73c48a55513c,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,Vitiligo Surgery Masterclass: SBG Technique,17:15:00,17:27:00,6,2026-11-08 21:15:02.255845+00
+b6ef0bed-465e-4608-9b58-c799c70966b2,78baaf69-1db1-4b62-ba53-70939ca7572e,"Cut, Coagulate, Control: Precision RF in Practice",13:06:00,13:18:00,9,2026-11-08 21:15:57.822932+00
+b740ff53-7412-40a0-9cf1-c0690fc26905,e8a6555b-fa2d-448a-b369-b38527a7c3de,Ear lobe repair,10:48:00,11:00:00,10,2026-11-08 21:16:14.260045+00
+b7d57da4-6d5a-44d5-825b-c8049bbb5d84,c785df25-82ad-4e71-ab96-ce4c7301fccd,Overview,16:15:00,16:35:00,1,2026-11-08 21:15:27.340443+00
+b822bc1a-dfc1-42db-b159-d5da58a4427f,de0be288-6953-41b8-8feb-994aa2d58b73,Video demo of hybrid HA and other biostimulators,11:30:00,11:45:00,7,2026-11-08 21:14:34.183993+00
+b8c34611-968c-4bad-a464-c16c6f8e9adc,bab50726-332e-439e-8a6a-8452cf0605e0,Exosomes -The next frontier in regenerative medicine(Explore the biology and their role in cell signalling),09:45:00,10:00:00,2,2026-11-08 21:14:40.02724+00
+b9193c3f-be61-466f-abfa-01fd64535635,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Sclerotherapy for veins,17:35:00,17:45:00,7,2026-11-08 21:15:39.200212+00
+b97be8aa-b1ff-4f7f-917e-3f0050aecc8e,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Nail Plate Surgery, Video Demonstration: Partial nail avulsion, Total nail avulsion, Longitudinal nail avulsion, Window technique. Discussion of Indications, Pitfalls",14:20:00,14:30:00,3,2026-11-08 21:14:57.65141+00
+b9fb7b94-cab1-41e9-9803-b98f1f7f6035,c2de6c3e-8932-437b-9bb5-9be30e2c8738,Live Demo (40 min) — [Topic/Speaker TBC],15:20:00,16:00:00,9,2026-11-08 21:16:00.703093+00
+ba46aa38-3330-4a62-950d-cce680c8edc0,5c8a73de-0371-4a47-a58b-8f4c8b40ccae,"Neck/jawline: Platysma, Body Botox, Non-cosmetic indications",14:40:00,15:00:00,2,2026-11-08 21:14:19.52478+00
+bb3484d8-aa34-4ced-b363-6dfcd8baac59,c2de6c3e-8932-437b-9bb5-9be30e2c8738,1470 diode Lift Laser technique,15:00:00,15:10:00,7,2026-11-08 21:16:00.38369+00
+bc0f0cd6-d1b4-49f4-9998-656de1db82a0,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,Surgical Management of Keloids: Excision with Adjuvant Strategies,17:05:00,17:15:00,6,2026-11-08 21:15:05.509105+00
+bc88e028-1939-422e-b621-b1e36a0a6d4c,9e14b3d8-d5cc-48f8-8134-98d4fae6c243,Medico-Legal Mastery for Dermatologists,16:30:00,16:45:00,2,2026-11-08 21:15:53.364309+00
+bca7fc37-d89c-42d7-9508-6a7977d3fff0,f63ee231-303d-4394-96bf-42449639fdda,Advanced peel strategies :From Acid to Artistry,16:50:00,17:00:00,5,2026-11-08 21:15:22.819216+00
+be0a6e2e-5229-4535-93c2-788485e7a4f1,6f552dc5-34ce-4d47-b282-f4c315a13d87,Hammock Technique for Double Chin and Neck Rejuvenation by Thread – Video Demonstration,16:10:00,16:30:00,9,2026-11-08 21:13:55.612517+00
+bec26d9a-ea62-4147-ab32-5422e464cef2,437f89e3-571e-4347-9649-527f1952673c,Product Selection/Layering: Understanding G Prime. Needle vs. Cannula (When/Why),10:15:00,10:30:00,2,2026-11-08 21:13:49.049451+00
+bf615c5b-8888-41c1-a700-7ca34eadd29b,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Anatomy + Aging Changes,16:25:00,16:35:00,2,2026-11-08 21:15:37.588247+00
+c071ca94-3892-4081-bfdb-96c0130c86f3,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,Moderator,17:05:00,17:30:00,13,2026-11-08 21:14:07.942701+00
+c07dfac9-7b09-4c62-b19c-552177cd451e,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,Understanding Vitiligo: Pathogenesis and Clinical Patterns,16:15:00,16:27:00,1,2026-11-08 21:15:00.625654+00
+c0eaa66d-eaaf-4932-8f39-61299795ac83,31ae9c07-80de-4788-aa13-3714734c0a21,Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses,17:20:00,18:05:00,5,2026-11-08 21:16:10.33334+00
+c0ed47b9-aa35-48af-894a-6cf567b233a9,78baaf69-1db1-4b62-ba53-70939ca7572e,Stepping Up: Mastering Corn Excision Techniques,11:54:00,12:06:00,3,2026-11-08 21:15:55.899835+00
+c0ffc569-3456-4668-835a-8d8d9f51de62,de0be288-6953-41b8-8feb-994aa2d58b73,Introduction to Biostimulators,09:30:00,09:45:00,1,2026-11-08 21:14:32.232441+00
+c1591805-f341-4d1a-a3d2-210668451e15,5c8a73de-0371-4a47-a58b-8f4c8b40ccae,Video demo: Injection sites/techniques,15:30:00,16:30:00,4,2026-11-08 21:14:20.156142+00
+c24ffbfa-2960-4ac0-9812-42748807984d,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,Botulinium : Red Alerts & Its  Management,15:12:00,15:24:00,8,2026-11-08 21:15:36.283611+00
+c2e672f0-cb0f-41c9-94da-4a8fdbeb8d65,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,Personalized AI using MedGemma,13:29:00,13:49:00,7,2026-11-08 21:14:51.096311+00
+c34b7fed-4af7-414e-8b83-e6423d06d47f,a344d969-36e7-468b-a730-1362a2902bed,Various injection techniques and dosing,10:00:00,11:00:00,3,2026-11-08 21:14:08.894044+00
+c36f57ff-78b5-4073-8c2b-9580aca2243e,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,"Secrets of Success in Scar Treatment: Pearls, Pitfalls & Long-Term Results",17:45:00,17:55:00,10,2026-11-08 21:15:07.111421+00
+c3d855d8-dd70-46e5-ac9f-613239dc4077,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Sculptra – Video Demo,16:10:00,16:20:00,14,2026-11-08 21:14:01.771458+00
+c3f2d7c8-f0d3-4147-8c35-4b5b8be0c57e,496d7566-86b8-4ce5-b449-6dabdb17b817,"Threads Around the Eye: Indications, Techniques & Limitations",15:00:00,15:10:00,7,2026-11-08 21:15:32.446503+00
+c40b8b56-f526-4ca7-90c8-8ba1df1782a3,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,"Keloid Masterclass: Prevention, Early Intervention & Recurrence Control",16:25:00,16:35:00,2,2026-11-08 21:15:04.207932+00
+c464ac01-dd5a-480e-843b-fbca4141ac99,c2de6c3e-8932-437b-9bb5-9be30e2c8738,Combination Treatments — RF + Laser / HIFU + Fillers / Hybrid protocols,14:40:00,14:50:00,5,2026-11-08 21:15:59.73981+00
+c59a2511-1781-4c19-9088-c41cd7c3c6a2,31ae9c07-80de-4788-aa13-3714734c0a21,Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses,17:20:00,18:05:00,5,2026-11-08 21:16:09.775804+00
+c638b353-28ad-400d-ba8a-f31ad5e59e6e,588dc806-baa4-4f81-a88d-696aa135150b,"Approaching a Patient with Hirsutism + Treatment Techniques for Different Areas (Face, Beard, Hormonal Areas, Sensitive Zones)",09:45:00,10:00:00,4,2026-11-08 21:14:43.60851+00
+c76ed060-32d2-4d46-8ca8-eea4f554143b,31ae9c07-80de-4788-aa13-3714734c0a21,Dermatopathology in Pediatric Dermatology: Insights Through Case-Based Learning,16:30:00,16:50:00,2,2026-11-08 21:16:07.842649+00
+c85e96c3-5a71-42ab-8e12-7135c6df8574,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Panel Discussion,17:55:00,18:15:00,9,2026-11-08 21:15:39.848978+00
+c8917b2c-a8b6-4839-ba06-e24d739cb4a1,437f89e3-571e-4347-9649-527f1952673c,Cadaveric Dissection Videos: Moderator: Dr Marina Landau. Anatomy Discussion. Fat Compartments. Vascular Anatomy. Ligaments. Danger Zones,09:30:00,10:15:00,1,2026-11-08 21:13:48.041297+00
+c89d80e6-8bdf-4c8c-b258-925acc7c0364,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,Emerging Frontiers: Advances & Challenging Cases,15:00:00,15:15:00,5,2026-11-08 21:15:13.106372+00
+c95d4d73-d599-4203-b772-0d5e5fc259f3,437f89e3-571e-4347-9649-527f1952673c,"Tear Trough, Lip",10:46:00,11:02:00,4,2026-11-08 21:13:50.053634+00
+c98b2a21-9f56-44de-88d7-b4194fd38fd8,8ca12b32-767e-4339-bcb6-327f7c64f38f,"Complications - how to deal: PIH, infection, scarring + acne scar protocol",17:05:00,17:15:00,6,2026-11-08 21:16:06.87579+00
+c9d0a980-93ff-491c-91f4-359c5b5b00d9,bab50726-332e-439e-8a6a-8452cf0605e0,Optimising Outcomes with Anti oxidants + Diet + Nutrition,11:00:00,11:15:00,6,2026-11-08 21:14:41.657701+00
+cb53fed6-f733-4b93-bac2-02b30254ea6a,437f89e3-571e-4347-9649-527f1952673c,"Chin, Nose, Jawline",11:02:00,11:18:00,5,2026-11-08 21:13:50.380904+00
+cb84cbf5-b746-4924-8a17-8e8f44aaa3a3,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,"PIH, hypopigmentation & paradoxical pigmentation- the challenge of treating skin of colour",14:11:00,14:20:00,2,2026-11-08 21:15:34.024625+00
+cbb5a3b4-6c83-4347-8aee-9866e3b5a77a,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Navigating the Tangled Path:Strategies for Managing Hair Transplant Complications,15:40:00,15:50:00,9,2026-11-08 21:14:29.603641+00
+cbe7d86d-8d59-4d4c-8986-6e4c8b957ac4,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI before/after prediction tools,14:12:00,14:20:00,11,2026-11-08 21:14:52.379537+00
+cc7e949a-e645-4365-b063-e309bed179f3,de0be288-6953-41b8-8feb-994aa2d58b73,"Biostimulators in the GLP-1 Era: rapid weight loss, facial deflation and changing treatment priorities",10:15:00,10:30:00,4,2026-11-08 21:14:33.210093+00
+cd047213-8e97-4b7e-b9b6-9a3102d06806,099bd763-c618-4721-97cc-26c72436c47b,"Novel drug delivery tools for facial melanosis (microneedling, MNRF, smaller encapsulated molecules)",14:48:00,15:00:00,5,2026-11-08 21:15:44.012003+00
+cd449751-99b6-4b72-bfc3-819440257c68,437f89e3-571e-4347-9649-527f1952673c,"Buttocks, Décolleté, Hands",11:34:00,11:50:00,7,2026-11-08 21:13:51.059582+00
+cd6b41a4-fb0d-4d29-ac6c-065a72c4cbdd,91457a77-8282-4dc0-bd65-7fec24aac38c,Hands On Workshop on Silicone Model,12:00:00,13:30:00,4,2026-11-08 21:14:48.17693+00
+cdfd9c3b-8819-4af9-be83-46fabf1025ce,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,High Resolution USG For Nerve Examination,09:12:00,09:24:00,2,2026-11-08 21:15:18.653986+00
+cf1111aa-59d6-4521-8975-77ab593df7bb,84e2f3d8-bece-4ee6-b243-d9256da758e8,Minimal invasive procedure for acne scar,14:48:00,15:00:00,5,2026-11-08 21:14:54.988118+00
+cfb3e2a6-c1a8-4da7-8bef-ac96151e94e8,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Cadaveric videos,,,1,2026-11-08 21:14:21.143259+00
+cff0f1e3-4554-4e40-a4d2-7bd8a2584e52,124d951f-7166-47c7-8927-c49d72a7216f,"WHAT AFTER THREADS ? SIDE EFFECTS COMPLICATIONS  - VASCULAR, NEURAL, MECHANICAL COMPLICATIONS",11:15:00,11:35:00,7,2026-11-08 21:14:38.090267+00
+cff9079e-bc0f-4f66-8f48-45431fe065e9,a2855bfd-adb7-4d31-a07e-7b26b0245325,"Beyond Basics: Synergistic Clinical Protocols - PRP + microneedling, PRF + fillers, combination with lasers, indication-specific protocols",10:15:00,10:30:00,6,2026-11-08 21:14:46.217816+00
+d10c77ff-ea4e-405c-9d95-63ad23f8d7af,c2de6c3e-8932-437b-9bb5-9be30e2c8738,Body contouring devices — tips and tricks,15:10:00,15:20:00,8,2026-11-08 21:16:01.034776+00
+d12592db-c7b2-44dd-964e-83353a0cf587,588dc806-baa4-4f81-a88d-696aa135150b,Live Demo (30 minutes),10:30:00,11:00:00,7,2026-11-08 21:16:14.586894+00
+d14550e0-87ec-40f7-9205-22381c939aa3,8ca12b32-767e-4339-bcb6-327f7c64f38f,"Parameter Optimization & Treatment Planning: Energy, density, passes, endpoints",16:45:00,16:55:00,4,2026-11-08 21:16:06.239307+00
+d186ae10-0d25-4abf-be90-62831075ee52,e3b6f75e-0fa3-4d1e-973a-a183072ec850,"Perioral and Lip Fillers: Structural Design, Shaping and Facial Balance",16:30:00,16:45:00,2,2026-11-08 21:15:51.104472+00
+d27f0173-2c7e-4323-bae1-ba1d5b59049f,f0e2998a-eaec-41f9-806b-b2ba4636b448,Targeting DHT at the Follicle: The Rise of Dutasteride and Bicalutamide Intralesional Injections,10:10:00,10:20:00,4,2026-11-08 21:14:14.689092+00
+d2932237-ec17-4cc0-9783-41387041b0a5,124d951f-7166-47c7-8927-c49d72a7216f,Q & A,12:55:00,13:00:00,11,2026-11-08 21:14:39.356597+00
+d2979c14-78f2-4f48-ad1c-187c85768af0,e8a6555b-fa2d-448a-b369-b38527a7c3de,Mucocele : exploring surgical excision and sclerotherapy as a therapeutic options.,09:00:00,09:12:00,1,2026-11-08 21:16:11.309439+00
+d32e2c68-e581-4b01-bcb0-52037dfee410,e3b6f75e-0fa3-4d1e-973a-a183072ec850,"Panel Discussion: Cases, Controversies and Complications",17:45:00,18:15:00,7,2026-11-08 21:15:52.712114+00
+d46febf0-e431-4fb3-ae5c-acdbd1b19b68,6f552dc5-34ce-4d47-b282-f4c315a13d87,Beyond PDO: Choosing the Right Thread for the Right Person,14:15:00,14:30:00,2,2026-11-08 21:13:52.736621+00
+d5752b0b-84f3-48b0-93de-cc3b2fc48111,46281f53-703d-4d4f-9106-78a2e835b2d9,Patient Experience Excellence: From First Impression to Last Follow-Up,14:15:00,14:30:00,2,2026-11-08 21:15:48.530709+00
+d59efdd7-a26a-459a-a772-c0f702801374,de0be288-6953-41b8-8feb-994aa2d58b73,Video demo of CaHA,12:00:00,12:15:00,9,2026-11-08 21:14:34.844368+00
+d633bb10-8504-49eb-9912-4eaa4fa44921,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,"Burns ,Blisters and scarring- when thermal injury goes beyond the expected endpoint",14:00:00,14:10:00,1,2026-11-08 21:15:33.700935+00
+d6574df6-9be9-41f9-b84c-6d4e325df184,9e14b3d8-d5cc-48f8-8134-98d4fae6c243,Burnout-Proof Practice: Work-Life Balance Strategies for Dermatologists,17:15:00,17:30:00,5,2026-11-08 21:15:54.326817+00
+d69aa4fb-2607-402d-ba41-504bbda7ce31,9e14b3d8-d5cc-48f8-8134-98d4fae6c243,"Laser Mastery: Smart buying, Safe practice & maximum ROI",16:45:00,17:00:00,3,2026-11-08 21:15:53.68214+00
+d6c8295d-da7c-4f0f-b9b9-a527cee021ea,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,Audience Q&A and closing,14:50:00,15:00:00,14,2026-11-08 21:14:53.359358+00
+d6d78c59-679b-4ef7-a29b-68b9a1fbbfa9,f0e2998a-eaec-41f9-806b-b2ba4636b448,Autologous Micro-Grafting -The Science of  Regenera Activa (SPONSORED),12:10:00,12:20:00,14,2026-11-08 21:14:17.922203+00
+d76689c0-732b-4ae3-8d16-c4c22c256047,588dc806-baa4-4f81-a88d-696aa135150b,What's New in Laser Hair Reduction: Single vs Triple Wavelength,10:15:00,10:30:00,6,2026-11-08 21:14:43.95893+00
+d85caf23-146d-427b-aa95-bbfb78450b99,c785df25-82ad-4e71-ab96-ce4c7301fccd,Fillers and products,16:55:00,17:15:00,3,2026-11-08 21:15:27.997656+00
+d8618abc-9d28-4fdf-9592-10667c793957,9e14b3d8-d5cc-48f8-8134-98d4fae6c243,The Dermatologist’s Wealth Blueprint: From Active Income to Financial Freedom,17:45:00,18:00:00,7,2026-11-08 21:15:54.952693+00
+d86d15b6-fc2d-464a-94a2-5a57c25aac59,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,"combination treatments gone wrong- Lasers+RF+HIFU, avoiding",14:51:00,15:00:00,6,2026-11-08 21:15:35.318285+00
+d92623c9-1c76-41d9-a91c-3a68ca876df0,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Profhilo – Video Demo,15:50:00,16:00:00,12,2026-11-08 21:14:01.132603+00
+d9306253-3cfb-40a9-86de-c78ceb467874,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,"Types of Basic Skin Boosters, Rheology and Indications",14:20:00,14:30:00,3,2026-11-08 21:13:58.209746+00
+d9494bdc-c993-4209-b062-44e8c87f9063,e3b6f75e-0fa3-4d1e-973a-a183072ec850,"Perioral Pigmentation: History, Assessment and Multimodal Management",16:45:00,17:00:00,3,2026-11-08 21:15:51.417034+00
+d95f4fdb-e295-4643-9ab1-d1b1022b3ad3,43e0cf1f-69e6-46ba-b118-b85ac26fefa5,Questions - Answers by delegates,17:45:00,18:15:00,4,2026-11-08 21:15:30.203293+00
+db0470e1-0703-47f0-929d-b87149bc2e79,496d7566-86b8-4ce5-b449-6dabdb17b817,"The Ageing Periorbital Face: Assessment , What is Really Making The Eye look older?",14:10:00,14:20:00,2,2026-11-08 21:15:30.831441+00
+db533749-329f-48fe-8a7f-c2ecaf716045,9e14b3d8-d5cc-48f8-8134-98d4fae6c243,Managing Difficult Patients & Negative Reviews & Art of saying NO : Protecting Your Practice & Reputation,16:15:00,16:30:00,1,2026-11-08 21:15:53.033111+00
+db95973a-629d-4d40-802d-33380f6943df,c785df25-82ad-4e71-ab96-ce4c7301fccd,Cases/Examples-Outcome,17:35:00,17:55:00,5,2026-11-08 21:15:28.633888+00
+dc0d5368-ba1b-423e-9e86-6c15b3353dd3,9b304322-c36c-4e50-bee9-53fb91439e69,Managing Difficult Patients & Negative Reviews & Art of saying NO : Protecting Your Practice & Reputation,16:15:00,16:30:00,1,2026-11-08 21:16:15.208434+00
+dd3a258f-42cc-4d95-82a1-c7544b130965,588dc806-baa4-4f81-a88d-696aa135150b,"Patient Selection & Parameter Optimization: Skin Typing, Fluence, Pulse Duration, Spot Size",09:30:00,09:45:00,3,2026-11-08 21:14:44.274455+00
+dda9568d-b58e-4c7c-8c81-18f45aa6108f,f63ee231-303d-4394-96bf-42449639fdda,Combination of other procedures with peels for better outcomes,17:20:00,17:30:00,8,2026-11-08 21:15:23.782171+00
+dde1af98-541f-4a40-a92f-620340598c13,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Complications/emergency rescue,,,15,2026-11-08 21:14:25.750285+00
+ddf31bf9-b93f-4936-8bd5-6c0405439c24,31ae9c07-80de-4788-aa13-3714734c0a21,Panel Discussion: The Crucial Role of Clinico Pathological Correlation in Complex Diagnoses,17:20:00,18:05:00,5,2026-11-08 21:16:08.798284+00
+de91c53c-3f02-40f5-8a69-841df2dbfc98,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,"Explore the use of autologous melanocyte transplant, PRP, and other therapies in treating vitiligo and pigmentary disorders",16:15:00,16:35:00,10,2026-11-08 21:14:06.906806+00
+def178f8-515b-426a-b95e-cc3890c5eb39,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,Jodhpur technique,18:03:00,18:15:00,10,2026-11-08 21:15:03.572144+00
+df1d8c09-721a-42e1-af09-22d1d6cf8cbc,0b57af14-1071-48b4-b95f-16fb5fb41624,Intimate skin quality: managing pigmentation and texture safety,15:00:00,15:15:00,5,2026-11-08 21:15:26.038105+00
+dfbea7b8-569f-4d55-b58e-2ecf60a6bee8,7dde630c-995f-44f5-b28f-20fd5fc98252,Fillers,16:55:00,17:15:00,4,2026-11-08 21:15:15.435893+00
+dffa784c-b13b-4252-af94-d3d20a3f1ab4,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Overview of Instruments in Hair Transplantant and Video Demonstration of Anaesthesia,14:30:00,14:40:00,4,2026-11-08 21:14:27.982982+00
+e1a94e43-f894-448b-ad33-8e266ee37280,de0be288-6953-41b8-8feb-994aa2d58b73,Complications and Difficult Outcomes with Biostimulators,11:00:00,11:30:00,6,2026-11-08 21:14:33.862203+00
+e2286d06-32cf-4eb9-a8e8-78dd00e03ceb,6f552dc5-34ce-4d47-b282-f4c315a13d87,Standard Protocol and Video Demonstration of Lower Face Thread Lift,15:15:00,15:30:00,6,2026-11-08 21:13:54.331632+00
+e382c823-b744-44ef-acb1-2adc0f6c1739,c92b696e-64c5-4350-b8bf-d0cb50b187d7,Live demo (49 min),12:41:00,13:30:00,7,2026-11-08 21:15:47.87682+00
+e44a47e6-0988-46a0-9ae8-858aea48fd1d,437f89e3-571e-4347-9649-527f1952673c,Advancements: Value of USG Imaging for Safety & Precision When Injecting Fillers,11:50:00,12:10:00,8,2026-11-08 21:13:51.406136+00
+e47c65eb-a96c-41e4-bb70-f28389bec150,c92b696e-64c5-4350-b8bf-d0cb50b187d7,Complications of pigmentary lasers,12:17:00,12:29:00,5,2026-11-08 21:15:47.225561+00
+e48bfe9b-f543-44e7-92b3-ed74ad7a6a58,7dde630c-995f-44f5-b28f-20fd5fc98252,Panel discussion,17:45:00,18:15:00,11,2026-11-08 21:15:17.684265+00
+e4a640bb-49be-488a-82dc-d0823d55193f,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Layering techniques,,,7,2026-11-08 21:14:23.078678+00
+e4bb2e80-ca31-40c8-bdc5-1d9675dd3405,7dde630c-995f-44f5-b28f-20fd5fc98252,Lip pigmentation,17:30:00,17:45:00,6,2026-11-08 21:15:16.078843+00
+e4cb63b3-81d0-4e9a-89e0-34f6b67e5a1f,84e2f3d8-bece-4ee6-b243-d9256da758e8,Fat Grafting in Acne Scar Revision: Volume Restoration Techniques,15:24:00,15:36:00,8,2026-11-08 21:14:56.017063+00
+e50323b2-97a4-4a06-83cd-a164b5cbc074,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,Zero Tolerance: Raising the Bar for Infection Control,10:36:00,10:48:00,9,2026-11-08 21:15:20.883843+00
+e5ce39e0-5dfd-448a-b67a-599b17f97457,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Facial overfilled syndrome (FOS),,,13,2026-11-08 21:14:25.049606+00
+e6f46741-49e6-4fa8-a873-14316db668ed,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,NCTF – Video Demo,16:00:00,16:10:00,13,2026-11-08 21:14:01.452578+00
+e7d80262-8dd7-4e28-9049-5d0ca78b4f6d,8ca12b32-767e-4339-bcb6-327f7c64f38f,Live demo - 40 mins,17:15:00,17:55:00,7,2026-11-08 21:16:07.204112+00
+e825291b-4aba-440a-aeaf-27e211788fec,78baaf69-1db1-4b62-ba53-70939ca7572e,Clear and Quick: Atraumatic Molluscum extraction,11:42:00,11:54:00,2,2026-11-08 21:15:55.589601+00
+e8686912-7c74-481f-9fdd-40e911c3ce78,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Nail Biopsies, Video Demonstrations: Nail bed biopsy, Nail Matrix biopsy, Tangential matrix biopsy",14:30:00,14:40:00,4,2026-11-08 21:14:57.979609+00
+e878ceab-3e5e-48ea-b616-f51fc6b979a9,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,Cracking the PIH Code : Science To Treatment,15:36:00,15:48:00,10,2026-11-08 21:15:35.969789+00
+e8bf74c1-47a3-4167-8cdd-1735619bb591,e3ae70e4-00dc-4d68-9b3d-b27686022701,"Panel Discussion: 1. Dermoscopy in Skin of Color: Global Phototype Variations. 2. Artificial Intelligence in Dermoscopy: Threat or Support? 3. Dermoscopy Pitfalls & Mimickers
+(Panelists: Dr Manas Chatterjee, Dr Yashmin Bhat, Dr Tejasvi Trilok Raj)",17:40:00,18:00:00,8,2026-11-08 21:15:42.418595+00
+e9b8c6e3-968f-4504-aa49-b185240b9ceb,f0e2998a-eaec-41f9-806b-b2ba4636b448,Threading the Future - Novel use of Monofilament threads for Hair Growth,11:15:00,11:30:00,9,2026-11-08 21:14:16.326222+00
+ea3dbf45-fbcc-49f2-91fd-778bb9f64885,561d65fe-e6c5-4ad9-b172-69b58d203470,Video Demo – LASERS AND EBDS FOR NECK REJUVENATION,14:20:00,14:35:00,3,2026-11-08 21:15:08.715471+00
+eb5a3ac9-1617-41fc-9fe8-a7be4072068b,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI in dermatology imaging: image analysis and clinical limitations,12:59:00,13:14:00,5,2026-11-08 21:14:50.452793+00
+ec1af11e-086e-4949-85e4-51ee09a1ca2e,561d65fe-e6c5-4ad9-b172-69b58d203470,PATIENT EVALUATION AND PLANNING,14:10:00,14:20:00,2,2026-11-08 21:15:08.399081+00
+ec21cdac-3676-48e4-8287-94ca1dc9591b,588dc806-baa4-4f81-a88d-696aa135150b,Technology Comparison: Diode vs Alexandrite vs Nd:YAG — When to Use What,09:15:00,09:30:00,2,2026-11-08 21:14:43.280042+00
+ec769473-5565-42bc-bcb5-51c1ec45417d,f0e2998a-eaec-41f9-806b-b2ba4636b448,Q & A/Panel discussion,12:40:00,13:00:00,17,2026-11-08 21:14:18.890054+00
+ecbfd0e7-b03c-4314-a7df-f8fa2eb4d63a,e3b6f75e-0fa3-4d1e-973a-a183072ec850,"Perioral Skin Quality: Hydration, Biostimulation and Collagen Remodelling",17:15:00,17:30:00,5,2026-11-08 21:15:52.056372+00
+ed012a66-9bd2-409b-9ac0-822db9872309,06a20962-8f9e-4ec0-a9fb-0452f2fa357a,Unlocking Urticaria: Maximizing the Value of ASST,09:36:00,09:48:00,4,2026-11-08 21:15:19.286198+00
+eda157f4-eb0f-4cef-ac1e-dc9b033a896f,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,"Challenging Areas in Scar Management: Ear Lobes, Chest, Shoulder & Jawline",17:25:00,17:35:00,8,2026-11-08 21:15:06.170442+00
+ee54395c-101a-4ffc-ad1b-5077a4d6c1ad,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,"AI clinic workflow: virtual receptionist, appointments and WhatsApp communication",12:20:00,12:32:00,2,2026-11-08 21:14:49.485656+00
+ee828a33-cd7a-47f8-aa74-4e779425ade7,e8a6555b-fa2d-448a-b369-b38527a7c3de,Local Anesthesia Techniques in Dermatosurgery,09:24:00,09:36:00,3,2026-11-08 21:16:11.990179+00
+eea0fe22-ad82-4b25-b42a-f7bc8deb35ff,6f552dc5-34ce-4d47-b282-f4c315a13d87,"Standard Protocol and Video Demonstration of Forehead, Fox Eye and Under-Eye Lift",15:30:00,15:45:00,7,2026-11-08 21:13:54.955502+00
+ef430a44-e0d8-4a93-932c-35882ba0fe93,f0e2998a-eaec-41f9-806b-b2ba4636b448,"Its in Your Blood ! - Unlocking the Regenerative Power of PRP, PRF, GFC",09:45:00,10:00:00,2,2026-11-08 21:14:14.04593+00
+ef82513f-b012-4083-8fc2-2cd1a4432444,496d7566-86b8-4ce5-b449-6dabdb17b817,PDRN/PN for Periorbital Rejuvenation: The Regenerative Approach,14:50:00,15:00:00,6,2026-11-08 21:15:32.125521+00
+efb0a676-777b-40d7-ac6a-02ec4b00dc6e,f0e2998a-eaec-41f9-806b-b2ba4636b448,Hair Cosmetics - A new dawn in Cosmetic Trichology,11:40:00,11:50:00,11,2026-11-08 21:14:16.967632+00
+f0e0f693-cc71-48c8-8c57-0b951c942126,099bd763-c618-4721-97cc-26c72436c47b,Energy based devices: where do they fit in facial melanosis – laser and devices beyond the hype,14:24:00,14:36:00,3,2026-11-08 21:15:43.370396+00
+f1a2b666-7b9c-432d-b8fd-481e6cefbd0c,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Injectable therapies of the nail unit, Video Demonstration: Rationale for injectables, nail matrix, nail bed, hyponychial and intralesional injections",14:10:00,14:20:00,2,2026-11-08 21:14:57.317138+00
+f1bd0e06-e5a4-4080-8ad0-209cf40cd07a,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Surgery for Ingrown nail, Video-Based: Partial avulsion and matricectomy",14:40:00,14:50:00,5,2026-11-08 21:14:58.312811+00
+f26d41ed-6aff-4c4b-8a22-dfa6497d3c5c,c92b696e-64c5-4350-b8bf-d0cb50b187d7,Picosecond Lasers + Combination Therapy,11:54:00,12:05:00,3,2026-11-08 21:15:46.581855+00
+f2bdd0ac-d280-4168-8fc6-60bd47db6875,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Understanding G Prime,,,8,2026-11-08 21:14:23.405673+00
+f38551c6-9063-45dc-b2e1-d542259d7ecb,3bf2e1aa-6a87-4b69-9c18-3d42b09e7d5f,"Insights on harvesting, processing, and injection techniques",15:15:00,15:30:00,6,2026-11-08 21:14:05.618251+00
+f39842e7-a70f-49fd-aa7c-5a54b3ab540a,124d951f-7166-47c7-8927-c49d72a7216f,NEWER INNOVATIONS IN THREADS,11:35:00,11:55:00,8,2026-11-08 21:14:38.41706+00
+f3aa8596-04ca-4a3e-bcc6-e673a5f2f1fd,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Consultation and Patient Selection,14:30:00,14:40:00,4,2026-11-08 21:13:58.531108+00
+f45d96f1-acf1-406a-87be-6b80e3bb32d4,c785df25-82ad-4e71-ab96-ce4c7301fccd,Techniques and injection techniques,17:15:00,17:35:00,4,2026-11-08 21:15:28.317732+00
+f4b93c94-36e1-4567-a89b-1b6a7135e577,a344d969-36e7-468b-a730-1362a2902bed,Standard points,,,13,2026-11-08 21:14:12.090747+00
+f58d0a55-ab47-4048-848d-e204e3a554e7,bab50726-332e-439e-8a6a-8452cf0605e0,Exosomes -The next frontier in regenerative medicine(Explore the biology and their role in cell signalling),10:00:00,10:15:00,2,2026-11-08 21:14:40.357733+00
+f6b1b3f3-5254-4550-9ea5-151820eda335,84e2f3d8-bece-4ee6-b243-d9256da758e8,"Perioral, Temporal & Difficult Area Acne Scar Management: Advanced Surgical Pearls",15:48:00,16:00:00,10,2026-11-08 21:14:56.669725+00
+f7150397-a02f-4722-a6e6-c8b34fe0b673,a344d969-36e7-468b-a730-1362a2902bed,Injection mapping/marking,,,9,2026-11-08 21:14:10.812523+00
+f7aa3ba2-9b46-4313-b613-85d736444f0c,d2ba5fc5-4f95-413a-a2c5-626d9797c842,Integrating Regenerative Trichology with Hair Transplant,16:20:00,16:35:00,13,2026-11-08 21:14:30.907944+00
+f9716458-76ce-48e4-85a7-477b7a358fe4,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,"Unexpected hair & skin reactions-paradoxical hypertrichosis,acne/HSV reactivation",14:21:00,14:30:00,3,2026-11-08 21:15:34.35227+00
+f9e8fe47-3a7d-442b-aab9-0f6a9bebf3a5,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Gel nails and nail peels, Video-Based: aesthetic enhancement in nail, cosmetic camouflage",14:50:00,15:00:00,6,2026-11-08 21:14:58.627714+00
+fb7f1f5f-a672-4571-9954-127475126bde,7dde630c-995f-44f5-b28f-20fd5fc98252,Boosters,16:40:00,16:55:00,3,2026-11-08 21:15:15.120592+00
+fc0daf31-1c7b-408b-9e00-28be4a490ac6,0b57af14-1071-48b4-b95f-16fb5fb41624,"Anatomy, vascularity & physiology of intimate aging – skin mucosa and supporting structural shift",14:00:00,14:15:00,1,2026-11-08 21:15:24.761094+00
+fc276439-5591-4050-9cfa-8d48afb0231a,de0be288-6953-41b8-8feb-994aa2d58b73,Choosing the Right Biostimulator: PLLA vs CaHA vs PCL vs HA; hybrid biostimulators,09:45:00,10:00:00,2,2026-11-08 21:14:32.554779+00
+fc2dae89-aaf6-4b6e-904a-b720e6028fb8,bab50726-332e-439e-8a6a-8452cf0605e0,Panel Discussion: How I treat,11:25:00,11:55:00,8,2026-11-08 21:14:42.302688+00
+fc9e8445-1dcf-4c75-b205-1467ab79cf85,6f552dc5-34ce-4d47-b282-f4c315a13d87,Standard Protocol and Video Demonstration of Mid-Face Thread Lift,15:00:00,15:15:00,5,2026-11-08 21:13:54.006849+00
+fcc1c0f5-6097-4036-9b0a-98183da16ea4,c92b696e-64c5-4350-b8bf-d0cb50b187d7,Basics of Pigmentary lasers + Laser Interaction & physics,11:30:00,11:42:00,1,2026-11-08 21:15:45.935288+00
+fd049358-b740-4136-9520-a6a802c831ca,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,Pearls in Scar Management,18:05:00,18:15:00,12,2026-11-08 21:15:07.764426+00
+fd8b5b1e-36cd-4ebe-9d6d-a9e0c7229d48,84e2f3d8-bece-4ee6-b243-d9256da758e8,"Introduction to acne scars with Subcision: Breaking Fibrosis, Restoring Skin",14:24:00,14:36:00,3,2026-11-08 21:14:54.341403+00
+fd9f421b-16a7-4b27-b979-e98b6b8ea55f,86d4f8e9-dd4d-4f1e-a1a3-00a6c5be02c2,Video demo: Mid face/periorbital,,,10,2026-11-08 21:14:24.080018+00
+fecf2d62-867a-48f3-bbfd-980e81f01971,a344d969-36e7-468b-a730-1362a2902bed,Dynamic vs static line evaluation,,,4,2026-11-08 21:14:09.211899+00
+ff158b81-de3e-499a-b929-0529de443022,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Clinical Indications,14:40:00,14:50:00,5,2026-11-08 21:13:58.852169+00
