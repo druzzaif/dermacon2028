@@ -15,3 +15,7 @@ Thumbs.db
 _task4_dump.txt
 _verify_task2.mjs
 public/pdfs/
+
+# TypeScript incremental cache
+tsconfig.tsbuildinfo
+*.tsbuildinfo
