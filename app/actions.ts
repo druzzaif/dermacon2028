@@ -1,6 +1,17 @@
 // @ts-nocheck
 
 'use server';
+function fmt12hForEmail(t: string | null | undefined): string {
+  if (!t) return '--:--';
+  const [hs, ms] = t.split(':');
+  let h = parseInt(hs, 10);
+  const m = ms ? ms.substring(0, 2) : '00';
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return `${h}:${m} ${ampm}`;
+}
+
 
 import { supabase } from './supabase';
 import puppeteer from 'puppeteer';
@@ -363,33 +374,37 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
     const base64Pdf = pdfBuffer.toString('base64');
 
     // 2. Fetch the detailed session data from Supabase
-    const { data: facultyTopics } = await supabase
+    const { data: facultyTopics, error: facultyTopicsError } = await supabase
       .from('faculty_topics')
-      .select(`session_topics ( topic_title, conference_sessions ( session_code, session_name, hall ) )`)
+      .select(`session_topics ( topic_title, start_time, end_time, sequence_no, conference_sessions ( session_code, session_name, hall ) )`)
       .eq('faculty_id', faculty.id);
 
-    // 3. Group by session to create sessionsData
-    const uniqueSessions: Record<string, any> = {};
-    if (facultyTopics) {
-      facultyTopics.forEach((ft: any) => {
-        const s = ft.session_topics?.conference_sessions;
-        if (s) {
-          if (!uniqueSessions[s.session_code]) {
-            uniqueSessions[s.session_code] = {
-              session_code: s.session_code,
-              session_name: s.session_name,
-              session_hall: s.hall || 'TBD',
-              topics: []
-            };
-          }
-          if (ft.session_topics?.topic_title) {
-            uniqueSessions[s.session_code].topics.push({ topic_title: ft.session_topics.topic_title });
-          }
-        }
-      });
-    }
+    if (facultyTopicsError) throw facultyTopicsError;
+    if (!facultyTopics?.length) throw new Error("No session topics assigned to this faculty member.");
 
-    const sessionCodesArray = Object.keys(uniqueSessions);
+    // Send one row per faculty topic so the email can show its topic and timing.
+    const sessionsData = facultyTopics
+      .flatMap((ft) => {
+        const session = ft.session_topics?.conference_sessions;
+        const topic = ft.session_topics;
+        if (!session || !topic) return [];
+
+        return [{
+          session_code: session.session_code,
+          session_name: session.session_name,
+          session_hall: session.hall || 'TBD',
+          topic: topic.topic_title || '',
+          time: `${fmt12hForEmail(topic.start_time)} - ${fmt12hForEmail(topic.end_time)}`,
+          sequence_no: topic.sequence_no
+        }];
+      })
+      .sort((a, b) =>
+        String(a.session_code ?? '').localeCompare(String(b.session_code ?? ''), undefined, { numeric: true }) ||
+        (a.sequence_no ?? 0) - (b.sequence_no ?? 0)
+      );
+    if (!sessionsData.length) throw new Error("No session details found for this faculty member.");
+
+    const assignedSessionCodes = [...new Set(sessionsData.map((session) => session.session_code))].join(',');
 
     // 4. Build the payload
     const payload = {
@@ -397,8 +412,8 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
       name: faculty.canonical_name,
       email: faculty.email,
       phone: faculty.phone || "",
-      sessions: sessionCodesArray.join(','), 
-      sessionsData: Object.values(uniqueSessions),
+      sessions: assignedSessionCodes || sessionCodes,
+      sessionsData,
       pdfs: [{ name: fileName, base64: base64Pdf }]
     };
 
