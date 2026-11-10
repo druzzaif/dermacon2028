@@ -1,6 +1,14 @@
 // @ts-nocheck
 
 'use server';
+function fmtDateForEmail(d: string | null | undefined): string {
+  if (!d) return '--';
+  const dt = new Date(d + 'T00:00:00');
+  if (isNaN(dt.getTime())) return d;
+  return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+
 function fmt12hForEmail(t: string | null | undefined): string {
   if (!t) return '--:--';
   const [hs, ms] = t.split(':');
@@ -364,38 +372,58 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
   if (!faculty.email) return { success: false, message: "Faculty member has no email address." };
 
   try {
-    // 1. Generate the PDF
-    const pdfRes = await generatePDFData(faculty.id);
-    if (!pdfRes.success || !pdfRes.url) throw new Error(pdfRes.message || "Failed to generate PDF");
+   
 
-    const fileName = pdfRes.url.split('/').pop()!;
-    const filePath = path.join(process.cwd(), 'public', 'pdfs', fileName);
-    const pdfBuffer = fs.readFileSync(filePath);
-    const base64Pdf = pdfBuffer.toString('base64');
-
-    // 2. Fetch the detailed session data from Supabase
+        // 2. Fetch the detailed session data from Supabase
     const { data: facultyTopics, error: facultyTopicsError } = await supabase
       .from('faculty_topics')
-      .select(`session_topics ( topic_title, start_time, end_time, sequence_no, conference_sessions ( session_code, session_name, hall ) )`)
+      .select(`role, session_topics ( topic_title, start_time, end_time, sequence_no, conference_sessions ( id, session_code, session_name, session_date, hall, start_time, end_time ) )`)
       .eq('faculty_id', faculty.id);
 
     if (facultyTopicsError) throw facultyTopicsError;
     if (!facultyTopics?.length) throw new Error("No session topics assigned to this faculty member.");
 
-    // Send one row per faculty topic so the email can show its topic and timing.
+    // 3. Look up the Lead Coordinator once per session
+    const sessionIds = [...new Set(
+      facultyTopics.map((ft: any) => ft.session_topics?.conference_sessions?.id).filter(Boolean)
+    )] as string[];
+
+    const coordBySession: Record<string, { name: string; phone: string; email: string }> = {};
+    for (const sid of sessionIds) {
+      const { data: coordData } = await supabase
+        .from('session_coordinators')
+        .select('faculty ( canonical_name, phone, email )')
+        .eq('session_id', sid)
+        .eq('role', 'Lead Coordinator')
+        .maybeSingle();
+      const lead = coordData?.faculty as any;
+      coordBySession[sid] = {
+        name: lead?.canonical_name || 'Scientific Committee',
+        phone: lead?.phone || '+91 99981 84930',
+        email: lead?.email || 'osdermacon@iadvl.org',
+      };
+    }
+
+    // Send one row per faculty topic
     const sessionsData = facultyTopics
-      .flatMap((ft) => {
+      .flatMap((ft: any) => {
         const session = ft.session_topics?.conference_sessions;
         const topic = ft.session_topics;
         if (!session || !topic) return [];
+        const coord = coordBySession[session.id];
 
         return [{
           session_code: session.session_code,
           session_name: session.session_name,
           session_hall: session.hall || 'TBD',
+          date: fmtDateForEmail(session.session_date),
+          session_time: `${fmt12hForEmail(session.start_time)} - ${fmt12hForEmail(session.end_time)}`,
           topic: topic.topic_title || '',
           time: `${fmt12hForEmail(topic.start_time)} - ${fmt12hForEmail(topic.end_time)}`,
-          sequence_no: topic.sequence_no
+          coordName: coord.name,
+          coordPhone: coord.phone,
+          coordEmail: coord.email,
+          sequence_no: topic.sequence_no,
         }];
       })
       .sort((a, b) =>
@@ -404,7 +432,7 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
       );
     if (!sessionsData.length) throw new Error("No session details found for this faculty member.");
 
-    const assignedSessionCodes = [...new Set(sessionsData.map((session) => session.session_code))].join(',');
+    const assignedSessionCodes = [...new Set(sessionsData.map((s) => s.session_code))].join(',');
 
     // 4. Build the payload
     const payload = {
@@ -412,12 +440,12 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
       name: faculty.canonical_name,
       email: faculty.email,
       phone: faculty.phone || "",
+      role: facultyTopics[0]?.role || 'Faculty',
       sessions: assignedSessionCodes || sessionCodes,
-      sessionsData,
-      pdfs: [{ name: fileName, base64: base64Pdf }]
+      sessionsData  
     };
 
-    console.log("SENDING TO GOOGLE:", JSON.stringify(payload, null, 2));
+    console.log("SESSIONS DATA:", JSON.stringify(payload.sessionsData, null, 2));
 
     const res = await fetch(scriptUrl, {
       method: 'POST',
