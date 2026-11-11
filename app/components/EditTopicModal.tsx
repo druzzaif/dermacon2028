@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { generatePDFData, generatePDFForSession, deleteTopic } from '../actions';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { sendScheduleUpdateToFaculty } from '../actions';
 
 type FacultyLite = { id: string; canonical_name: string; email: string | null };
 
@@ -95,6 +96,8 @@ export default function EditTopicModal({
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [addingFaculty, setAddingFaculty] = useState(false);
+  const [emailOnSave, setEmailOnSave] = useState(true);
+  const [emailReport, setEmailReport] = useState<{ name: string; ok: boolean; message?: string }[]>([]);
 
   // Parse initial 24h time to 12h components
   const parseInitial = (timeStr: string | null | undefined) => {
@@ -397,8 +400,23 @@ export default function EditTopicModal({
       }
     }
 
-    setIsSaving(false);
-    setShowSuccessPrompt(true);
+    // Email the updated schedule to assigned faculty (only if the box is ticked)
+if (emailOnSave) {
+  const report: { name: string; ok: boolean; message?: string }[] = [];
+  for (const link of facultyLinks) {
+    const f = link.faculty;
+    if (!f?.email) {
+      report.push({ name: f?.canonical_name || 'Unknown', ok: false, message: 'No email on file' });
+      continue;
+    }
+    const r = await sendScheduleUpdateToFaculty(f);
+    report.push({ name: f.canonical_name, ok: r.success, message: r.message });
+  }
+  setEmailReport(report);
+}
+
+setIsSaving(false);
+setShowSuccessPrompt(true);
   }
 
   function finalizeAndClose() {
@@ -614,6 +632,15 @@ export default function EditTopicModal({
             >
               Delete Topic
             </button>
+            <label className="mr-auto flex cursor-pointer items-center gap-2 text-sm text-ink-2 select-none">
+            <input
+            type="checkbox"
+            checked={emailOnSave}
+            onChange={(e) => setEmailOnSave(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300"
+            />
+            📧 Email updated schedule to faculty
+            </label>
             <div className="flex gap-3">
               <button
                 type="button"

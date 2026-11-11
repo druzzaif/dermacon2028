@@ -6,6 +6,7 @@ import { generatePDFData, generatePDFForSession } from '../actions';
 import Modal from './Modal';
 import Field, { inputCls } from './Field';
 import { AlertIcon, CheckIcon } from './Icons';
+import { sendScheduleUpdateToFaculty } from '../actions';
 
 type FacultyLite = { id: string; canonical_name: string; email: string | null };
 
@@ -169,6 +170,8 @@ export default function AddTopicModal({
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [addingFaculty, setAddingFaculty] = useState(false);
+  const [emailOnSave, setEmailOnSave] = useState(true);
+  const [emailReport, setEmailReport] = useState<{ name: string; ok: boolean; message?: string }[]>([]);
 
   // Parse initial session time
   const parseSessionTime = (timeStr: string | null | undefined) => {
@@ -477,8 +480,23 @@ export default function AddTopicModal({
       }
     }
 
-    setIsSaving(false);
-    setShowSuccessPrompt(true);
+// Email the updated schedule to assigned faculty (only if the box is ticked)
+if (emailOnSave) {
+  const report: { name: string; ok: boolean; message?: string }[] = [];
+  for (const link of facultyLinks) {
+    const f = link.faculty;
+    if (!f?.email) {
+      report.push({ name: f?.canonical_name || 'Unknown', ok: false, message: 'No email on file' });
+      continue;
+    }
+    const r = await sendScheduleUpdateToFaculty(f);
+    report.push({ name: f.canonical_name, ok: r.success, message: r.message });
+  }
+  setEmailReport(report);
+}
+
+setIsSaving(false);
+setShowSuccessPrompt(true);
   }
 
   function finalizeAndClose() {
@@ -575,6 +593,15 @@ export default function AddTopicModal({
       busy={isSaving}
       footer={
         <>
+          <label className="mr-auto flex cursor-pointer items-center gap-2 text-sm text-ink-2 select-none">
+            <input
+              type="checkbox"
+              checked={emailOnSave}
+              onChange={(e) => setEmailOnSave(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            📧 Email updated schedule to faculty
+          </label>
           <button type="button" onClick={onClose} disabled={isSaving} className={secondaryBtn}>Cancel</button>
           <button type="submit" form="add-topic-form" disabled={isSaving} className={primaryBtn}>
             {isSaving ? 'Saving…' : 'Save topic'}

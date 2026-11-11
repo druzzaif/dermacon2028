@@ -502,6 +502,53 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
     return { success: false, message: error.message || "Failed to connect to Google Script." };
   }
 }
+
+// NEW ACTION — everything below is identical to sendFormLinkToFaculty
+// except for the two marked lines.
+export async function sendScheduleUpdateToFaculty(faculty: any) {   // ← changed (no sessionCodes param)
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
+
+  if (!faculty.email) return { success: false, message: "Faculty member has no email address." };
+
+  try {
+    await syncCoordinatorsToSheet();
+
+    const { data: facultyTopics, error: facultyTopicsError } = await supabase
+      .from('faculty_topics')
+      .select(`role, session_topics ( topic_title, start_time, end_time, sequence_no,
+               conference_sessions ( id, session_code, session_name, session_date, hall, start_time, end_time ) )`)
+      .eq('faculty_id', faculty.id);
+
+    if (facultyTopicsError) throw facultyTopicsError;
+    if (!facultyTopics?.length) throw new Error("No session topics assigned to this faculty member.");
+
+    // ... keep the coordinator lookup + sessionsData building EXACTLY as-is ...
+
+    const payload = {
+      action: "sendScheduleUpdate",          // ← changed (was "sendFormLink")
+      name: faculty.canonical_name,
+      email: faculty.email,
+      phone: faculty.phone || "",
+      role: facultyTopics[0]?.role || 'Faculty',
+      sessions: assignedSessionCodes,        // ← changed (sessionCodes param no longer exists)
+      sessionsData
+    };
+
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      // @ts-ignore
+      next: { revalidate: 0 }
+    });
+
+    const data = await res.json();
+    if (data.status === "Success") return { success: true, message: "Email sent!" };
+    return { success: false, message: data.message || "Failed to send email." };
+  } catch (error: any) {
+    console.error("Google Script Error:", error);
+    return { success: false, message: error.message || "Failed to connect to Google Script." };
+  }
+}
 export async function getConfirmedEmails() {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
   try {

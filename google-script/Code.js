@@ -25,7 +25,7 @@ var SETTINGS = {
 };
 
 var LOG_SHEET = "EmailLog";
-var LOG_HEADERS = ["SentAt", "Name", "Email", "Phone", "Sessions", "FormLink", "Status", "ReminderSentAt", "RespondedAt"];
+var LOG_HEADERS = ["SentAt", "Name", "Email", "Phone", "Sessions", "FormLink", "Status", "ReminderSentAt", "RespondedAt", "SessionsData"];
 
 // ==========================================
 // HELPERS
@@ -87,8 +87,7 @@ function logSent(data, link) {
     for (var i = 1; i < values.length; i++) {
       if (String(values[i][2]).trim().toLowerCase() === email) { rowIdx = i + 1; break; }
     }
-    var row = [new Date(), data.name, data.email, data.phone || '', data.sessions || '', link, "Sent", "", ""];
-    if (rowIdx > 0) {
+    var row = [new Date(), data.name, data.email, data.phone || '', data.sessions || '', link, "Sent", "", "", JSON.stringify(data.sessionsData || [])];    if (rowIdx > 0) {
       sh.getRange(rowIdx, 1, 1, row.length).setValues([row]);
     } else {
       sh.appendRow(row);
@@ -128,10 +127,11 @@ function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
 
-    if (data.action === "sendFormLink") {
+    if (data.action === "sendFormLink" || data.action === "sendScheduleUpdate") {
+      var isUpdate = (data.action === "sendScheduleUpdate");
 
       // 1. Pre-filled Google Form link
-      var prefilledLink = buildPrefilledLink(data.name, data.phone, data.sessions);
+      var prefilledLink = isUpdate ? "" : buildPrefilledLink(data.name, data.phone, data.sessions);
 
       // 2. Load the HTML template (raw text)
       var template = HtmlService.createTemplateFromFile('Template').getRawContent();
@@ -175,10 +175,14 @@ function doPost(e) {
       htmlBody = fill(htmlBody, {
         FacultyName: esc(data.name),
         Role:        esc(data.role || 'Faculty'),
-        LetterDate:  new Date().toLocaleDateString('en-GB')
+        LetterDate:  new Date().toLocaleDateString('en-GB'),
+        EmailTitle:  isUpdate ? "Schedule Update – DERMACON International 2027" : "Faculty Scientific Commitment – DERMACON International 2027",
+        Greeting:    "Greetings from the Scientific Committee of <strong>DERMACON International 2027</strong>.",
+        IntroText:   "We are delighted to welcome you as <strong>" + esc(data.role || 'Faculty') + "</strong>. Your scientific commitment details are below."
       });
-
-      htmlBody = htmlBody.replace('https://forms.gle/REPLACE_WITH_YOUR_GOOGLE_FORM_LINK', function () { return prefilledLink; });
+            // Always replace the link. If it's an update, use your specific dialog link.
+      var finalLink = isUpdate ? "https://docs.google.com/forms/d/e/1FAIpQLSdxz_5YnX30AkhVuTEBYiTjAU5Ps38Qa_-Fx-uQS3fbG1cWcg/viewform?usp=dialog" : prefilledLink;
+      htmlBody = htmlBody.replace('https://forms.gle/REPLACE_WITH_YOUR_GOOGLE_FORM_LINK', function () { return finalLink; });
 
       // 6. Point every cid:name image at its public Drive URL
       htmlBody = htmlBody.replace(/cid:(\w+)/g, function (match, key) {
@@ -347,29 +351,7 @@ function onFormSubmit(e) {
   var sessionsStr = iSessions >= 0 ? String(row[iSessions] || "").trim() : "";
 
   if (!email) return;
-
-    // ── SYNC TO SUPABASE ──
-  try {
-    var isConfirmed = /yes/i.test(status);
-    var url = SUPABASE_URL + "/rest/v1/faculty?email=eq." + encodeURIComponent(email);
-    var options = {
-      method: "patch",
-      headers: {
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal"
-      },
-      payload: JSON.stringify({ is_confirmed: isConfirmed }),
-      muteHttpExceptions: true
-    };
-    UrlFetchApp.fetch(url, options);
-    Logger.log("Successfully synced confirmation to Supabase for: " + email);
-  } catch (err) {
-    Logger.log("Supabase Sync Error: " + err.toString());
-  }
-  // ───────────────────────
-
+  
   // Stop reminders for this faculty
   try {
     markResponded(email, name, /no/i.test(status) ? "Declined" : (/yes/i.test(status) ? "Confirmed" : "Responded"));
@@ -388,6 +370,84 @@ function onFormSubmit(e) {
   }
 
   if (/yes/i.test(status)) {
+    // 1. Fetch the saved sessionsData from the EmailLog
+    var logSheet = getLogSheet();
+    var logData = logSheet.getDataRange().getValues();
+    var sessionsData = [];
+    for (var i = 1; i < logData.length; i++) {
+      if (String(logData[i][2]).trim().toLowerCase() === email.toLowerCase()) {
+        try { sessionsData = JSON.parse(logData[i][9] || "[]"); } catch(e) {}
+        break;
+      }
+    }
+
+    // 2. Build the full HTML using the template
+    var template = HtmlService.createTemplateFromFile('Template').getRawContent();
+    var startMatch = /<!--\s*SESSION_START\s*-->/i.exec(template);
+    var endMatch   = /<!--\s*SESSION_END\s*-->/i.exec(template);
+    var sessionBlocksHtml = '';
+
+    if (startMatch && endMatch && sessionsData.length > 0) {
+      var blockTemplate = template.substring(startMatch.index + startMatch[0].length, endMatch.index);
+      for (var i = 0; i < sessionsData.length; i++) {
+        var row = sessionsData[i];
+        sessionBlocksHtml += fill(blockTemplate, {
+          SessionNumber: String(i + 1),
+          Topic:         esc(row.topic || ''),
+          Timing:        esc(row.time || ''),
+          SessionName:   esc(((row.session_code || '') + ' ' + (row.session_name || '')).trim()),
+          Hall:          esc(row.session_hall || 'TBD'),
+          Date:          esc(row.date || ''),
+          SessionTime:   esc(row.session_time || ''),
+          CoordName:     esc(row.coordName || ''),
+          CoordPhone:    esc(row.coordPhone || ''),
+          CoordEmail:    esc(row.coordEmail || '')
+        });
+      }
+      
+      var htmlBody = template.substring(0, startMatch.index) + sessionBlocksHtml + template.substring(endMatch.index + endMatch[0].length);
+      
+      // 3. Fill global variables for the confirmation email
+      htmlBody = fill(htmlBody, {
+        FacultyName: esc(name),
+        Role:        "Faculty",
+        LetterDate:  new Date().toLocaleDateString('en-GB'),
+        EmailTitle:  "Participation Confirmed – DERMACON International 2027",
+        Greeting:    "Thank you for confirming your participation for <strong>DERMACON International 2027</strong>.",
+        IntroText:   "Your confirmed scientific commitment details are below."
+      });
+      htmlBody = htmlBody.replace(/cid:(\w+)/g, function (match, key) {
+        return SETTINGS.images[key] ? driveImgUrl(SETTINGS.images[key]) : match;
+      });
+
+      // 4. Remove the Confirm box
+      var confirmStart = htmlBody.indexOf('<!-- CONFIRM_BOX_START -->');
+      var confirmEnd = htmlBody.indexOf('<!-- CONFIRM_BOX_END -->');
+      if (confirmStart !== -1 && confirmEnd !== -1) {
+        htmlBody = htmlBody.substring(0, confirmStart) + htmlBody.substring(confirmEnd + '<!-- CONFIRM_BOX_END -->'.length);
+      }
+
+      // 5. Send the beautifully formatted email
+      MailApp.sendEmail({
+        to: email,
+        subject: "✅ Confirmed: DERMACON International 2027",
+        body: "Thank you for confirming, " + name,
+        htmlBody: htmlBody
+      });
+
+    } else {
+      // Fallback if data is missing
+      var htmlFaculty = "<div style='font-family: Arial, sans-serif;'>";
+      htmlFaculty += "<p><strong>Dear " + name + ",</strong></p>";
+      htmlFaculty += "<p>Thank you for confirming your participation for DERMACON International 2027.</p>";
+      htmlFaculty += "<p>Warm regards,<br><strong>DERMACON International 2027</strong></p></div>";
+      MailApp.sendEmail({
+        to: email,
+        subject: "✅ Confirmed: DERMACON International 2027",
+        body: "Thank you for confirming, " + name,
+        htmlBody: htmlFaculty
+      });
+    }
     var htmlFaculty = "<div style='font-family: Arial, sans-serif;'>";
     htmlFaculty += "<p><strong>Dear " + name + ",</strong></p>";
     htmlFaculty += "<p>Thank you for confirming your participation for DERMACON International 2027.</p>";
