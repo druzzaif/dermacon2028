@@ -403,98 +403,205 @@ export async function syncCoordinatorsToSheet() {
   }
 }
 
-export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) {
+// Builds the per-topic rows sent to the Google Script (also stored in the
+// EmailLog sheet, which is what the confirmation email is built from).
+// Each row carries topic_id + faculty_id so a confirmation can be recorded per topic.
+async function buildFacultyPayload(faculty: any) {
+  const { data: facultyTopics, error: facultyTopicsError } = await supabase
+    .from('faculty_topics')
+    .select(`role, session_topics ( id, topic_title, start_time, end_time, sequence_no, conference_sessions ( id, session_code, session_name, session_date, hall, start_time, end_time ) )`)
+    .eq('faculty_id', faculty.id);
+
+  if (facultyTopicsError) throw facultyTopicsError;
+  if (!facultyTopics?.length) throw new Error("No session topics assigned to this faculty member.");
+
+  // Lead Coordinator once per session
+  const sessionIds = [...new Set(
+    facultyTopics.map((ft: any) => ft.session_topics?.conference_sessions?.id).filter(Boolean)
+  )] as string[];
+
+  const coordBySession: Record<string, { name: string; phone: string; email: string }> = {};
+  for (const sid of sessionIds) {
+    const { data: coordData } = await supabase
+      .from('session_coordinators')
+      .select('faculty ( canonical_name, phone, email )')
+      .eq('session_id', sid)
+      .eq('role', 'Lead Coordinator')
+      .maybeSingle();
+    const lead = coordData?.faculty as any;
+    coordBySession[sid] = {
+      name: lead?.canonical_name || '',
+      phone: lead?.phone || '',
+      email: lead?.email || '',
+    };
+  }
+
+  // One row per faculty topic
+  const sessionsRows = facultyTopics
+    .flatMap((ft: any) => {
+      const session = ft.session_topics?.conference_sessions;
+      const topic = ft.session_topics;
+      if (!session || !topic) return [];
+      const coord = coordBySession[session.id];
+
+      return [{
+        _raw: { session, topic, role: ft.role || 'Faculty', coord },
+        topic_id: topic.id,
+        faculty_id: faculty.id,
+        session_code: session.session_code,
+        session_name: session.session_name,
+        session_hall: session.hall || 'TBD',
+        date: fmtDateForEmail(session.session_date),
+        session_time: `${fmt12hForEmail(session.start_time)} - ${fmt12hForEmail(session.end_time)}`,
+        topic: topic.topic_title || '',
+        time: `${fmt12hForEmail(topic.start_time)} - ${fmt12hForEmail(topic.end_time)}`,
+        coordName: coord.name,
+        coordPhone: coord.phone,
+        coordEmail: coord.email,
+        sequence_no: topic.sequence_no,
+      }];
+    })
+    .sort((a, b) =>
+      String(a.session_code ?? '').localeCompare(String(b.session_code ?? ''), undefined, { numeric: true }) ||
+      (a.sequence_no ?? 0) - (b.sequence_no ?? 0)
+    );
+  if (!sessionsRows.length) throw new Error("No session details found for this faculty member.");
+
+  const assignedSessionCodes = [...new Set(sessionsRows.map((s) => s.session_code))].join(',');
+  const pdfJobs = sessionsRows.map((r) => r._raw);
+  const sessionsData = sessionsRows.map(({ _raw, ...rest }) => rest);
+  return { sessionsData, pdfJobs, assignedSessionCodes, role: facultyTopics[0]?.role || 'Faculty' };
+}
+
+function prefilledFormLink(name: string, phone: string, sessionCodes: string) {
+  return "https://docs.google.com/forms/d/e/1FAIpQLSdxz_5YnX30AkhVuTEBYiTjAU5Ps38Qa_-Fx-uQS3fbG1cWcg/viewform?usp=pp_url" +
+    "&entry.640056832=" + encodeURIComponent(name || "") +
+    "&entry.778392849=" + encodeURIComponent(phone || "") +
+    "&entry.1359171350=" + encodeURIComponent(sessionCodes || "");
+}
+
+// One PDF per topic, using the same letterhead layout as generatePDFData.
+// Each PDF holds that topic's session details and only that topic.
+async function generateTopicPdfs(faculty: any, pdfJobs: any[]) {
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: true,
+  });
+  const out: { topic_id: string; name: string; base64: string }[] = [];
+  try {
+    const page = await browser.newPage();
+    const used = new Set<string>();
+    for (const job of pdfJobs) {
+      const html = renderCommitmentHTML({
+        faculty: { canonical_name: faculty.canonical_name, phone: faculty.phone || '' },
+        sessions: [{
+          session: job.session,
+          topics: [job.topic],
+          role: job.role,
+          coordinator: job.coord,
+        }],
+        formLink: prefilledFormLink(faculty.canonical_name, faculty.phone || '', job.session.session_code),
+      });
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      const buf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      });
+
+      // e.g. DERMACON2027_MC1_Topic-title.pdf (unique per topic)
+      const title = String(job.topic.topic_title || 'Topic').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 50);
+      let name = `DERMACON2027_${job.session.session_code}_${title}.pdf`;
+      let n = 2;
+      while (used.has(name)) name = `DERMACON2027_${job.session.session_code}_${title}_${n++}.pdf`;
+      used.add(name);
+
+      out.push({ topic_id: job.topic.id, name, base64: Buffer.from(buf).toString('base64') });
+    }
+  } finally {
+    await browser.close();
+  }
+  return out;
+}
+
+// Faculty directory "PDF" button: one PDF file per topic of this faculty.
+// Files are saved in public/pdfs and the URLs are returned for the browser to download.
+export async function generateFacultyTopicPdfs(facultyId: string) {
+  try {
+    const { data: faculty, error } = await supabase
+      .from('faculty').select('*').eq('id', facultyId).single();
+    if (error || !faculty) throw new Error('Faculty not found.');
+
+    const { pdfJobs } = await buildFacultyPayload(faculty);
+    const pdfs = await generateTopicPdfs(faculty, pdfJobs);
+
+    const dir = path.join(process.cwd(), 'public', 'pdfs');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    const safeFaculty = String(faculty.canonical_name || 'Faculty').replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '');
+    const stamp = Date.now();
+    const files = pdfs.map((p) => {
+      const fileName = `${safeFaculty}_${stamp}_${p.name}`;
+      fs.writeFileSync(path.join(dir, fileName), Buffer.from(p.base64, 'base64'));
+      return { name: p.name, url: `/pdfs/${fileName}` };
+    });
+    return { success: true, files };
+  } catch (e: any) {
+    console.error('generateFacultyTopicPdfs failed:', e);
+    return { success: false, files: [], message: e?.message || 'PDF generation failed.' };
+  }
+}
+
+async function postToGoogleScript(action: 'sendFormLink' | 'sendScheduleUpdate', faculty: any, sessionCodes?: string) {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
-  
+
   if (!faculty.email) return { success: false, message: "Faculty member has no email address." };
 
   try {
-       await syncCoordinatorsToSheet();   // keep the CoordinatorList tab current
+    await syncCoordinatorsToSheet();   // keep the CoordinatorList tab current
 
-        // 2. Fetch the detailed session data from Supabase
-    const { data: facultyTopics, error: facultyTopicsError } = await supabase
-      .from('faculty_topics')
-      .select(`role, session_topics ( topic_title, start_time, end_time, sequence_no, conference_sessions ( id, session_code, session_name, session_date, hall, start_time, end_time ) )`)
-      .eq('faculty_id', faculty.id);
+    const { sessionsData, pdfJobs, assignedSessionCodes, role } = await buildFacultyPayload(faculty);
 
-    if (facultyTopicsError) throw facultyTopicsError;
-    if (!facultyTopics?.length) throw new Error("No session topics assigned to this faculty member.");
-
-    // 3. Look up the Lead Coordinator once per session
-    const sessionIds = [...new Set(
-      facultyTopics.map((ft: any) => ft.session_topics?.conference_sessions?.id).filter(Boolean)
-    )] as string[];
-
-    const coordBySession: Record<string, { name: string; phone: string; email: string }> = {};
-    for (const sid of sessionIds) {
-      const { data: coordData } = await supabase
-        .from('session_coordinators')
-        .select('faculty ( canonical_name, phone, email )')
-        .eq('session_id', sid)
-        .eq('role', 'Lead Coordinator')
-        .maybeSingle();
-      const lead = coordData?.faculty as any;
-            coordBySession[sid] = {
-        name: lead?.canonical_name || '',
-        phone: lead?.phone || '',
-        email: lead?.email || '',
-      };
+    // One PDF per topic. If this fails the email still goes, without attachments.
+    let pdfs: { topic_id: string; name: string; base64: string }[] = [];
+    let pdfWarning = '';
+    try {
+      pdfs = await generateTopicPdfs(faculty, pdfJobs);
+    } catch (pdfErr: any) {
+      console.error("Topic PDF generation failed:", pdfErr);
+      pdfWarning = ` (PDFs could not be attached: ${pdfErr?.message || 'PDF generation failed'})`;
     }
 
-    // Send one row per faculty topic
-    const sessionsData = facultyTopics
-      .flatMap((ft: any) => {
-        const session = ft.session_topics?.conference_sessions;
-        const topic = ft.session_topics;
-        if (!session || !topic) return [];
-        const coord = coordBySession[session.id];
-
-        return [{
-          session_code: session.session_code,
-          session_name: session.session_name,
-          session_hall: session.hall || 'TBD',
-          date: fmtDateForEmail(session.session_date),
-          session_time: `${fmt12hForEmail(session.start_time)} - ${fmt12hForEmail(session.end_time)}`,
-          topic: topic.topic_title || '',
-          time: `${fmt12hForEmail(topic.start_time)} - ${fmt12hForEmail(topic.end_time)}`,
-          coordName: coord.name,
-          coordPhone: coord.phone,
-          coordEmail: coord.email,
-          sequence_no: topic.sequence_no,
-        }];
-      })
-      .sort((a, b) =>
-        String(a.session_code ?? '').localeCompare(String(b.session_code ?? ''), undefined, { numeric: true }) ||
-        (a.sequence_no ?? 0) - (b.sequence_no ?? 0)
-      );
-    if (!sessionsData.length) throw new Error("No session details found for this faculty member.");
-
-    const assignedSessionCodes = [...new Set(sessionsData.map((s) => s.session_code))].join(',');
-
-    // 4. Build the payload
     const payload = {
-      action: "sendFormLink",
+      action,
+      facultyId: faculty.id,
       name: faculty.canonical_name,
       email: faculty.email,
       phone: faculty.phone || "",
-      role: facultyTopics[0]?.role || 'Faculty',
-      sessions: assignedSessionCodes || sessionCodes,
-      sessionsData  
+      role,
+      sessions: assignedSessionCodes || sessionCodes || "",
+      sessionsData,
+      pdfs,
     };
-
-    console.log("SESSIONS DATA:", JSON.stringify(payload.sessionsData, null, 2));
 
     const res = await fetch(scriptUrl, {
       method: 'POST',
       body: JSON.stringify(payload),
       // @ts-ignore
-      next: { revalidate: 0 } 
+      next: { revalidate: 0 },
     });
-    
+
     const data = await res.json();
-    
     if (data.status === "Success") {
-      return { success: true, message: "Email sent successfully!" };
+      const attached = typeof data.pdfsAttached === 'number' ? data.pdfsAttached : null;
+      const pdfNote = pdfWarning
+        ? pdfWarning
+        : attached === null
+          ? ' (the Google Script is an old version: it did not report PDFs)'
+          : attached === pdfs.length
+            ? ` with ${attached} PDF attachment${attached === 1 ? '' : 's'}`
+            : ` but only ${attached} of ${pdfs.length} PDFs were attached`;
+      return { success: true, message: (action === 'sendFormLink' ? "Email sent successfully" : "Email sent") + pdfNote + '.' };
     }
     return { success: false, message: data.message || "Failed to send email." };
   } catch (error: any) {
@@ -503,52 +610,59 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
   }
 }
 
-// NEW ACTION — everything below is identical to sendFormLinkToFaculty
-// except for the two marked lines.
-export async function sendScheduleUpdateToFaculty(faculty: any) {   // ← changed (no sessionCodes param)
+export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) {
+  return postToGoogleScript('sendFormLink', faculty, sessionCodes);
+}
+
+// Same payload as sendFormLinkToFaculty, but the Google Script labels the
+// email "Schedule Update". (This used to reference variables it never defined.)
+export async function sendScheduleUpdateToFaculty(faculty: any) {
+  return postToGoogleScript('sendScheduleUpdate', faculty);
+}
+
+// Pulls per-topic confirmations from the Google Sheet into faculty_topics.
+// Only topics the faculty actually confirmed are flagged; a topic added later
+// stays unconfirmed until the faculty confirms again.
+export async function syncTopicConfirmations() {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
-
-  if (!faculty.email) return { success: false, message: "Faculty member has no email address." };
-
   try {
-    await syncCoordinatorsToSheet();
-
-    const { data: facultyTopics, error: facultyTopicsError } = await supabase
-      .from('faculty_topics')
-      .select(`role, session_topics ( topic_title, start_time, end_time, sequence_no,
-               conference_sessions ( id, session_code, session_name, session_date, hall, start_time, end_time ) )`)
-      .eq('faculty_id', faculty.id);
-
-    if (facultyTopicsError) throw facultyTopicsError;
-    if (!facultyTopics?.length) throw new Error("No session topics assigned to this faculty member.");
-
-    // ... keep the coordinator lookup + sessionsData building EXACTLY as-is ...
-
-    const payload = {
-      action: "sendScheduleUpdate",          // ← changed (was "sendFormLink")
-      name: faculty.canonical_name,
-      email: faculty.email,
-      phone: faculty.phone || "",
-      role: facultyTopics[0]?.role || 'Faculty',
-      sessions: assignedSessionCodes,        // ← changed (sessionCodes param no longer exists)
-      sessionsData
-    };
-
-    const res = await fetch(scriptUrl, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      // @ts-ignore
-      next: { revalidate: 0 }
-    });
-
+    const res = await fetch(scriptUrl, { cache: 'no-store' });
     const data = await res.json();
-    if (data.status === "Success") return { success: true, message: "Email sent!" };
-    return { success: false, message: data.message || "Failed to send email." };
-  } catch (error: any) {
-    console.error("Google Script Error:", error);
-    return { success: false, message: error.message || "Failed to connect to Google Script." };
+    const pairs: { facultyId: string; topicId: string; confirmedAt: string | null }[] = data.topics || [];
+    if (!pairs.length) return { success: true, updated: 0 };
+
+    // Which of these topics still have unconfirmed faculty links in the DB?
+    const topicIds = [...new Set(pairs.map((p) => p.topicId))];
+    const pending = new Set<string>();
+    for (let i = 0; i < topicIds.length; i += 100) {
+      const { data: rows, error } = await supabase
+        .from('faculty_topics')
+        .select('faculty_id, topic_id')
+        .eq('confirmed', false)
+        .in('topic_id', topicIds.slice(i, i + 100));
+      if (error) throw error;
+      (rows || []).forEach((r: any) => pending.add(`${r.faculty_id}|${r.topic_id}`));
+    }
+
+    const toUpdate = pairs.filter((p) => pending.has(`${p.facultyId}|${p.topicId}`));
+    for (let i = 0; i < toUpdate.length; i += 20) {
+      await Promise.all(
+        toUpdate.slice(i, i + 20).map((p) =>
+          supabase
+            .from('faculty_topics')
+            .update({ confirmed: true, confirmed_at: p.confirmedAt || new Date().toISOString() })
+            .eq('faculty_id', p.facultyId)
+            .eq('topic_id', p.topicId)
+        )
+      );
+    }
+    return { success: true, updated: toUpdate.length };
+  } catch (e: any) {
+    console.error('syncTopicConfirmations failed:', e);
+    return { success: false, updated: 0, message: e?.message || 'Sync failed.' };
   }
 }
+
 export async function getConfirmedEmails() {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
   try {

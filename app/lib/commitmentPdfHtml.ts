@@ -113,6 +113,7 @@ export function renderCommitmentHTML(input: CommitmentInput): string {
 
           <p class="small">For any query contact your session coordinator<br/><strong>${escapeHtml(coordinator.name)}</strong> | ${escapeHtml(coordinator.phone)} | ${escapeHtml(coordinator.email)}</p>
           <p class="small">As per IADVL Policy, Conference Registration, Travel and Accommodation will have to be arranged by faculty and delegates themselves.</p>
+          <p class="small">If you have not yet registered, you can register at the special faculty rate by <a href="https://dermacon27faculty.groupthink.events/">clicking here</a>.</p>
           <p class="small">Thank you for contributing your time and expertise to the scientific programme. We look forward to your participation and welcoming you to DERMACON International 2027.</p>
           <p class="small"><strong>Confirm your participation. <a href="${escapeHtml(input.formLink)}">Click Here to Confirm</a></strong></p>
 

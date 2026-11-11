@@ -1,2 +1,1 @@
-ALTER TABLE faculty 
-ADD COLUMN is_confirmed BOOLEAN DEFAULT false;
+NOTIFY pgrst, 'reload schema';

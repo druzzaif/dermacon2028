@@ -54,7 +54,7 @@ export default function FacultyProfileModal({
     setSendingEmail(false);
     
     if (res.success) {
-      setEmailStatus({ type: 'success', msg: 'Email sent successfully!' });
+      setEmailStatus({ type: 'success', msg: res.message || 'Email sent successfully!' });
     } else {
       setEmailStatus({ type: 'error', msg: res.message });
     }
@@ -141,7 +141,7 @@ export default function FacultyProfileModal({
     setSendingEmail(false);
     
     if (res.success) {
-      setEmailStatus({ type: 'success', msg: 'Email sent successfully!' });
+      setEmailStatus({ type: 'success', msg: res.message || 'Email sent successfully!' });
     } else {
       setEmailStatus({ type: 'error', msg: res.message });
     }
@@ -253,7 +253,7 @@ export default function FacultyProfileModal({
     setSendingEmail(false);
     
     if (res.success) {
-      setEmailStatus({ type: 'success', msg: 'Email sent successfully!' });
+      setEmailStatus({ type: 'success', msg: res.message || 'Email sent successfully!' });
     } else {
       setEmailStatus({ type: 'error', msg: res.message });
     }
@@ -313,7 +313,7 @@ export default function FacultyProfileModal({
     setSendingEmail(false);
     
     if (res.success) {
-      setEmailStatus({ type: 'success', msg: 'Email sent successfully!' });
+      setEmailStatus({ type: 'success', msg: res.message || 'Email sent successfully!' });
     } else {
       setEmailStatus({ type: 'error', msg: res.message });
     }

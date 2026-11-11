@@ -1,6 +1,6 @@
 'use client';
 
-import { getConfirmedEmails } from '../actions';
+import { syncTopicConfirmations, generateFacultyTopicPdfs } from '../actions';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
 import EditFacultyModal from '../components/EditFacultyModal';
@@ -11,7 +11,7 @@ import { inputCls } from '../components/Field';
 
 type CountFilter = 'all' | '0' | '1' | '2' | '3+' | '4+' | '5+';
 
-const FACULTY_SELECT = `*, faculty_topic_counts ( topic_count )`;
+const FACULTY_SELECT = `*, faculty_topic_counts ( topic_count ), faculty_topics ( confirmed )`;
 
 function matchesCount(topicCount: number, filter: CountFilter): boolean {
   switch (filter) {
@@ -28,16 +28,13 @@ function matchesCount(topicCount: number, filter: CountFilter): boolean {
 export default function FacultyDirectoryPage() {
   const [faculty, setFaculty] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pdfBusyId, setPdfBusyId] = useState<string | null>(null);
 
   const [editingFaculty, setEditingFaculty] = useState<any | null>(null);
   const [viewingProfile, setViewingProfile] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [countFilter, setCountFilter] = useState<CountFilter>('all');
-  const [confirmedEmails, setConfirmedEmails] = useState<string[]>([]);
-
   useEffect(() => {
-    getConfirmedEmails().then(setConfirmedEmails);
-
     async function fetchFaculty() {
       const { data, error } = await supabase
         .from('faculty')
@@ -48,7 +45,10 @@ export default function FacultyDirectoryPage() {
       else setFaculty(data || []);
       setLoading(false);
     }
-    fetchFaculty();
+    // Pull per-topic confirmations from the Google Sheet, then reload if anything changed
+    fetchFaculty().then(() =>
+      syncTopicConfirmations().then((r) => { if (r.updated > 0) fetchFaculty(); })
+    );
   }, []);
 
   async function refreshFaculty() {
@@ -59,9 +59,29 @@ export default function FacultyDirectoryPage() {
     if (data) setFaculty(data);
   }
 
-  const handleViewPDF = (id: string, e: React.MouseEvent) => {
+  // One PDF per topic: download every file (the browser may ask once to allow multiple downloads)
+  const handleViewPDF = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    window.open(`/api/generate-pdf?id=${id}`, '_blank');
+    if (pdfBusyId) return;
+    setPdfBusyId(id);
+    try {
+      const r = await generateFacultyTopicPdfs(id);
+      if (!r.success || !r.files.length) {
+        alert(r.message || 'No topics assigned, so no PDF was generated.');
+        return;
+      }
+      for (const f of r.files) {
+        const a = document.createElement('a');
+        a.href = f.url;
+        a.download = f.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        await new Promise((res) => setTimeout(res, 400));
+      }
+    } finally {
+      setPdfBusyId(null);
+    }
   };
 
   const filteredFaculty = useMemo(() => {
@@ -183,7 +203,9 @@ export default function FacultyDirectoryPage() {
                     .toUpperCase();
                   const topicCount = doc.faculty_topic_counts?.[0]?.topic_count || 0;
                   const phoneDigits = (doc.phone || '').replace(/[^0-9+]/g, '');
-                  const confirmed = confirmedEmails.includes((doc.email || '').toLowerCase());
+                  const confirmedCount = (doc.faculty_topics || []).filter((ft: any) => ft.confirmed).length;
+                  const allConfirmed = topicCount > 0 && confirmedCount === topicCount;
+                  const partlyConfirmed = confirmedCount > 0 && !allConfirmed;
 
                   return (
                     <tr
@@ -208,10 +230,15 @@ export default function FacultyDirectoryPage() {
                               >
                                 {doc.canonical_name}
                               </button>
-                              {confirmed && (
+                              {allConfirmed && (
                                 <Badge tone="success">
                                   <CheckIcon width={12} height={12} strokeWidth={3} />
                                   Confirmed
+                                </Badge>
+                              )}
+                              {partlyConfirmed && (
+                                <Badge tone="warning">
+                                  {confirmedCount}/{topicCount} topics confirmed
                                 </Badge>
                               )}
                             </div>
@@ -281,10 +308,11 @@ export default function FacultyDirectoryPage() {
                           <button
                             type="button"
                             onClick={(e) => handleViewPDF(doc.id, e)}
-                            aria-label={`Open PDF for ${doc.canonical_name}`}
+                            aria-label={`Download PDFs for ${doc.canonical_name} (one per topic)`}
+                            disabled={pdfBusyId === doc.id}
                             className={actionBtn}
                           >
-                            PDF
+                            {pdfBusyId === doc.id ? 'Making PDFs…' : 'PDF'}
                           </button>
                         </div>
                       </td>

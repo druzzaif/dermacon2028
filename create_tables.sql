@@ -51,6 +51,8 @@ CREATE TABLE IF NOT EXISTS faculty_topics (
   faculty_id UUID REFERENCES faculty(id) ON DELETE CASCADE,
   topic_id UUID REFERENCES session_topics(id) ON DELETE CASCADE,
   role TEXT DEFAULT 'Faculty',
+  confirmed BOOLEAN NOT NULL DEFAULT false,
+  confirmed_at TIMESTAMPTZ,
   PRIMARY KEY (faculty_id, topic_id)
 );
 

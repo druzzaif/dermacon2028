@@ -384,7 +384,17 @@ export default function EditTopicModal({
       return;
     }
 
-    await supabase.from('faculty_topics').delete().eq('topic_id', topic.id);
+    // Remove only the faculty who were taken off this topic, then upsert the rest.
+    // (Deleting everything and re-inserting would wipe the "confirmed" flag.)
+    const keepIds = facultyLinks.map((l) => l.faculty_id);
+    let removeQuery = supabase.from('faculty_topics').delete().eq('topic_id', topic.id);
+    if (keepIds.length > 0) removeQuery = removeQuery.not('faculty_id', 'in', `(${keepIds.join(',')})`);
+    const { error: removeError } = await removeQuery;
+    if (removeError) {
+      setError(removeError.message);
+      setIsSaving(false);
+      return;
+    }
 
     if (facultyLinks.length > 0) {
       const payload = facultyLinks.map((l) => ({
@@ -392,7 +402,9 @@ export default function EditTopicModal({
         faculty_id: l.faculty_id,
         role: l.role,
       }));
-      const { error: linkError } = await supabase.from('faculty_topics').insert(payload);
+      const { error: linkError } = await supabase
+        .from('faculty_topics')
+        .upsert(payload, { onConflict: 'faculty_id,topic_id' });
       if (linkError) {
         setError(linkError.message);
         setIsSaving(false);

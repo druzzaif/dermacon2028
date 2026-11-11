@@ -1,8 +1,9 @@
 'use client';
-import { resequenceSession, deleteTopic, getConfirmedEmails } from '../actions';
+import { resequenceSession, deleteTopic, syncTopicConfirmations } from '../actions';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
 import EditSessionModal from '../components/EditSessionModal';
+import AddSessionModal from '../components/AddSessionModal';
 import AddTopicModal from '../components/AddTopicModal';
 import EditCoordinatorsModal from '../components/EditCoordinatorsModal';
 import EditTopicModal from '../components/EditTopicModal';
@@ -37,7 +38,7 @@ export default function SessionsPage() {
   const [selectedSession, setSelectedSession] = useState<any | null>(null);
   const [coordinators, setCoordinators] = useState<any[]>([]);
   const [topics, setTopics] = useState<any[]>([]);
-  const [confirmedEmails, setConfirmedEmails] = useState<string[]>([]);
+  const [syncTick, setSyncTick] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,6 +47,7 @@ export default function SessionsPage() {
   const [filterSessionCode, setFilterSessionCode] = useState<string>('');
 
   const [isEditingSession, setIsEditingSession] = useState(false);
+  const [isAddingSession, setIsAddingSession] = useState(false);
   const [isAddingTopic, setIsAddingTopic] = useState(false);
   const [isEditingCoordinators, setIsEditingCoordinators] = useState(false);
   const [editingTopic, setEditingTopic] = useState<any | null>(null);
@@ -57,8 +59,12 @@ export default function SessionsPage() {
   const searchParams = useSearchParams();
   const targetCode = searchParams.get('code');
 
-    useEffect(() => {
-    getConfirmedEmails().then(setConfirmedEmails);
+  // Pull per-topic confirmations from the Google Sheet into the database,
+  // then re-read the open session so the badges update.
+  useEffect(() => {
+    syncTopicConfirmations().then((r) => {
+      if (r.updated > 0) setSyncTick((n) => n + 1);
+    });
   }, []);
 
 
@@ -127,7 +133,7 @@ export default function SessionsPage() {
       .select(
         `
         id, topic_title, start_time, end_time, sequence_no,
-        faculty_topics ( role, faculty ( id, canonical_name, phone, email, is_confirmed ) )
+        faculty_topics ( role, confirmed, faculty ( id, canonical_name, phone, email ) )
       `
       )
       .eq('session_id', selectedSession.id)
@@ -141,7 +147,7 @@ export default function SessionsPage() {
   useEffect(() => {
     refreshDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSession]);
+  }, [selectedSession, syncTick]);
 
   const distinctHalls = useMemo(() => {
     const set = new Set<string>();
@@ -235,6 +241,13 @@ export default function SessionsPage() {
         </div>
 
         <div className="space-y-2 border-b border-line p-3">
+          <button
+            type="button"
+            onClick={() => setIsAddingSession(true)}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white hover:opacity-90"
+          >
+            <PlusIcon /> Add session
+          </button>
           <div className="relative">
             <label htmlFor="session-search" className="sr-only">Search sessions by code or name</label>
             <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
@@ -451,7 +464,7 @@ export default function SessionsPage() {
                                     <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                       <span className="text-sm font-medium text-ink">{ft.faculty?.canonical_name}</span>
                                       <Badge tone={roleTone(ft.role || 'Faculty')}>{ft.role || 'Faculty'}</Badge>
-                                      {confirmedEmails.includes((ft.faculty?.email || '').toLowerCase()) && (
+                                      {ft.confirmed && (
                                         <Badge tone="success">
                                           <CheckIcon width={12} height={12} strokeWidth={3} />
                                           Confirmed
@@ -493,6 +506,16 @@ export default function SessionsPage() {
           <div className="flex flex-1 items-center justify-center text-ink-2">Select a session to view it.</div>
         )}
 
+        {isAddingSession && (
+          <AddSessionModal
+            onClose={() => setIsAddingSession(false)}
+            onSaved={(code) => {
+              setIsAddingSession(false);
+              // Reload the page on the new session so it is listed and selected
+              window.location.assign(`/sessions?code=${encodeURIComponent(code)}`);
+            }}
+          />
+        )}
         {isEditingSession && sel && (
           <EditSessionModal
             session={sel}
