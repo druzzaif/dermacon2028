@@ -4,21 +4,28 @@
 var SETTINGS = {
   sheetId: "1HUvUnGC7G9Kab-cHTW0WYAI41dK9bhuOy5tGq0f_NDM",
   myEmail: "druzzaif@gmail.com",
+  workshopEmail: "workshop@dermacon2027.com",
+  reminderAfterDays: 5,
+  coordinatorRole: "Lead Coordinator",
+
   formBaseUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdxz_5YnX30AkhVuTEBYiTjAU5Ps38Qa_-Fx-uQS3fbG1cWcg/viewform",
   entryName: "entry.640056832",
   entryPhone: "entry.778392849",
   entrySessions: "entry.1359171350",
 
-  // Google Drive file IDs of the images (used as inline images in the email)
+  // Google Drive file IDs (images must be shared: Anyone with the link = Viewer)
   images: {
-    iadvl:    "1wMw8YXdv0CqtKVF1YSvCoQTzrRq9oK3R",  // IADVL logo
-    dermacon: "18O31LHEMdrDw2MGTwW_jlsI_kudIzo8P",  // DERMACON logo
-    sigKrina: "1kj3CC54PbE-tixvnKu8hni1jAb14BFRs",  // Dr Krina Patel
-    sigRanjan:"1vBnl3lg7OW_V_BKUdWEhu8LmlLJ3hFH3",  // Dr Ranjan Raval
-    sigJagdish:"1YnfUTVnzQ2A4GDM-csACA28KjzLnmevd", // Dr Jagdish Sakhiya
-    sigKandarp:"1qVJd9oAvZJT1SA4uo5c24yYDLt9IMHsk"  // Dr Kandarp Pandya
+    iadvl:      "1wMw8YXdv0CqtKVF1YSvCoQTzrRq9oK3R",
+    dermacon:   "18O31LHEMdrDw2MGTwW_jlsI_kudIzo8P",
+    sigKrina:   "1kj3CC54PbE-tixvnKu8hni1jAb14BFRs",
+    sigRanjan:  "1vBnl3lg7OW_V_BKUdWEhu8LmlLJ3hFH3",
+    sigJagdish: "1YnfUTVnzQ2A4GDM-csACA28KjzLnmevd",
+    sigKandarp: "1qVJd9oAvZJT1SA4uo5c24yYDLt9IMHsk"
   }
 };
+
+var LOG_SHEET = "EmailLog";
+var LOG_HEADERS = ["SentAt", "Name", "Email", "Phone", "Sessions", "FormLink", "Status", "ReminderSentAt", "RespondedAt"];
 
 // ==========================================
 // HELPERS
@@ -31,7 +38,7 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
-// Replace {{Key}} placeholders safely (values are not treated as regex patterns)
+// Replace {{Key}} placeholders safely
 function fill(str, map) {
   for (var key in map) {
     if (map.hasOwnProperty(key)) {
@@ -42,22 +49,76 @@ function fill(str, map) {
   }
   return str;
 }
-// Public image URL for a Drive file (no attachment needed)
+
 function driveImgUrl(fileId) {
   return "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w600";
 }
-// Load all Drive images as inline-image blobs. One bad image will not stop the email.
-function loadInlineImages() {
-  var out = {};
-  for (var key in SETTINGS.images) {
-    if (!SETTINGS.images.hasOwnProperty(key)) continue;
-    try {
-      out[key] = DriveApp.getFileById(SETTINGS.images[key]).getBlob().setName(key);
-    } catch (err) {
-      Logger.log("Image failed: " + key + " -> " + err);
-    }
+
+function buildPrefilledLink(name, phone, sessions) {
+  return SETTINGS.formBaseUrl + "?usp=pp_url" +
+    "&" + SETTINGS.entryName + "=" + encodeURIComponent(name || "") +
+    "&" + SETTINGS.entryPhone + "=" + encodeURIComponent(phone || "") +
+    "&" + SETTINGS.entrySessions + "=" + encodeURIComponent(sessions || "");
+}
+
+// ==========================================
+// EMAIL LOG (tracks who was emailed / confirmed)
+// ==========================================
+function getLogSheet() {
+  var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+  var sh = ss.getSheetByName(LOG_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(LOG_SHEET);
+    sh.appendRow(LOG_HEADERS);
+    sh.setFrozenRows(1);
   }
-  return out;
+  return sh;
+}
+
+// Add a row, or reset the existing row if this faculty was emailed before
+function logSent(data, link) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var sh = getLogSheet();
+    var email = String(data.email || '').trim().toLowerCase();
+    var values = sh.getDataRange().getValues();
+    var rowIdx = -1;
+    for (var i = 1; i < values.length; i++) {
+      if (String(values[i][2]).trim().toLowerCase() === email) { rowIdx = i + 1; break; }
+    }
+    var row = [new Date(), data.name, data.email, data.phone || '', data.sessions || '', link, "Sent", "", ""];
+    if (rowIdx > 0) {
+      sh.getRange(rowIdx, 1, 1, row.length).setValues([row]);
+    } else {
+      sh.appendRow(row);
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Called when the faculty submits the Google Form
+function markResponded(email, name, status) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var sh = getLogSheet();
+    var values = sh.getDataRange().getValues();
+    var e = String(email || '').trim().toLowerCase();
+    var n = String(name || '').trim().toLowerCase();
+    if (n === 'doctor') n = '';
+    for (var i = 1; i < values.length; i++) {
+      var rowEmail = String(values[i][2]).trim().toLowerCase();
+      var rowName  = String(values[i][1]).trim().toLowerCase();
+      if ((e && rowEmail === e) || (n && rowName === n)) {
+        sh.getRange(i + 1, 7).setValue(status);
+        sh.getRange(i + 1, 9).setValue(new Date());
+      }
+    }
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ==========================================
@@ -69,23 +130,18 @@ function doPost(e) {
 
     if (data.action === "sendFormLink") {
 
-      // 1. Build the pre-filled Google Form link
-      var prefilledLink = SETTINGS.formBaseUrl + "?usp=pp_url" +
-        "&" + SETTINGS.entryName + "=" + encodeURIComponent(data.name) +
-        "&" + SETTINGS.entryPhone + "=" + encodeURIComponent(data.phone) +
-        "&" + SETTINGS.entrySessions + "=" + encodeURIComponent(data.sessions);
+      // 1. Pre-filled Google Form link
+      var prefilledLink = buildPrefilledLink(data.name, data.phone, data.sessions);
 
       // 2. Load the HTML template (raw text)
       var template = HtmlService.createTemplateFromFile('Template').getRawContent();
 
-      // 3. Find the loop markers (tolerant of spaces/case)
+      // 3. Find the loop markers
       var startMatch = /<!--\s*SESSION_START\s*-->/i.exec(template);
       var endMatch   = /<!--\s*SESSION_END\s*-->/i.exec(template);
-
       if (!startMatch || !endMatch) {
         throw new Error("Markers not found. Template starts with: " + template.substring(0, 200));
       }
-
       var startIndex = startMatch.index;
       var endIndex   = endMatch.index;
 
@@ -104,7 +160,7 @@ function doPost(e) {
             Hall:          esc(row.session_hall || 'TBD'),
             Date:          esc(row.date || ''),
             SessionTime:   esc(row.session_time || ''),
-            CoordName:     esc(row.coordName || 'Scientific Committee'),
+            CoordName:     esc(row.coordName || ''),
             CoordPhone:    esc(row.coordPhone || ''),
             CoordEmail:    esc(row.coordEmail || '')
           });
@@ -129,21 +185,138 @@ function doPost(e) {
         return SETTINGS.images[key] ? driveImgUrl(SETTINGS.images[key]) : match;
       });
 
-      // 7. Send
-            MailApp.sendEmail({
+      // 7. Send to faculty
+      MailApp.sendEmail({
         to: data.email,
         subject: "[DERMACON International 2027] Scientific Commitments - " + data.name,
         body: "Dear " + data.name + ",\n\nYour scientific commitment details are included in this email.\n\nConfirm your attendance here: " + prefilledLink,
         htmlBody: htmlBody
       });
 
+      // 8. Record it (used for the 5-day reminder). A failure here must not break the response.
+      try { logSent(data, prefilledLink); }
+      catch (err1) { Logger.log("logSent failed: " + err1); }
+
+      // 9. Tell the coordinators that the faculty was emailed
+      try { notifyCoordinatorsSent(data); }
+      catch (err2) { Logger.log("notifyCoordinatorsSent failed: " + err2); }
+
       return ContentService.createTextOutput(JSON.stringify({ status: "Success" })).setMimeType(ContentService.MimeType.JSON);
+    }
+    if (data.action === "syncCoordinators") {
+      var expected = PropertiesService.getScriptProperties().getProperty('SYNC_TOKEN');
+      if (!expected || data.token !== expected) {
+        return ContentService.createTextOutput(JSON.stringify({ status: "Error", message: "Unauthorized" })).setMimeType(ContentService.MimeType.JSON);
+      }
+
+      var out = [];
+      (data.rows || []).forEach(function (r) {
+        var code = String(r.code || '').trim();
+        var em = String(r.email || '').trim();
+        if (code && em.indexOf('@') > 0) out.push([code, em, String(r.name || '').trim()]);
+      });
+
+      // Safety: never wipe the tab if nothing was received
+      if (!out.length) {
+        return ContentService.createTextOutput(JSON.stringify({ status: "Error", message: "No rows received. The tab was NOT changed." })).setMimeType(ContentService.MimeType.JSON);
+      }
+
+      var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+      var sh = ss.getSheetByName("CoordinatorList") || ss.insertSheet("CoordinatorList");
+      sh.clearContents();
+      sh.getRange(1, 1, 1, 3).setValues([["SessionCode", "Email", "Name"]]);
+      sh.getRange(2, 1, out.length, 3).setValues(out);
+
+      return ContentService.createTextOutput(JSON.stringify({ status: "Success", count: out.length })).setMimeType(ContentService.MimeType.JSON);
     }
 
     return ContentService.createTextOutput(JSON.stringify({ status: "Error", message: "Unknown action" })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: "Error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+// ==========================================
+// 2b. COORDINATOR: "we have emailed your faculty"
+// ==========================================
+function notifyCoordinatorsSent(data) {
+  var coordSheet = SpreadsheetApp.openById(SETTINGS.sheetId).getSheetByName("CoordinatorList");
+  if (!coordSheet) return;                       // no tab: nothing is sent
+
+  var coordData = coordSheet.getDataRange().getValues();   // A = session code, B = email, C = name
+  var facultyEmail = String(data.email || '').trim().toLowerCase();
+  var byCoord = {};
+
+  (data.sessionsData || []).forEach(function (r) {
+    var code = String(r.session_code || '').trim();
+    if (!code) return;
+
+    for (var k = 1; k < coordData.length; k++) {
+      if (String(coordData[k][0]).trim() !== code) continue;
+
+      var cEmail = String(coordData[k][1] || '').trim();
+      var cName  = String(coordData[k][2] || '').trim();
+      var key = cEmail.toLowerCase();
+
+      if (cEmail.indexOf('@') < 1) continue;     // no email: nothing is sent
+      if (key === facultyEmail) continue;
+
+      if (!byCoord[key]) byCoord[key] = { email: cEmail, name: cName, rows: [], seen: {} };
+
+      // avoid listing the same topic twice for the same coordinator
+      var rowKey = code + '|' + (r.topic || '') + '|' + (r.time || '');
+      if (byCoord[key].seen[rowKey]) continue;
+      byCoord[key].seen[rowKey] = true;
+      byCoord[key].rows.push(r);
+    }
+  });
+
+  Object.keys(byCoord).forEach(function (key) {
+    var c = byCoord[key];
+    var codes = [];
+    var rowsHtml = '';
+    var rowsText = '';
+    var cell = "border:1px solid #999; padding:4px 8px;";
+
+    c.rows.forEach(function (r) {
+      var sess = ((r.session_code || '') + ' ' + (r.session_name || '')).trim();
+      if (r.session_code && codes.indexOf(r.session_code) === -1) codes.push(r.session_code);
+
+      rowsHtml += "<tr>" +
+        "<td style='" + cell + "'>" + esc(sess) + "</td>" +
+        "<td style='" + cell + "'>" + esc(r.topic || '') + "</td>" +
+        "<td style='" + cell + "'>" + esc(r.time || '') + "</td>" +
+        "<td style='" + cell + "'>" + esc(r.session_hall || '') + "</td>" +
+        "<td style='" + cell + "'>" + esc(r.date || '') + "</td>" +
+        "<td style='" + cell + "'>" + esc(r.session_time || '') + "</td>" +
+        "</tr>";
+
+      rowsText += "- " + sess + " | " + (r.topic || '') + " | " + (r.time || '') + " | Hall " + (r.session_hall || '') +
+                  " | " + (r.date || '') + " | " + (r.session_time || '') + "\n";
+    });
+
+    var html = "<div style='font-family: Arial, sans-serif; font-size:13px; line-height:1.5; color:#333;'>" +
+      "<p><strong>Dear " + esc(c.name || 'Coordinator') + ",</strong></p>" +
+      "<p>Faculty <strong>" + esc(data.name) + "</strong> has been invited for your session(s).</p>" +
+      "<table style='border-collapse:collapse; font-size:12px;'>" +
+        "<tr style='background:#e8eef7; font-weight:bold;'>" +
+          "<td style='" + cell + "'>Session</td>" +
+          "<td style='" + cell + "'>Topic</td>" +
+          "<td style='" + cell + "'>Timing</td>" +
+          "<td style='" + cell + "'>Hall</td>" +
+          "<td style='" + cell + "'>Date</td>" +
+          "<td style='" + cell + "'>Session time</td>" +
+        "</tr>" + rowsHtml +
+      "</table>" +
+      "<p>Warm regards,<br><strong>DERMACON International 2027</strong></p></div>";
+
+    MailApp.sendEmail({
+      to: c.email,
+      subject: "[DERMACON International 2027] Faculty invited: " + data.name + " (" + codes.join(', ') + ")",
+      body: "Dear " + (c.name || 'Coordinator') + ",\n\nFaculty " + data.name + " has been invited for your session(s).\n\n" + rowsText,
+      htmlBody: html
+    });
+  });
 }
 
 // ==========================================
@@ -175,6 +348,35 @@ function onFormSubmit(e) {
 
   if (!email) return;
 
+    // ── SYNC TO SUPABASE ──
+  try {
+    var isConfirmed = /yes/i.test(status);
+    var url = SUPABASE_URL + "/rest/v1/faculty?email=eq." + encodeURIComponent(email);
+    var options = {
+      method: "patch",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      payload: JSON.stringify({ is_confirmed: isConfirmed }),
+      muteHttpExceptions: true
+    };
+    UrlFetchApp.fetch(url, options);
+    Logger.log("Successfully synced confirmation to Supabase for: " + email);
+  } catch (err) {
+    Logger.log("Supabase Sync Error: " + err.toString());
+  }
+  // ───────────────────────
+
+  // Stop reminders for this faculty
+  try {
+    markResponded(email, name, /no/i.test(status) ? "Declined" : (/yes/i.test(status) ? "Confirmed" : "Responded"));
+  } catch (errLog) {
+    Logger.log("markResponded failed: " + errLog);
+  }
+
   if (/no/i.test(status)) {
     MailApp.sendEmail({
       to: email,
@@ -198,12 +400,15 @@ function onFormSubmit(e) {
       htmlBody: htmlFaculty
     });
 
+    // Workshop team (your Gmail on cc)
     MailApp.sendEmail({
-      to: SETTINGS.myEmail,
+      to: SETTINGS.workshopEmail,
+      cc: SETTINGS.myEmail,
       subject: "✅ Faculty Confirmed: " + name,
-      body: name + " (" + phone + ") has confirmed their attendance."
+      body: name + " has confirmed their attendance.\n\nPhone: " + phone + "\nEmail: " + email + "\nSessions: " + sessionsStr
     });
 
+    // Coordinators (from the CoordinatorList tab)
     if (sessionsStr) {
       var sessionArray = sessionsStr.split(",");
       var coordSheet = SpreadsheetApp.openById(SETTINGS.sheetId).getSheetByName("CoordinatorList");
@@ -243,51 +448,105 @@ function onFormSubmit(e) {
 }
 
 // ==========================================
-// 4. ONE-TIME SETUP HELPERS (run once, then you may delete)
+// 4. REMINDERS (run daily by a time trigger)
 // ==========================================
-// Run this once from the editor to grant Drive permission.
-// Load all Drive images as inline-image blobs. Failures are collected, not hidden.
-function loadInlineImages(errors) {
-  var out = {};
-  for (var key in SETTINGS.images) {
-    if (!SETTINGS.images.hasOwnProperty(key)) continue;
+function sendReminders() {
+  var sh = getLogSheet();
+  var values = sh.getDataRange().getValues();
+  var now = new Date().getTime();
+  var limitMs = SETTINGS.reminderAfterDays * 24 * 60 * 60 * 1000;
+
+  for (var i = 1; i < values.length; i++) {
+    var r = values[i];
+    var status = String(r[6]).trim();
+    if (status !== "Sent") continue;     // already confirmed / declined
+    if (r[7]) continue;                  // reminder already sent
+
+    var sentAt = new Date(r[0]);
+    if (isNaN(sentAt.getTime()) || (now - sentAt.getTime()) < limitMs) continue;
+
+    if (MailApp.getRemainingDailyQuota() < 1) {
+      Logger.log("Daily email quota reached. Remaining reminders will go out tomorrow.");
+      break;
+    }
+
     try {
-      var blob = DriveApp.getFileById(SETTINGS.images[key]).getBlob();
-      var type = blob.getContentType();
-      if (!/^image\//.test(type)) {
-        throw new Error("Not an image, type is " + type);
-      }
-      out[key] = blob.setName(key);
+      sendReminderEmail(String(r[1]), String(r[2]), String(r[4]), String(r[5]), sentAt);
+      sh.getRange(i + 1, 8).setValue(new Date());
     } catch (err) {
-      if (errors) errors.push(key + ": " + err);
-      Logger.log("Image failed: " + key + " -> " + err);
+      Logger.log("Reminder failed for " + r[2] + ": " + err);
     }
   }
-  return out;
 }
 
-// Run this from the editor. It shows what loaded and what failed.
-function authDrive() {
-  var errors = [];
-  var imgs = loadInlineImages(errors);
-  Logger.log("LOADED: " + Object.keys(imgs).join(", "));
-  Logger.log("FAILED: " + (errors.length ? errors.join(" | ") : "none"));
-}
+function sendReminderEmail(name, email, sessions, link, sentAt) {
+  var sentStr = Utilities.formatDate(sentAt, Session.getScriptTimeZone(), "dd MMM yyyy");
 
-// Sends a small test email to yourself with all six images.
-function testImageEmail() {
-  var errors = [];
-  var imgs = loadInlineImages(errors);
-  var html = '<p>Image test</p>';
-  for (var k in SETTINGS.images) {
-    html += '<p>' + k + '<br><img src="cid:' + k + '" width="120"></p>';
-  }
+  var html = "<div style='font-family: Arial, sans-serif; font-size:14px; line-height:1.6; color:#333;'>" +
+    "<p><strong>Dear " + esc(name) + ",</strong></p>" +
+    "<p>This is a gentle reminder. We emailed you your scientific commitment details for " +
+    "<strong>DERMACON International 2027</strong> on " + esc(sentStr) + ", and we have not yet received your confirmation.</p>" +
+    (sessions ? "<p><strong>Your session(s):</strong> " + esc(sessions.replace(/,/g, ', ')) + "</p>" : "") +
+    "<p>Please confirm your participation using the button below. It takes less than a minute.</p>" +
+    "<p style='margin:22px 0;'><a href='" + link + "' style='background:#4a2c6e; color:#ffffff; padding:12px 22px; text-decoration:none; border-radius:4px; font-weight:bold;'>Confirm participation</a></p>" +
+    "<p>If you have any difficulty, please reply to this email.</p>" +
+    "<p>Warm regards,<br><strong>DERMACON International 2027</strong></p></div>";
+
   MailApp.sendEmail({
-    to: SETTINGS.myEmail,
-    subject: "Image test",
-    body: "Image test",
-    htmlBody: html,
-    inlineImages: imgs
+    to: email,
+    subject: "[Reminder] [DERMACON International 2027] Please confirm your participation - " + name,
+    body: "Dear " + name + ",\n\nThis is a gentle reminder. We have not yet received your confirmation for DERMACON International 2027.\n\nPlease confirm here: " + link,
+    htmlBody: html
   });
-  Logger.log("Sent. Failed: " + (errors.length ? errors.join(" | ") : "none"));
+}
+
+// Run this ONCE from the editor to schedule the daily reminder check (10 AM)
+function createReminderTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'sendReminders') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('sendReminders').timeBased().everyDays(1).atHour(10).create();
+  Logger.log("Daily reminder trigger created.");
+}
+function createFormSubmitTrigger() {
+  var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+  var triggers = ScriptApp.getUserTriggers(ss);
+  
+  // Check if the trigger already exists to prevent duplicates
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'onFormSubmit') {
+      Logger.log("Trigger already exists.");
+      return;
+    }
+  }
+  
+  ScriptApp.newTrigger('onFormSubmit')
+    .forSpreadsheet(ss)
+    .onFormSubmit()
+    .create();
+    
+  Logger.log("Successfully created onFormSubmit trigger.");
+}
+function doGet(e) {
+  var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+  var sheet = ss.getSheetByName("EmailLog");
+  if (!sheet) return ContentService.createTextOutput(JSON.stringify({ confirmed: [] }));
+
+  var data = sheet.getDataRange().getValues();
+  if (data.length < 2) return ContentService.createTextOutput(JSON.stringify({ confirmed: [] }));
+
+  // Find column indexes dynamically
+  var headers = data[0];
+  var iEmail = headers.indexOf("Email");
+  var iStatus = headers.indexOf("Status");
+
+  var confirmed = [];
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][iStatus]).trim().toLowerCase() === "confirmed") {
+      confirmed.push(String(data[i][iEmail]).trim().toLowerCase());
+    }
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ confirmed: confirmed }))
+    .setMimeType(ContentService.MimeType.JSON);
 }

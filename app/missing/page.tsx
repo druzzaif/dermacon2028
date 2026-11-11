@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import AssignFacultyModal from '../components/AssignFacultyModal';
+import Badge from '../components/Badge';
+import { AlertIcon, ArrowUpRightIcon, CalendarIcon, CheckIcon, ClockIcon, PinIcon, PlusIcon } from '../components/Icons';
 
 export default function MissingDataPage() {
   const [groupedData, setGroupedData] = useState<any[]>([]);
@@ -59,158 +61,142 @@ export default function MissingDataPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-3rem)] bg-gray-100 flex items-center justify-center">
-        <div className="text-center text-gray-500 text-lg">Scanning database for missing data...</div>
+      <div role="status" className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center bg-canvas text-ink-2">
+        Scanning the database for missing data…
       </div>
     );
   }
 
+  const goBtn =
+    'inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-lg border bg-white px-4 text-sm font-medium transition-colors';
+
   return (
-    <div className="min-h-[calc(100vh-3rem)] bg-gray-100 text-gray-900 font-sans">
-      <main className="p-8 max-w-5xl mx-auto w-full">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">To-Do Checklist</h1>
-          <p className="text-gray-500 text-lg">Sessions and topics that require your attention.</p>
+    <div className="min-h-[calc(100vh-3.5rem)] bg-canvas text-ink">
+      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-5xl p-4 outline-none sm:p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold">To-do checklist</h1>
+          <p className="mt-1.5 text-ink-2">Sessions and topics that still need your attention.</p>
         </div>
 
         {groupedData.length === 0 ? (
-          <div className="bg-green-50 text-green-700 p-10 rounded-2xl border border-green-200 text-center shadow-sm">
-            <div className="text-5xl mb-4">🎉</div>
-            <div className="text-2xl font-bold">Everything is Perfect!</div>
-            <div className="text-sm mt-2">All sessions have topics, faculty, and coordinators assigned.</div>
+          <div className="rounded-2xl border border-green-200 bg-green-50 p-10 text-center text-green-800 shadow-card">
+            <CheckIcon width={36} height={36} className="mx-auto mb-3" />
+            <p className="text-xl font-semibold">Everything is in place</p>
+            <p className="mt-1 text-sm">All sessions have topics, faculty and coordinators assigned.</p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {groupedData.map((session) => (
-              <div key={session.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                
-                <div className="bg-gray-50 border-b border-gray-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1 flex-wrap">
-                      <a 
+              <section
+                key={session.id}
+                aria-labelledby={`session-${session.id}`}
+                className="overflow-hidden rounded-2xl border border-line bg-white shadow-card"
+              >
+                <div className="flex flex-col justify-between gap-4 border-b border-line bg-slate-50/70 p-5 sm:p-6 md:flex-row md:items-center">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <a
                         href={`/sessions?code=${session.session_code}`}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-bold text-sm tracking-wide transition-colors flex items-center gap-1 group"
-                        title={`Go to ${session.session_code}`}
+                        className="tnum inline-flex h-9 items-center gap-1 rounded-lg bg-accent px-3 text-sm font-semibold text-white transition-colors hover:bg-accent-strong"
+                        aria-label={`Open session ${session.session_code}`}
                       >
                         {session.session_code}
-                        <span className="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+                        <ArrowUpRightIcon width={14} height={14} />
                       </a>
-                      <h2 className="text-xl font-bold text-gray-900">{session.session_name || 'Untitled Session'}</h2>
+                      <h2 id={`session-${session.id}`} className="text-xl font-semibold text-ink">
+                        {session.session_name || 'Untitled session'}
+                      </h2>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mt-2 flex-wrap">
-                      <span>📅 {session.session_date || 'No Date'}</span>
-                      <span>⏰ {session.start_time?.slice(0,5) || 'No Time'}</span>
-                      <span>📍 {session.hall || <span className="text-red-600 font-semibold">No Hall</span>}</span>
-                    </div>
+                    <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-2">
+                      <div className="flex items-center gap-1.5">
+                        <dt className="text-muted"><CalendarIcon /><span className="sr-only">Date</span></dt>
+                        <dd className="tnum">{session.session_date || 'No date'}</dd>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <dt className="text-muted"><ClockIcon /><span className="sr-only">Start time</span></dt>
+                        <dd className="tnum">{session.start_time?.slice(0, 5) || 'No time'}</dd>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <dt className="text-muted"><PinIcon /><span className="sr-only">Hall</span></dt>
+                        <dd>{session.hall || <span className="font-semibold text-red-700">No hall</span>}</dd>
+                      </div>
+                    </dl>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
-                    {session.isEmpty && (
-                      <span className="bg-red-100 text-red-800 border border-red-200 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                        No Topics
-                      </span>
-                    )}
+                  <div className="flex flex-wrap gap-2">
+                    {session.isEmpty && <Badge tone="danger">No topics</Badge>}
                     {session.missingTopics.length > 0 && (
-                      <span className="bg-red-100 text-red-800 border border-red-200 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                        {session.missingTopics.length} Missing Faculty
-                      </span>
+                      <Badge tone="danger">{session.missingTopics.length} missing faculty</Badge>
                     )}
-                    {!session.hasCoordinators && (
-                      <span className="bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                        No Coordinators
-                      </span>
-                    )}
+                    {!session.hasCoordinators && <Badge tone="warning">No coordinators</Badge>}
                   </div>
                 </div>
 
-                <div className="p-6 space-y-4">
+                <ul className="space-y-3 p-5 sm:p-6">
                   {session.isEmpty && (
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-100">
-                      <div className="flex items-start gap-4">
-                        <div className="bg-white text-red-600 font-bold px-3 py-1 rounded-lg border border-red-200 shadow-sm text-sm shrink-0">
-                          ⚠️
-                        </div>
+                    <li className="flex flex-col justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center">
+                      <div className="flex items-start gap-3">
+                        <AlertIcon className="mt-0.5 shrink-0 text-red-800" width={20} height={20} />
                         <div>
-                          <div className="text-base font-semibold text-gray-900">This session has no topics yet</div>
-                          <div className="text-sm text-red-600 mt-1 font-medium">
-                            Add topics to build the session programme.
-                          </div>
+                          <p className="font-semibold text-ink">This session has no topics yet</p>
+                          <p className="mt-0.5 text-sm text-red-900">Add topics to build the programme.</p>
                         </div>
                       </div>
-                      <a
-                        href={`/sessions?code=${session.session_code}`}
-                        className="bg-white border border-red-200 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition-colors whitespace-nowrap"
-                      >
-                        Go to Session ↗
+                      <a href={`/sessions?code=${session.session_code}`} className={`${goBtn} border-red-300 text-red-800 hover:bg-red-100`}>
+                        Go to session <ArrowUpRightIcon width={14} height={14} />
                       </a>
-                    </div>
+                    </li>
                   )}
 
                   {!session.hasCoordinators && (
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50 border border-amber-100">
-                      <div className="flex items-start gap-4">
-                        <div className="bg-white text-amber-600 font-bold px-3 py-1 rounded-lg border border-amber-200 shadow-sm text-sm shrink-0">
-                          ⚠️
-                        </div>
+                    <li className="flex flex-col justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center">
+                      <div className="flex items-start gap-3">
+                        <AlertIcon className="mt-0.5 shrink-0 text-amber-900" width={20} height={20} />
                         <div>
-                          <div className="text-base font-semibold text-gray-900">No coordinators assigned</div>
-                          <div className="text-sm text-amber-700 mt-1 font-medium">
-                            Assign a lead coordinator, national, or local coordinator.
-                          </div>
+                          <p className="font-semibold text-ink">No coordinators assigned</p>
+                          <p className="mt-0.5 text-sm text-amber-900">Assign a lead, national or local coordinator.</p>
                         </div>
                       </div>
-                      <a
-                        href={`/sessions?code=${session.session_code}`}
-                        className="bg-white border border-amber-200 text-amber-700 hover:bg-amber-100 px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition-colors whitespace-nowrap"
-                      >
-                        Edit Coordinators ↗
+                      <a href={`/sessions?code=${session.session_code}`} className={`${goBtn} border-amber-300 text-amber-900 hover:bg-amber-100`}>
+                        Edit coordinators <ArrowUpRightIcon width={14} height={14} />
                       </a>
-                    </div>
+                    </li>
                   )}
 
                   {session.missingTopics.map((topic: any) => (
-                    <div key={topic.id} className="flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-100">
-                      <div className="flex items-start gap-4">
-                        <div className="bg-white text-red-600 font-bold px-3 py-1 rounded-lg border border-red-200 shadow-sm text-sm shrink-0">
-                          Seq {topic.sequence_no || '?'}
-                        </div>
+                    <li key={topic.id} className="flex flex-col justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center">
+                      <div className="flex items-start gap-3">
+                        <span className="tnum inline-flex h-8 min-w-8 shrink-0 items-center justify-center rounded-lg bg-white px-2 text-sm font-semibold text-red-800 ring-1 ring-inset ring-red-200">
+                          <span className="sr-only">Number </span>{topic.sequence_no || '?'}
+                        </span>
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <a 
-                              href={`/sessions?code=${session.session_code}`}
-                              className="text-blue-600 hover:text-blue-800 hover:underline font-bold text-sm transition-colors"
-                              title={`Go to ${session.session_code}`}
-                            >
-                              {session.session_code} ↗
-                            </a>
-                          </div>
-                          <div className="text-base font-semibold text-gray-900">
-                            {topic.topic_title || <span className="text-red-500 italic">(Blank Topic Title)</span>}
-                          </div>
-                          <div className="text-sm text-red-600 mt-1 font-medium flex items-center gap-1">
-                            ⚠️ Needs a speaker
-                          </div>
+                          <p className="font-semibold text-ink">
+                            {topic.topic_title || <span className="italic text-red-800">(Blank topic title)</span>}
+                          </p>
+                          <p className="mt-0.5 text-sm text-red-900">Needs a speaker</p>
                         </div>
                       </div>
-                      <button 
+                      <button
+                        type="button"
                         onClick={() => setAssigningTopic(topic)}
-                        className="bg-white border border-red-200 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition-colors"
+                        aria-label={`Assign a speaker to ${topic.topic_title || 'untitled topic'} in ${session.session_code}`}
+                        className={`${goBtn} border-red-300 text-red-800 hover:bg-red-100`}
                       >
-                        + Assign
+                        <PlusIcon width={14} height={14} /> Assign
                       </button>
-                    </div>
+                    </li>
                   ))}
-                </div>
-              </div>
+                </ul>
+              </section>
             ))}
           </div>
         )}
       </main>
 
       {assigningTopic && (
-        <AssignFacultyModal 
-          topic={assigningTopic} 
-          onClose={() => setAssigningTopic(null)} 
-          onSaved={fetchMissingData} 
+        <AssignFacultyModal
+          topic={assigningTopic}
+          onClose={() => setAssigningTopic(null)}
+          onSaved={fetchMissingData}
         />
       )}
     </div>

@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../supabase';
 import { generatePDFData, generatePDFForSession } from '../actions';
+import Modal from './Modal';
+import Field, { inputCls } from './Field';
+import { AlertIcon, CheckIcon } from './Icons';
 
 type FacultyLite = { id: string; canonical_name: string; email: string | null };
 
@@ -61,6 +64,77 @@ function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   return `${dd}-${mm}-${d.getFullYear()}`;
 }
 
+
+/* ------------------------------------------------------------------
+   TimePicker lives at module level. It used to be declared inside
+   AddTopicModal, which gave it a new identity on every render, so the
+   inputs remounted and lost focus after each keystroke.
+   ------------------------------------------------------------------ */
+function TimePicker({
+  label,
+  h,
+  m,
+  ampm,
+  onChange,
+}: {
+  label: string;
+  h: number;
+  m: number;
+  ampm: string;
+  onChange: (h: number, m: number, ampm: string) => void;
+}) {
+  const clamp = (v: string, lo: number, hi: number, fallback: number) => {
+    let n = parseInt(v, 10);
+    if (isNaN(n)) n = fallback;
+    return Math.min(hi, Math.max(lo, n));
+  };
+  const seg = 'h-11 w-14 rounded-lg border border-field bg-white text-center text-lg font-semibold text-ink tnum [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
+
+  return (
+    <fieldset>
+      <legend className="mb-1.5 text-sm font-medium text-ink">{label}</legend>
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={12}
+          aria-label={`${label} hour`}
+          value={String(h).padStart(2, '0')}
+          onChange={(e) => onChange(clamp(e.target.value, 1, 12, 12), m, ampm)}
+          className={seg}
+        />
+        <span aria-hidden="true" className="text-lg font-semibold text-muted">:</span>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={59}
+          aria-label={`${label} minutes`}
+          value={String(m).padStart(2, '0')}
+          onChange={(e) => onChange(h, clamp(e.target.value, 0, 59, 0), ampm)}
+          className={seg}
+        />
+        <div role="group" aria-label={`${label} AM or PM`} className="ml-1 flex overflow-hidden rounded-lg border border-field">
+          {['AM', 'PM'].map((v) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={ampm === v}
+              onClick={() => onChange(h, m, v)}
+              className={`h-11 w-12 text-sm font-semibold transition-colors ${
+                ampm === v ? 'bg-accent text-white' : 'bg-white text-ink-2 hover:bg-slate-50'
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+    </fieldset>
+  );
+}
+
 export default function AddTopicModal({
   session,
   onClose,
@@ -74,7 +148,7 @@ export default function AddTopicModal({
   const [searchFaculty, setSearchFaculty] = useState('');
   const [facultyLinks, setFacultyLinks] = useState<FacultyLink[]>([]);
   const [topicTitle, setTopicTitle] = useState('');
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
@@ -82,6 +156,13 @@ export default function AddTopicModal({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const skipConflictCheck = useRef(false);
+
+  // Topics already in this session, used to warn when the new topic's time overlaps one
+  const [sessionTopics, setSessionTopics] = useState<
+    { id: string; topic_title: string | null; sequence_no: number | null; start_time: string | null; end_time: string | null }[]
+  >([]);
+  const [overlapBlocked, setOverlapBlocked] = useState(false);
 
   const [showAddNew, setShowAddNew] = useState(false);
   const [newName, setNewName] = useState('');
@@ -107,7 +188,7 @@ export default function AddTopicModal({
   const [startM, setStartM] = useState(initSessionTime.m);
   const [startAmPm, setStartAmPm] = useState(initSessionTime.ampm);
 
-  // Calculate default end time (10 mins after start)
+  // Default end time: 10 minutes after start
   const calcEndTime = (h: number, m: number, ampm: string) => {
     let endM = m + 10;
     let endH = h;
@@ -135,139 +216,40 @@ export default function AddTopicModal({
     return `${String(h24).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
   };
 
-  const scrollH = (e: React.WheelEvent, current: number, setter: (v: number) => void) => {
-    if (e.deltaY < 0) setter(current === 12 ? 1 : current + 1);
-    else setter(current === 1 ? 12 : current - 1);
-  };
-  const scrollM = (e: React.WheelEvent, current: number, setter: (v: number) => void) => {
-    if (e.deltaY < 0) setter(current === 59 ? 0 : current + 1);
-    else setter(current === 0 ? 59 : current - 1);
-  };
-
-  // Sync End Time automatically when Start Time changes
+  // Changing the start time moves the end time with it
   const handleStartChange = (h: number, m: number, ampm: string) => {
     setStartH(h);
     setStartM(m);
     setStartAmPm(ampm);
-    
     const newEnd = calcEndTime(h, m, ampm);
     setEndH(newEnd.h);
     setEndM(newEnd.m);
     setEndAmPm(newEnd.ampm);
   };
 
-  function TimePicker({
-    label,
-    h,
-    setH,
-    m,
-    setM,
-    ampm,
-    setAmPm,
-    onChangeOverride,
-  }: {
-    label: string;
-    h: number;
-    setH: (v: number) => void;
-    m: number;
-    setM: (v: number) => void;
-    ampm: string;
-    setAmPm: (v: string) => void;
-    onChangeOverride?: (h: number, m: number, ampm: string) => void;
-  }) {
-    const triggerChange = (newH: number, newM: number, newAmPm: string) => {
-      if (onChangeOverride) onChangeOverride(newH, newM, newAmPm);
-      else {
-        setH(newH);
-        setM(newM);
-        setAmPm(newAmPm);
-      }
-    };
+  useEffect(() => {
+    async function loadSessionTopics() {
+      const { data } = await supabase
+        .from('session_topics')
+        .select('id, topic_title, sequence_no, start_time, end_time')
+        .eq('session_id', session.id)
+        .order('sequence_no', { ascending: true });
+      if (data) setSessionTopics(data as any);
+    }
+    loadSessionTopics();
+  }, [session.id]);
 
-    return (
-      <div>
-        <label className="block text-sm font-bold text-gray-700 mb-1">{label}</label>
-        <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-1 bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 shadow-sm">
-          <div className="flex flex-col items-center">
-            <button type="button" onClick={() => {
-              const newH = h === 12 ? 1 : h + 1;
-              triggerChange(newH, m, ampm);
-            }} className="text-gray-400 hover:text-blue-600 px-2 text-[10px]">▲</button>
-            <input
-              type="number"
-              min={1}
-              max={12}
-              value={String(h).padStart(2, '0')}
-              onChange={(e) => {
-                let val = parseInt(e.target.value);
-                if (isNaN(val)) val = 12;
-                if (val > 12) val = 12;
-                if (val < 1) val = 1;
-                triggerChange(val, m, ampm);
-              }}
-              onWheel={(e) => {
-                if (e.deltaY < 0) triggerChange(h === 12 ? 1 : h + 1, m, ampm);
-                else triggerChange(h === 1 ? 12 : h - 1, m, ampm);
-              }}
-              className="w-8 text-center text-lg font-bold focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <button type="button" onClick={() => {
-              const newH = h === 1 ? 12 : h - 1;
-              triggerChange(newH, m, ampm);
-            }} className="text-gray-400 hover:text-blue-600 px-2 text-[10px]">▼</button>
-          </div>
-          
-          <span className="text-lg font-bold text-gray-400">:</span>
-          
-          <div className="flex flex-col items-center">
-            <button type="button" onClick={() => {
-              const newM = m === 59 ? 0 : m + 1;
-              triggerChange(h, newM, ampm);
-            }} className="text-gray-400 hover:text-blue-600 px-2 text-[10px]">▲</button>
-            <input
-              type="number"
-              min={0}
-              max={59}
-              value={String(m).padStart(2, '0')}
-              onChange={(e) => {
-                let val = parseInt(e.target.value);
-                if (isNaN(val)) val = 0;
-                if (val > 59) val = 59;
-                if (val < 0) val = 0;
-                triggerChange(h, val, ampm);
-              }}
-              onWheel={(e) => {
-                if (e.deltaY < 0) triggerChange(h, m === 59 ? 0 : m + 1, ampm);
-                else triggerChange(h, m === 0 ? 59 : m - 1, ampm);
-              }}
-              className="w-10 text-center text-lg font-bold focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-            <button type="button" onClick={() => {
-              const newM = m === 0 ? 59 : m - 1;
-              triggerChange(h, newM, ampm);
-            }} className="text-gray-400 hover:text-blue-600 px-2 text-[10px]">▼</button>
-          </div>
+  const newStart = to24Hour(startH, startM, startAmPm);
+  const newEnd = to24Hour(endH, endM, endAmPm);
+  const invalidRange = newEnd <= newStart;
 
-          <div className="flex flex-col border-l border-gray-200 ml-1 pl-1">
-            <button
-              type="button"
-              onClick={() => triggerChange(h, m, 'AM')}
-              className={`px-2 py-0.5 text-xs font-bold rounded ${ampm === 'AM' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:bg-gray-50'}`}
-            >
-              AM
-            </button>
-            <button
-              type="button"
-              onClick={() => triggerChange(h, m, 'PM')}
-              className={`px-2 py-0.5 text-xs font-bold rounded ${ampm === 'PM' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:bg-gray-50'}`}
-            >
-              PM
-            </button>
-          </div>
-        </div>
-      </div>
+  // Overlap = the two time ranges share any minutes (touching ends do not count)
+  const topicOverlaps = useMemo(() => {
+    if (invalidRange) return [];
+    return sessionTopics.filter(
+      (t) => t.start_time && t.end_time && newStart < t.end_time && t.start_time < newEnd
     );
-  }
+  }, [sessionTopics, newStart, newEnd, invalidRange]);
 
   useEffect(() => {
     async function loadFaculty() {
@@ -307,7 +289,7 @@ export default function AddTopicModal({
 
   async function handleAddNewFaculty() {
     if (!newName.trim()) {
-      setError('Name is required');
+      setError('Enter a name for the new faculty member.');
       return;
     }
     setAddingFaculty(true);
@@ -392,13 +374,24 @@ export default function AddTopicModal({
     setIsSaving(true);
     setError(null);
     setConflicts([]);
+    setOverlapBlocked(false);
 
     const parsedStart = to24Hour(startH, startM, startAmPm);
     const parsedEnd = to24Hour(endH, endM, endAmPm);
 
-    const conflictsFound = await checkConflicts(parsedStart, parsedEnd);
-    if (conflictsFound.length > 0) {
+    if (parsedEnd <= parsedStart) {
+      setError('The end time must be after the start time.');
+      setIsSaving(false);
+      return;
+    }
+
+    const skip = skipConflictCheck.current;
+    skipConflictCheck.current = false;
+    const conflictsFound = skip ? [] : await checkConflicts(parsedStart, parsedEnd);
+    const overlapFound = !skip && topicOverlaps.length > 0;
+    if (conflictsFound.length > 0 || overlapFound) {
       setConflicts(conflictsFound);
+      setOverlapBlocked(overlapFound);
       setIsSaving(false);
       return;
     }
@@ -494,291 +487,301 @@ export default function AddTopicModal({
     onClose();
   }
 
+  // FIX: "Save anyway" now skips the conflict check on the next submit.
+  // Before, it re-ran the check, found the same conflicts, and could never save.
   function forceSaveAnyway() {
+    skipConflictCheck.current = true;
     setConflicts([]);
+    setOverlapBlocked(false);
     const form = document.getElementById('add-topic-form') as HTMLFormElement | null;
     if (form) form.requestSubmit();
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden max-h-[92vh] flex flex-col">
-        <div className="flex justify-between items-center p-5 border-b bg-gray-50 shrink-0">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Add Topic</h2>
-            <p className="text-sm text-gray-500">
-              {session.session_code} - {session.session_name}
-            </p>
-          </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-2xl leading-none">
-            ×
-          </button>
-        </div>
+  const secondaryBtn =
+    'inline-flex h-11 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
+  const primaryBtn =
+    'inline-flex h-11 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
 
-        <form id="add-topic-form" onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Topic Title</label>
+  if (showSuccessPrompt) {
+    return (
+      <Modal title="Topic saved" size="md" onClose={finalizeAndClose} busy={pdfBusy}
+        footer={<button type="button" onClick={finalizeAndClose} className={secondaryBtn}>Close</button>}
+      >
+        <div className="space-y-4">
+          <p className="flex items-start gap-2 text-ink-2">
+            <CheckIcon className="mt-1 shrink-0 text-green-700" width={18} height={18} />
+            Faculty assignments are updated. You can generate a PDF for the new faculty, for the whole session, or just close.
+          </p>
+          <div role="status" aria-live="polite">
+            {pdfBusy && <p className="text-sm text-ink-2">Rendering PDF…</p>}
+            {pdfUrl && (
+              <p className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
+                PDF ready.{' '}
+                <a href={pdfUrl} target="_blank" rel="noreferrer" className="font-semibold underline">
+                  Open or download<span className="sr-only"> (opens in a new tab)</span>
+                </a>
+              </p>
+            )}
+          </div>
+          {pdfError && (
+            <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{pdfError}</p>
+          )}
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              disabled={pdfBusy || facultyLinks.length === 0}
+              onClick={async () => {
+                setPdfBusy(true); setPdfError(null);
+                const ids = facultyLinks.map(l => l.faculty_id);
+                const results = [];
+                for (const id of ids) {
+                  const r = await generatePDFData(id);
+                  results.push(r);
+                }
+                const ok = results.filter(r => r.success);
+                setPdfBusy(false);
+                if (ok.length === 0) setPdfError('No PDFs were generated. Try again.');
+                else setPdfUrl((ok[0] as any).url);
+              }}
+              className={primaryBtn}
+            >
+              PDF for new faculty
+            </button>
+            <button
+              type="button"
+              disabled={pdfBusy}
+              onClick={async () => {
+                setPdfBusy(true); setPdfError(null);
+                const r = await generatePDFForSession(session.id);
+                setPdfBusy(false);
+                if (r.success) setPdfUrl((r as any).url);
+                else setPdfError((r as any).message || 'The PDF could not be generated.');
+              }}
+              className={secondaryBtn}
+            >
+              PDF for whole session
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      title="Add topic"
+      subtitle={`${session.session_code} – ${session.session_name}`}
+      onClose={onClose}
+      busy={isSaving}
+      footer={
+        <>
+          <button type="button" onClick={onClose} disabled={isSaving} className={secondaryBtn}>Cancel</button>
+          <button type="submit" form="add-topic-form" disabled={isSaving} className={primaryBtn}>
+            {isSaving ? 'Saving…' : 'Save topic'}
+          </button>
+        </>
+      }
+    >
+      <form id="add-topic-form" onSubmit={handleSubmit} className="space-y-5">
+        <Field label="Topic title" required>
+          {(p) => (
             <input
-              required
+              {...p}
               value={topicTitle}
               onChange={(e) => setTopicTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="e.g., Anatomy Discussion"
+              className={inputCls}
+              placeholder="e.g. Anatomy discussion"
             />
+          )}
+        </Field>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <TimePicker label="Start time" h={startH} m={startM} ampm={startAmPm} onChange={handleStartChange} />
+          <TimePicker
+            label="End time"
+            h={endH}
+            m={endM}
+            ampm={endAmPm}
+            onChange={(h, m, a) => { setEndH(h); setEndM(m); setEndAmPm(a); }}
+          />
+        </div>
+        <p className="-mt-2 text-sm text-muted">The running-order number is worked out from the start time.</p>
+
+        {invalidRange && (
+          <p role="alert" className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+            <AlertIcon className="mt-0.5 shrink-0" width={16} height={16} />
+            The end time must be after the start time.
+          </p>
+        )}
+        {!overlapBlocked && topicOverlaps.length > 0 && (
+          <div role="status" aria-live="polite" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            <p className="flex items-center gap-2 font-semibold">
+              <AlertIcon width={16} height={16} />
+              This time overlaps {topicOverlaps.length === 1 ? 'another topic' : `${topicOverlaps.length} other topics`} in this session.
+            </p>
+            <p className="mt-1">You can still save, and you’ll be asked to confirm.</p>
+          </div>
+        )}
+
+        <div className="border-t border-line pt-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-medium text-ink">Assign faculty</h3>
+            <button
+              type="button"
+              onClick={() => setShowAddNew(!showAddNew)}
+              aria-expanded={showAddNew}
+              aria-controls="add-new-faculty"
+              className="inline-flex h-11 items-center rounded-lg px-3 text-sm font-medium text-accent hover:bg-accent-tint"
+            >
+              {showAddNew ? 'Hide new faculty form' : 'Add new faculty'}
+            </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 items-end">
-            <TimePicker 
-              label="Start Time" 
-              h={startH} setH={setStartH} 
-              m={startM} setM={setStartM} 
-              ampm={startAmPm} setAmPm={setStartAmPm} 
-              onChangeOverride={handleStartChange}
-            />
-            <TimePicker 
-              label="End Time" 
-              h={endH} setH={setEndH} 
-              m={endM} setM={setEndM} 
-              ampm={endAmPm} setAmPm={setEndAmPm} 
-            />
-          </div>
-          <p className="text-xs text-gray-500 mt-1">Sequence number will be automatically calculated based on start time.</p>
-
-          <hr className="my-4 border-gray-200" />
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-bold text-gray-700">Assign Faculty</label>
-              <button
-                type="button"
-                onClick={() => setShowAddNew(!showAddNew)}
-                className="text-xs font-bold text-blue-600 hover:text-blue-800"
-              >
-                + Add new faculty
-              </button>
-            </div>
-
-            {showAddNew && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3 space-y-2">
-                <input
-                  placeholder="Full name (e.g., Dr. Jane Doe)"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    placeholder="Email (optional)"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-                  />
-                  <input
-                    placeholder="Phone (optional)"
-                    value={newPhone}
-                    onChange={(e) => setNewPhone(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-                  />
-                </div>
-                <div className="flex gap-2 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddNew(false)}
-                    className="text-xs px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleAddNewFaculty}
-                    disabled={addingFaculty}
-                    className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {addingFaculty ? 'Adding...' : 'Add & Attach'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {facultyLinks.length > 0 && (
-              <div className="space-y-2 mb-3">
-                {facultyLinks.map((l) => (
-                  <div
-                    key={l.faculty_id}
-                    className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-2"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm text-gray-900 truncate">
-                        {l.faculty.canonical_name}
-                      </div>
-                      <div className="text-xs text-gray-500 truncate">{l.faculty.email || '—'}</div>
-                    </div>
-                    <select
-                      value={l.role}
-                      onChange={(e) => updateRole(l.faculty_id, e.target.value)}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
-                    >
-                      <option value="Faculty">Faculty</option>
-                      <option value="Panel">Panel</option>
-                      <option value="Moderator">Moderator</option>
-                      <option value="Coordinator">Coordinator</option>
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => removeFaculty(l.faculty_id)}
-                      className="text-xs text-red-600 hover:underline font-semibold"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <input
-              type="text"
-              placeholder="Search by name or email to add faculty..."
-              value={searchFaculty}
-              onChange={(e) => setSearchFaculty(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-            {searchFaculty.length > 0 && (
-              <div className="mt-1 border border-gray-200 rounded-lg max-h-40 overflow-y-auto bg-white shadow-sm">
-                {filteredFaculty.length === 0 ? (
-                  <div className="p-3 text-sm text-gray-500">No faculty found</div>
-                ) : (
-                  filteredFaculty.map((f) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => addFaculty(f)}
-                      className="w-full text-left p-2.5 border-b border-gray-100 hover:bg-blue-50 text-sm"
-                    >
-                      <div className="font-semibold text-gray-900">{f.canonical_name}</div>
-                      <div className="text-xs text-gray-500">{f.email || '—'}</div>
-                    </button>
-                  ))
+          {showAddNew && (
+            <div id="add-new-faculty" className="mb-4 space-y-3 rounded-xl bg-accent-tint p-4">
+              <Field label="Full name" required>
+                {(p) => (
+                  <input {...p} placeholder="e.g. Dr. Jane Doe" value={newName} onChange={(e) => setNewName(e.target.value)} className={inputCls} />
                 )}
+              </Field>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Email (optional)">
+                  {(p) => <input {...p} type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className={inputCls} />}
+                </Field>
+                <Field label="Phone (optional)">
+                  {(p) => <input {...p} type="tel" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} className={inputCls} />}
+                </Field>
               </div>
-            )}
-          </div>
-
-          {conflicts.length > 0 && (
-            <div className="bg-red-50 border border-red-300 rounded-lg p-3 space-y-2">
-              <div className="font-bold text-red-800 text-sm">
-                Overlap warning — this faculty is already booked:
-              </div>
-              {conflicts.map((c, i) => (
-                <div key={i} className="text-xs text-red-800 bg-white rounded p-2 border border-red-200">
-                  <strong>{c.facultyName}</strong> also on <em>{c.otherSession}</em> ({c.otherTopic}) on{' '}
-                  {formatDateDdMmYyyy(c.otherDate)}, {formatTimeAmPm(c.otherStart)} –{' '}
-                  {formatTimeAmPm(c.otherEnd)}
-                </div>
-              ))}
-              <div className="flex gap-2 justify-end pt-1">
-                <button
-                  type="button"
-                  onClick={() => setConflicts([])}
-                  className="text-xs px-3 py-1.5 border border-gray-300 rounded bg-white hover:bg-gray-50"
-                >
-                  Go back and fix
-                </button>
-                <button
-                  type="button"
-                  onClick={forceSaveAnyway}
-                  className="text-xs px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700"
-                >
-                  Save anyway
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setShowAddNew(false)} className={secondaryBtn}>Cancel</button>
+                <button type="button" onClick={handleAddNewFaculty} disabled={addingFaculty} className={primaryBtn}>
+                  {addingFaculty ? 'Adding…' : 'Add and attach'}
                 </button>
               </div>
             </div>
           )}
 
-          {error && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{error}</p>}
+          {facultyLinks.length > 0 && (
+            <ul className="mb-4 space-y-2" aria-label="Assigned faculty">
+              {facultyLinks.map((l) => (
+                <li key={l.faculty_id} className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-white p-2.5 pl-3.5">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-ink">{l.faculty.canonical_name}</div>
+                    <div className="truncate text-xs text-muted">{l.faculty.email || '—'}</div>
+                  </div>
+                  <label className="sr-only" htmlFor={`role-${l.faculty_id}`}>Role for {l.faculty.canonical_name}</label>
+                  <select
+                    id={`role-${l.faculty_id}`}
+                    value={l.role}
+                    onChange={(e) => updateRole(l.faculty_id, e.target.value)}
+                    className={`${inputCls} w-auto`}
+                  >
+                    <option value="Faculty">Faculty</option>
+                    <option value="Panel">Panel</option>
+                    <option value="Moderator">Moderator</option>
+                    <option value="Coordinator">Coordinator</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => removeFaculty(l.faculty_id)}
+                    aria-label={`Remove ${l.faculty.canonical_name}`}
+                    className="inline-flex h-11 items-center rounded-lg px-3 text-sm font-medium text-red-700 hover:bg-red-50"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 border border-gray-300 rounded-lg font-medium hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : 'Save Topic'}
-            </button>
-          </div>
-        </form>
-
-                {showSuccessPrompt && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Topic saved</h3>
-              <p className="text-sm text-gray-700">
-                Faculty assignments updated. You can now generate a PDF for the
-                newly added faculty, the whole session, or just close.
-              </p>
-              {pdfError && <p className="text-xs text-red-600 bg-red-50 p-2 rounded">{pdfError}</p>}
-              {pdfUrl && (
-                <p className="text-xs text-green-700 bg-green-50 p-2 rounded">
-                  PDF ready:{' '}
-                  <a href={pdfUrl} target="_blank" rel="noreferrer" className="underline font-semibold">
-                    Open / download
-                  </a>
-                </p>
+          <Field label="Search faculty by name or email" srOnlyLabel>
+            {(p) => (
+              <input
+                {...p}
+                type="search"
+                placeholder="Search by name or email to add faculty"
+                value={searchFaculty}
+                onChange={(e) => setSearchFaculty(e.target.value)}
+                className={inputCls}
+              />
+            )}
+          </Field>
+          {searchFaculty.length > 0 && (
+            <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-line bg-white shadow-card">
+              <p role="status" className="sr-only">{filteredFaculty.length} results</p>
+              {filteredFaculty.length === 0 ? (
+                <p className="p-3 text-sm text-ink-2">No faculty found.</p>
+              ) : (
+                <ul>
+                  {filteredFaculty.map((f) => (
+                    <li key={f.id}>
+                      <button
+                        type="button"
+                        onClick={() => addFaculty(f)}
+                        className="block min-h-11 w-full border-b border-line px-3.5 py-2 text-left last:border-b-0 hover:bg-accent-tint"
+                      >
+                        <div className="text-sm font-medium text-ink">{f.canonical_name}</div>
+                        <div className="text-xs text-muted">{f.email || '—'}</div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  disabled={pdfBusy}
-                  onClick={async () => {
-                    setPdfBusy(true); setPdfError(null);
-                    const ids = facultyLinks.map(l => l.faculty_id);
-                    const results = [];
-                    for (const id of ids) {
-                      const r = await generatePDFData(id);
-                      results.push(r);
-                    }
-                    const ok = results.filter(r => r.success);
-                    setPdfBusy(false);
-                    if (ok.length === 0) setPdfError('No PDFs generated.');
-                    else setPdfUrl((ok[0] as any).url);
-                  }}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {pdfBusy ? 'Rendering…' : 'PDF for new faculty'}
-                </button>
-                <button
-                  type="button"
-                  disabled={pdfBusy}
-                  onClick={async () => {
-                    setPdfBusy(true); setPdfError(null);
-                    const r = await generatePDFForSession(session.id);
-                    setPdfBusy(false);
-                    if (r.success) setPdfUrl((r as any).url);
-                    else setPdfError((r as any).message || 'PDF failed');
-                  }}
-                  className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  {pdfBusy ? 'Rendering…' : 'PDF for whole session'}
-                </button>
+            </div>
+          )}
+        </div>
+
+        {(conflicts.length > 0 || (overlapBlocked && topicOverlaps.length > 0)) && (
+          <div role="alert" className="space-y-3 rounded-xl border border-red-300 bg-red-50 p-4">
+            {overlapBlocked && topicOverlaps.length > 0 && (
+              <div className="space-y-2">
+                <p className="flex items-center gap-2 text-sm font-semibold text-red-900">
+                  <AlertIcon width={18} height={18} /> This topic overlaps another topic in {session.session_code}.
+                </p>
+                <ul className="space-y-2">
+                  {topicOverlaps.map((t) => {
+                    const same = t.start_time === newStart && t.end_time === newEnd;
+                    return (
+                      <li key={t.id} className="rounded-lg border border-red-200 bg-white p-2.5 text-sm text-red-900">
+                        <span className="tnum font-semibold">
+                          {formatTimeAmPm(t.start_time)} – {formatTimeAmPm(t.end_time)}
+                        </span>
+                        {t.sequence_no != null && <> · No. {t.sequence_no}</>}
+                        {' '}· {t.topic_title || 'Untitled topic'}
+                        {same && <span className="block text-xs">Same time slot. This is fine for a co-presented topic.</span>}
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
-              <div className="flex justify-end pt-2 border-t">
-                <button
-                  onClick={finalizeAndClose}
-                  className="px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 text-sm"
-                >
-                  Close
-                </button>
-              </div>
+            )}
+            {conflicts.length > 0 && (
+              <p className="flex items-center gap-2 text-sm font-semibold text-red-900">
+                <AlertIcon width={18} height={18} /> Overlap: this faculty is already booked at that time.
+              </p>
+            )}
+            <ul className="space-y-2">
+              {conflicts.map((c, i) => (
+                <li key={i} className="rounded-lg border border-red-200 bg-white p-2.5 text-sm text-red-900">
+                  <strong>{c.facultyName}</strong> is also in <em>{c.otherSession}</em> ({c.otherTopic}) on{' '}
+                  <span className="tnum">{formatDateDdMmYyyy(c.otherDate)}, {formatTimeAmPm(c.otherStart)} – {formatTimeAmPm(c.otherEnd)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button type="button" onClick={() => { setConflicts([]); setOverlapBlocked(false); }} className={secondaryBtn}>Go back and fix</button>
+              <button type="button" onClick={forceSaveAnyway}
+                className="inline-flex h-11 items-center rounded-lg bg-red-700 px-5 text-sm font-medium text-white hover:bg-red-800">
+                Save anyway
+              </button>
             </div>
           </div>
         )}
-      </div>
-    </div>
+
+        {error && (
+          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>
+        )}
+      </form>
+    </Modal>
   );
 }

@@ -53,7 +53,7 @@ export async function generatePDFData(facultyId: string) {
       const lead = coordData?.faculty as any;
       inputSessions.push({
         session: s.session, topics: s.topics, role: s.role || 'Faculty',
-        coordinator: { name: lead?.canonical_name || 'Scientific Committee', phone: lead?.phone || '+91 99981 84930', email: lead?.email || 'osdermacon@iadvl.org' }
+        coordinator: { name: lead?.canonical_name || '', phone: lead?.phone || '', email: lead?.email || '' }
       });
     }
 
@@ -158,9 +158,9 @@ export async function generatePDFForSession(sessionId: string) {
       .eq('role', 'Lead Coordinator')
       .maybeSingle();
     const lead = leadCoordData?.faculty;
-    const coordName  = lead?.canonical_name || 'Scientific Committee';
-    const coordPhone = lead?.phone || '+91 99981 84930';
-    const coordEmail = lead?.email || 'osdermacon@iadvl.org';
+    const coordName  = lead?.canonical_name || '';
+    const coordPhone = lead?.phone || '';
+    const coordEmail = lead?.email || '';
 
     const d = new Date(session.session_date);
     const formattedDate = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -366,13 +366,50 @@ export async function deleteTopic(topicId: string, sessionId: string) {
 // ─────────────────────────────────────────────────────────────────────
 //  Google Script Integration: Send PDFs and Form Link via Email
 // ─────────────────────────────────────────────────────────────────────
+// Role to copy into the sheet. '' = all roles. Use 'Lead Coordinator' for only that role.
+const COORD_ROLE = '';
+
+export async function syncCoordinatorsToSheet() {
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
+  try {
+    let q = supabase
+      .from('session_coordinators')
+      .select('role, conference_sessions ( session_code ), faculty ( canonical_name, email )');
+    if (COORD_ROLE) q = q.eq('role', COORD_ROLE);
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    const rows = (data || [])
+      .map((r: any) => ({
+        code: r.conference_sessions?.session_code,
+        email: r.faculty?.email,
+        name: r.faculty?.canonical_name,
+      }))
+      .filter((r: any) => r.code && r.email);
+
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'syncCoordinators', token: process.env.SYNC_TOKEN, rows }),
+      // @ts-ignore
+      next: { revalidate: 0 },
+    });
+    const out = await res.json();
+    if (out.status === 'Success') return { success: true, message: `Synced ${out.count} coordinator rows.` };
+    return { success: false, message: out.message || 'Sync failed.' };
+  } catch (error: any) {
+    console.error('Coordinator sync error:', error);
+    return { success: false, message: error.message || 'Sync failed.' };
+  }
+}
+
 export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
   
   if (!faculty.email) return { success: false, message: "Faculty member has no email address." };
 
   try {
-   
+       await syncCoordinatorsToSheet();   // keep the CoordinatorList tab current
 
         // 2. Fetch the detailed session data from Supabase
     const { data: facultyTopics, error: facultyTopicsError } = await supabase
@@ -397,10 +434,10 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
         .eq('role', 'Lead Coordinator')
         .maybeSingle();
       const lead = coordData?.faculty as any;
-      coordBySession[sid] = {
-        name: lead?.canonical_name || 'Scientific Committee',
-        phone: lead?.phone || '+91 99981 84930',
-        email: lead?.email || 'osdermacon@iadvl.org',
+            coordBySession[sid] = {
+        name: lead?.canonical_name || '',
+        phone: lead?.phone || '',
+        email: lead?.email || '',
       };
     }
 
@@ -463,5 +500,15 @@ export async function sendFormLinkToFaculty(faculty: any, sessionCodes: string) 
   } catch (error: any) {
     console.error("Google Script Error:", error);
     return { success: false, message: error.message || "Failed to connect to Google Script." };
+  }
+}
+export async function getConfirmedEmails() {
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbyyImelai6B3iKTmQ4hdaCzZ8CLQ21IsRiWZi1UiTa5KNXy6mgYICZgZDEF0ZoVWfbA/exec";
+  try {
+    const res = await fetch(scriptUrl, { cache: 'no-store' });
+    const data = await res.json();
+    return data.confirmed || [];
+  } catch (e) {
+    return [];
   }
 }

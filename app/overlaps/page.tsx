@@ -4,6 +4,8 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
+import Badge from '../components/Badge';
+import { AlertIcon, CheckIcon, ClockIcon, PinIcon } from '../components/Icons';
 
 function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   if (!dateStr) return '--';
@@ -59,6 +61,14 @@ export default function OverlapsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'faculty' | 'hall'>('faculty');
 
+  function onTabKey(e: React.KeyboardEvent) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    const next: 'faculty' | 'hall' = e.key === 'Home' ? 'faculty' : e.key === 'End' ? 'hall' : activeTab === 'faculty' ? 'hall' : 'faculty';
+    setActiveTab(next);
+    document.getElementById(`tab-${next}`)?.focus();
+  }
+
   useEffect(() => {
     async function checkOverlaps() {
       setLoading(true);
@@ -69,7 +79,10 @@ export default function OverlapsPage() {
         faculty_topics ( faculty ( canonical_name ) )
       `) as any);
 
-      if (!topics) return;
+      if (!topics) {
+        setLoading(false);
+        return;
+      }
 
       // FACULTY OVERLAPS
       const facultyIssues: any[] = [];
@@ -150,151 +163,123 @@ export default function OverlapsPage() {
     checkOverlaps();
   }, []);
 
+  const tabCls = (on: boolean, tone: 'red' | 'orange') =>
+    `inline-flex h-12 items-center gap-2 border-b-2 px-4 text-sm font-medium transition-colors ${
+      on
+        ? tone === 'red' ? 'border-red-700 text-red-800' : 'border-orange-700 text-orange-800'
+        : 'border-transparent text-ink-2 hover:text-ink'
+    }`;
+
+  function SessionCard({ t, showHall }: { t: any; showHall?: boolean }) {
+    const cs = t.conference_sessions;
+    return (
+      <div className="rounded-xl bg-canvas p-4 ring-1 ring-inset ring-line">
+        <div className="tnum text-sm font-semibold text-accent">{cs.session_code}</div>
+        <div className="mt-0.5 font-medium text-ink">{cs.session_name}</div>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-2">
+          <span className="tnum inline-flex items-center gap-1.5">
+            <ClockIcon /> <span className="sr-only">Time:</span>
+            {formatTimeAmPm(t.start_time)} – {formatTimeAmPm(t.end_time)}
+          </span>
+          {showHall && (
+            <span className="inline-flex items-center gap-1.5">
+              <PinIcon /> <span className="sr-only">Hall:</span>
+              {cs.hall}
+            </span>
+          )}
+        </div>
+        {showHall && t.topic_title && (
+          <p className="mt-3 border-t border-line pt-3 text-sm italic text-ink">“{t.topic_title}”</p>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col">
-      <main className="flex-1 p-8 max-w-6xl mx-auto w-full">
-        <h1 className="text-3xl font-bold mb-2">Schedule Conflicts</h1>
-        <p className="text-gray-500 mb-8">
-          Automatically detected clashes in faculty schedules and hall bookings.
+    <div className="min-h-[calc(100vh-3.5rem)] bg-canvas text-ink">
+      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl p-4 outline-none sm:p-8">
+        <h1 className="text-3xl font-semibold">Schedule conflicts</h1>
+        <p className="mb-8 mt-1.5 max-w-prose text-ink-2">
+          Clashes in faculty schedules and hall bookings, detected automatically. Sessions without a hall are skipped.
         </p>
 
-        <div className="flex gap-4 mb-6 border-b border-gray-200">
+        <div role="tablist" aria-label="Conflict type" onKeyDown={onTabKey} className="mb-6 flex gap-2 border-b border-line">
           <button
+            id="tab-faculty"
+            role="tab"
+            type="button"
+            aria-selected={activeTab === 'faculty'}
+            aria-controls="panel-faculty"
+            tabIndex={activeTab === 'faculty' ? 0 : -1}
             onClick={() => setActiveTab('faculty')}
-            className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-              activeTab === 'faculty'
-                ? 'border-red-500 text-red-600'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
-            }`}
+            className={tabCls(activeTab === 'faculty', 'red')}
           >
-            Faculty Overlaps{' '}
-            {overlaps.length > 0 && (
-              <span className="ml-2 bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">
-                {overlaps.length}
-              </span>
-            )}
+            Faculty overlaps
+            {overlaps.length > 0 && <Badge tone="danger" className="tnum">{overlaps.length}</Badge>}
           </button>
           <button
+            id="tab-hall"
+            role="tab"
+            type="button"
+            aria-selected={activeTab === 'hall'}
+            aria-controls="panel-hall"
+            tabIndex={activeTab === 'hall' ? 0 : -1}
             onClick={() => setActiveTab('hall')}
-            className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-              activeTab === 'hall'
-                ? 'border-orange-500 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
-            }`}
+            className={tabCls(activeTab === 'hall', 'orange')}
           >
-            Hall Overlaps{' '}
-            {hallOverlaps.length > 0 && (
-              <span className="ml-2 bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs">
-                {hallOverlaps.length}
-              </span>
-            )}
+            Hall overlaps
+            {hallOverlaps.length > 0 && <Badge tone="orange" className="tnum">{hallOverlaps.length}</Badge>}
           </button>
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-gray-500 text-lg font-medium">
-            Scanning schedule for conflicts...
-          </div>
+          <div role="status" className="py-16 text-center text-ink-2">Scanning the schedule for conflicts…</div>
         ) : (
-          <div className="space-y-4">
-            {activeTab === 'faculty' &&
-              (overlaps.length === 0 ? (
-                <div className="bg-green-50 text-green-700 p-8 rounded-xl border border-green-200 text-center font-medium shadow-sm">
-                  <div className="text-lg">No faculty members are double-booked.</div>
+          <>
+            <div id="panel-faculty" role="tabpanel" aria-labelledby="tab-faculty" hidden={activeTab !== 'faculty'} className="space-y-4">
+              {overlaps.length === 0 ? (
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-green-200 bg-green-50 p-8 font-medium text-green-800">
+                  <CheckIcon width={20} height={20} /> No faculty members are double-booked.
                 </div>
               ) : (
                 overlaps.map((issue, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white border-l-4 border-red-500 rounded-lg shadow-sm p-5 flex flex-col gap-4"
-                  >
-                    <div className="font-bold text-lg text-red-700 flex items-center gap-2">
-                      <span className="bg-red-100 px-2 py-0.5 rounded text-xs uppercase tracking-wide">
-                        Warning
-                      </span>
+                  <article key={idx} className="rounded-2xl border border-line border-l-4 border-l-red-700 bg-white p-5 shadow-card">
+                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-ink">
+                      <AlertIcon className="text-red-700" width={20} height={20} />
                       {issue.name}
+                      <span className="text-sm font-normal text-ink-2">is booked twice</span>
+                    </h2>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <SessionCard t={issue.a} showHall />
+                      <SessionCard t={issue.b} showHall />
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="bg-gray-50 p-4 rounded border border-gray-200">
-                        <div className="font-bold text-blue-800 mb-2">
-                          {issue.a.conference_sessions.session_code} -{' '}
-                          {issue.a.conference_sessions.session_name}
-                        </div>
-                        <div className="text-gray-600 mb-1">
-                          <strong>Time:</strong> {formatTimeAmPm(issue.a.start_time)} -{' '}
-                          {formatTimeAmPm(issue.a.end_time)}
-                        </div>
-                        <div className="text-gray-600">
-                          <strong>Hall:</strong> {issue.a.conference_sessions.hall}
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-gray-200 text-gray-800 italic">
-                          "{issue.a.topic_title}"
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 p-4 rounded border border-gray-200">
-                        <div className="font-bold text-blue-800 mb-2">
-                          {issue.b.conference_sessions.session_code} -{' '}
-                          {issue.b.conference_sessions.session_name}
-                        </div>
-                        <div className="text-gray-600 mb-1">
-                          <strong>Time:</strong> {formatTimeAmPm(issue.b.start_time)} -{' '}
-                          {formatTimeAmPm(issue.b.end_time)}
-                        </div>
-                        <div className="text-gray-600">
-                          <strong>Hall:</strong> {issue.b.conference_sessions.hall}
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-gray-200 text-gray-800 italic">
-                          "{issue.b.topic_title}"
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  </article>
                 ))
-              ))}
+              )}
+            </div>
 
-            {activeTab === 'hall' &&
-              (hallOverlaps.length === 0 ? (
-                <div className="bg-green-50 text-green-700 p-8 rounded-xl border border-green-200 text-center font-medium shadow-sm">
-                  <div className="text-lg">No halls are double-booked.</div>
+            <div id="panel-hall" role="tabpanel" aria-labelledby="tab-hall" hidden={activeTab !== 'hall'} className="space-y-4">
+              {hallOverlaps.length === 0 ? (
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-green-200 bg-green-50 p-8 font-medium text-green-800">
+                  <CheckIcon width={20} height={20} /> No halls are double-booked.
                 </div>
               ) : (
                 hallOverlaps.map((issue, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white border-l-4 border-orange-500 rounded-lg shadow-sm p-5 flex flex-col gap-4"
-                  >
-                    <div className="font-bold text-lg text-orange-700 flex items-center gap-2">
-                      <span className="bg-orange-100 px-2 py-0.5 rounded text-xs uppercase tracking-wide">
-                        Warning
-                      </span>
-                      Hall {issue.hall} on {formatDateDdMmYyyy(issue.date)}
+                  <article key={idx} className="rounded-2xl border border-line border-l-4 border-l-orange-700 bg-white p-5 shadow-card">
+                    <h2 className="mb-4 flex flex-wrap items-center gap-2 text-lg font-semibold text-ink">
+                      <AlertIcon className="text-orange-700" width={20} height={20} />
+                      Hall {issue.hall}
+                      <span className="tnum text-sm font-normal text-ink-2">on {formatDateDdMmYyyy(issue.date)}</span>
+                    </h2>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <SessionCard t={issue.a} />
+                      <SessionCard t={issue.b} />
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="bg-gray-50 p-4 rounded border border-gray-200">
-                        <div className="font-bold text-blue-800 mb-2">
-                          {issue.a.conference_sessions.session_code} -{' '}
-                          {issue.a.conference_sessions.session_name}
-                        </div>
-                        <div className="text-gray-600">
-                          <strong>Time:</strong> {formatTimeAmPm(issue.a.start_time)} -{' '}
-                          {formatTimeAmPm(issue.a.end_time)}
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 p-4 rounded border border-gray-200">
-                        <div className="font-bold text-blue-800 mb-2">
-                          {issue.b.conference_sessions.session_code} -{' '}
-                          {issue.b.conference_sessions.session_name}
-                        </div>
-                        <div className="text-gray-600">
-                          <strong>Time:</strong> {formatTimeAmPm(issue.b.start_time)} -{' '}
-                          {formatTimeAmPm(issue.b.end_time)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  </article>
                 ))
-              ))}
-          </div>
+              )}
+            </div>
+          </>
         )}
       </main>
     </div>

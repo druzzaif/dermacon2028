@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  /* Standard Web Sizing (1rem = 16px) */
-  --text-xs: 0.75rem;   /* 12px */
-  --text-sm: 0.875rem;  /* 14px */
-  --text-base: 1rem;    /* 16px - Base size */
-  --text-lg: 1.125rem;  /* 18px */
-  --text-xl: 1.25rem;   /* 20px */
-  --text-2xl: 1.5rem;   /* 24px */
-  --text-3xl: 1.875rem; /* 30px */
-  --text-4xl: 2.25rem;  /* 36px */
+  --color-canvas: #f7f7f5;   /* warm page background */
+  --color-ink: #0f172a;      /* 16.6:1 on canvas */
+  --color-ink-2: #475569;    /* 7.6:1 on white */
+  --color-muted: #5b6b7f;    /* 5.1:1 on canvas, 5.5:1 on white */
+  --color-field: #8a94a6;    /* input borders, 3.06:1 */
+  --color-line: #e5e7eb;     /* decorative dividers only */
+  --color-accent: #4338ca;   /* 7.9:1 on white */
+  --color-accent-tint: #eef2ff;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / .04), 0 6px 20px rgb(15 23 42 / .05);
 }
 
 :root {
@@ -18,10 +18,11 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 1rem; /* Locks base to 16px */
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 0.9375rem;      /* 15px */
+  -webkit-font-smoothing: antialiased;
 }
 
 
