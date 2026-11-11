@@ -1,17 +1,29 @@
-// ==========================================
-// 1. SETTINGS
-// ==========================================
+// ==========================================================================
+// DERMACON International 2027 - Google Apps Script
+//
+// What this script does:
+//   * doPost  : sends emails ONLY when the Next.js app asks (first email,
+//               schedule update, reminder, coordinator report).
+//   * onFormSubmit : when a faculty submits the Google Form it RECORDS the
+//               result in the sheet and sends ONE thank-you email to that
+//               faculty. It never emails coordinators or the committee.
+//   * doGet   : the app reads confirmations (Sync button) and the number of
+//               emails left today from here.
+//
+// One-time setup after pasting this code:  run authorizeAll(), then installTrigger().
+// ==========================================================================
+
 var SETTINGS = {
   sheetId: "1HUvUnGC7G9Kab-cHTW0WYAI41dK9bhuOy5tGq0f_NDM",
-  myEmail: "druzzaif@gmail.com",
-  workshopEmail: "workshop@dermacon2027.com",
-  reminderAfterDays: 5,
-  coordinatorRole: "Lead Coordinator",
 
   formBaseUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdxz_5YnX30AkhVuTEBYiTjAU5Ps38Qa_-Fx-uQS3fbG1cWcg/viewform",
   entryName: "entry.640056832",
   entryPhone: "entry.778392849",
   entrySessions: "entry.1359171350",
+
+  // Emails kept free for the confirmation thank-you emails. Bulk sends from the
+  // app stop when only this many remain.
+  quotaReserve: 5,
 
   // Google Drive file IDs (images must be shared: Anyone with the link = Viewer)
   images: {
@@ -27,15 +39,16 @@ var SETTINGS = {
 var LOG_SHEET = "EmailLog";
 var LOG_HEADERS = ["SentAt", "Name", "Email", "Phone", "Sessions", "FormLink", "Status", "ReminderSentAt", "RespondedAt", "SessionsData"];
 
-// One row per (faculty, topic) that the faculty has confirmed. Rows are never
-// deleted when a new email goes out, so a new topic starts as NOT confirmed
-// while the old ones stay confirmed.
+// One row per (faculty, topic) the faculty has confirmed. Rows are only ever
+// added, so a topic added later starts as NOT confirmed.
 var CONFIRM_SHEET = "TopicConfirmations";
 var CONFIRM_HEADERS = ["FacultyId", "TopicId", "Email", "ConfirmedAt"];
 
-// ==========================================
+var PDF_FOLDER_NAME = "DERMACON Commitment PDFs";
+
+// ==========================================================================
 // HELPERS
-// ==========================================
+// ==========================================================================
 function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
@@ -44,7 +57,7 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
-// Replace {{Key}} placeholders safely
+// Replace {{Key}} placeholders (values are inserted as-is)
 function fill(str, map) {
   for (var key in map) {
     if (map.hasOwnProperty(key)) {
@@ -54,6 +67,10 @@ function fill(str, map) {
     }
   }
   return str;
+}
+
+function json(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
 function driveImgUrl(fileId) {
@@ -67,9 +84,38 @@ function buildPrefilledLink(name, phone, sessions) {
     "&" + SETTINGS.entrySessions + "=" + encodeURIComponent(sessions || "");
 }
 
-// ==========================================
-// EMAIL LOG (tracks who was emailed / confirmed)
-// ==========================================
+// Optional shared secret. If the script property SYNC_TOKEN is set, every call
+// from the app must carry the same token (env var SYNC_TOKEN in the app's .env.local).
+function isAuthorized(token) {
+  var expected = PropertiesService.getScriptProperties().getProperty('SYNC_TOKEN');
+  if (!expected) return true;
+  return String(token || '') === expected;
+}
+
+function quotaLeft() {
+  return MailApp.getRemainingDailyQuota();
+}
+
+function roleLabel(role) {
+  var r = String(role || 'Faculty');
+  if (r === 'Chairperson') return 'Chairperson';
+  if (r === 'Panel') return 'Panelist';
+  return r;
+}
+
+function readTemplate(name) {
+  return HtmlService.createTemplateFromFile(name).getRawContent();
+}
+
+function resolveImages(html) {
+  return html.replace(/cid:(\w+)/g, function (match, key) {
+    return SETTINGS.images[key] ? driveImgUrl(SETTINGS.images[key]) : match;
+  });
+}
+
+// ==========================================================================
+// SHEETS
+// ==========================================================================
 function getLogSheet() {
   var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
   var sh = ss.getSheetByName(LOG_SHEET);
@@ -95,7 +141,7 @@ function getConfirmSheet() {
 // Mark every topic in this faculty's latest email as confirmed (adds rows only).
 function recordTopicConfirmations(email, sessionsData) {
   var lock = LockService.getScriptLock();
-  lock.waitLock(10000);
+  lock.waitLock(20000);
   try {
     var sh = getConfirmSheet();
     var values = sh.getDataRange().getValues();
@@ -120,93 +166,10 @@ function recordTopicConfirmations(email, sessionsData) {
   }
 }
 
-// ----- Per-topic PDFs (generated by the Next.js app, one per topic) -----
-var PDF_FOLDER_NAME = "DERMACON Commitment PDFs";
-
-function getPdfFolder() {
-  var it = DriveApp.getFoldersByName(PDF_FOLDER_NAME);
-  return it.hasNext() ? it.next() : DriveApp.createFolder(PDF_FOLDER_NAME);
-}
-
-// Trash the PDFs saved for this faculty's previous email (avoids piles of old copies)
-function trashOldPdfs(email) {
-  try {
-    var values = getLogSheet().getDataRange().getValues();
-    var e = String(email || '').trim().toLowerCase();
-    for (var i = 1; i < values.length; i++) {
-      if (String(values[i][2]).trim().toLowerCase() !== e) continue;
-      var old = [];
-      try { old = JSON.parse(values[i][9] || "[]"); } catch (x) {}
-      old.forEach(function (r) {
-        if (r.pdf_id) { try { DriveApp.getFileById(r.pdf_id).setTrashed(true); } catch (y) {} }
-      });
-      break;
-    }
-  } catch (err) { Logger.log("trashOldPdfs failed: " + err); }
-}
-
-// Decode the PDFs sent by the app, keep a copy in Drive and remember each file id
-// on its topic row (row.pdf_id) so the confirmation email can attach the same files.
-function savePdfs(data) {
-  var blobs = [];
-  var list = data.pdfs || [];
-  if (!list.length) return blobs;
-  trashOldPdfs(data.email);
-  var folder = null;
-  try { folder = getPdfFolder(); } catch (err) { Logger.log("PDF folder failed: " + err); }
-  list.forEach(function (p) {
-    try {
-      var blob = Utilities.newBlob(Utilities.base64Decode(p.base64), 'application/pdf', p.name);
-      blobs.push(blob);
-      if (folder) {
-        var file = folder.createFile(blob);
-        (data.sessionsData || []).forEach(function (row) {
-          if (row.topic_id === p.topic_id) row.pdf_id = file.getId();
-        });
-      }
-    } catch (err2) { Logger.log("PDF save failed for " + p.name + ": " + err2); }
-  });
-  return blobs;
-}
-
-// Blobs of the PDFs belonging to the topics in a saved snapshot
-function pdfsFromSnapshot(sessionsData) {
-  var blobs = [];
-  (sessionsData || []).forEach(function (r) {
-    if (!r.pdf_id) return;
-    try { blobs.push(DriveApp.getFileById(r.pdf_id).getBlob()); }
-    catch (err) { Logger.log("PDF missing " + r.pdf_id + ": " + err); }
-  });
-  return blobs;
-}
-
-// Link the faculty can use to change their form answers. Needs "Allow response
-// editing" on the form, which is switched on here. Falls back to the prefilled link.
-function getEditResponseUrl(email, fallbackLink) {
-  try {
-    var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
-    var formUrl = ss.getFormUrl();
-    if (!formUrl) return fallbackLink;
-    var form = FormApp.openByUrl(formUrl);
-    if (!form.canEditResponse()) form.setAllowResponseEdits(true);
-    var responses = form.getResponses();
-    var e = String(email || '').trim().toLowerCase();
-    for (var i = responses.length - 1; i >= 0; i--) {
-      var re = String(responses[i].getRespondentEmail() || '').trim().toLowerCase();
-      if (re && re === e) return responses[i].getEditResponseUrl();
-    }
-    // Form does not collect respondent emails: use the most recent response
-    if (responses.length) return responses[responses.length - 1].getEditResponseUrl();
-  } catch (err) {
-    Logger.log("getEditResponseUrl failed: " + err);
-  }
-  return fallbackLink;
-}
-
 // Add a row, or reset the existing row if this faculty was emailed before
 function logSent(data, link) {
   var lock = LockService.getScriptLock();
-  lock.waitLock(10000);
+  lock.waitLock(20000);
   try {
     var sh = getLogSheet();
     var email = String(data.email || '').trim().toLowerCase();
@@ -215,7 +178,8 @@ function logSent(data, link) {
     for (var i = 1; i < values.length; i++) {
       if (String(values[i][2]).trim().toLowerCase() === email) { rowIdx = i + 1; break; }
     }
-    var row = [new Date(), data.name, data.email, data.phone || '', data.sessions || '', link, "Sent", "", "", JSON.stringify(data.sessionsData || [])];    if (rowIdx > 0) {
+    var row = [new Date(), data.name, data.email, data.phone || '', data.sessions || '', link, "Sent", "", "", JSON.stringify(data.sessionsData || [])];
+    if (rowIdx > 0) {
       sh.getRange(rowIdx, 1, 1, row.length).setValues([row]);
     } else {
       sh.appendRow(row);
@@ -228,7 +192,7 @@ function logSent(data, link) {
 // Called when the faculty submits the Google Form
 function markResponded(email, name, status) {
   var lock = LockService.getScriptLock();
-  lock.waitLock(10000);
+  lock.waitLock(20000);
   try {
     var sh = getLogSheet();
     var values = sh.getDataRange().getValues();
@@ -248,519 +212,315 @@ function markResponded(email, name, status) {
   }
 }
 
-// ==========================================
-// 2. DO POST (Called from Next.js)
-// ==========================================
+// ==========================================================================
+// PDF (ONE pdf per faculty, made by the app, one page per session)
+// ==========================================================================
+function getPdfFolder() {
+  var it = DriveApp.getFoldersByName(PDF_FOLDER_NAME);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(PDF_FOLDER_NAME);
+}
+
+// Trash the PDF saved for this faculty's previous email (no piles of old copies)
+function trashOldPdfs(email) {
+  try {
+    var values = getLogSheet().getDataRange().getValues();
+    var e = String(email || '').trim().toLowerCase();
+    for (var i = 1; i < values.length; i++) {
+      if (String(values[i][2]).trim().toLowerCase() !== e) continue;
+      var old = [];
+      try { old = JSON.parse(values[i][9] || "[]"); } catch (x) {}
+      var done = {};
+      old.forEach(function (r) {
+        if (r.pdf_id && !done[r.pdf_id]) {
+          done[r.pdf_id] = true;
+          try { DriveApp.getFileById(r.pdf_id).setTrashed(true); } catch (y) {}
+        }
+      });
+      break;
+    }
+  } catch (err) { Logger.log("trashOldPdfs failed: " + err); }
+}
+
+// Decode the PDF sent by the app, keep a copy in Drive, remember its file id on
+// every topic row (row.pdf_id) so the confirmation email can attach the same file.
+function savePdfs(data) {
+  var blobs = [];
+  var list = data.pdfs || [];
+  if (!list.length) return blobs;
+  trashOldPdfs(data.email);
+  var folder = null;
+  try { folder = getPdfFolder(); } catch (err) { Logger.log("PDF folder failed: " + err); }
+  list.forEach(function (p) {
+    try {
+      var blob = Utilities.newBlob(Utilities.base64Decode(p.base64), 'application/pdf', p.name);
+      blobs.push(blob);
+      if (folder) {
+        var file = folder.createFile(blob);
+        (data.sessionsData || []).forEach(function (row) { row.pdf_id = file.getId(); });
+      }
+    } catch (err2) { Logger.log("PDF save failed for " + p.name + ": " + err2); }
+  });
+  return blobs;
+}
+
+function pdfsFromSnapshot(sessionsData) {
+  var blobs = [];
+  var done = {};
+  (sessionsData || []).forEach(function (r) {
+    if (!r.pdf_id || done[r.pdf_id]) return;
+    done[r.pdf_id] = true;
+    try { blobs.push(DriveApp.getFileById(r.pdf_id).getBlob()); }
+    catch (err) { Logger.log("PDF missing " + r.pdf_id + ": " + err); }
+  });
+  return blobs;
+}
+
+// ==========================================================================
+// LETTER BUILDING (Template.html = the faculty letter, ReportTemplate.html = shell)
+// ==========================================================================
+function extraRows(r) {
+  var speakers = r.speakers || [];
+  if (r.role === 'Chairperson' && speakers.length) {
+    return '<tr><td style="border:1px solid #222; padding:3px 6px; font-weight:bold;">Speakers</td>' +
+           '<td colspan="3" style="border:1px solid #222; padding:3px 6px;">' + esc(speakers.join(', ')) + '</td></tr>';
+  }
+  return '';
+}
+
+function changesBox(changes) {
+  if (!changes || !changes.length) return '';
+  var items = changes.map(function (c) {
+    return '<li style="margin:0 0 4px;">' + esc(c) + '</li>';
+  }).join('');
+  return '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e8c36a; border-radius:6px; background:#fff8e6; margin:0 0 22px;">' +
+         '<tr><td style="padding:12px 18px; font-size:13px; line-height:1.5;">' +
+         '<div style="font-size:15px; font-weight:bold; color:#7a4b00; margin-bottom:6px;">What has changed</div>' +
+         '<ul style="margin:0; padding-left:18px;">' + items + '</ul></td></tr></table>';
+}
+
+// o: { name, role, title, greeting, intro, formLink, changes }
+function buildLetterHtml(rows, o) {
+  var template = readTemplate('Template');
+  var sm = /<!--\s*SESSION_START\s*-->/i.exec(template);
+  var em = /<!--\s*SESSION_END\s*-->/i.exec(template);
+  if (!sm || !em) throw new Error("Markers not found. Template starts with: " + template.substring(0, 200));
+
+  var block = template.substring(sm.index + sm[0].length, em.index);
+  var blocks = '';
+  (rows || []).forEach(function (r, i) {
+    blocks += fill(block, {
+      SessionNumber: String(i + 1),
+      RoleLabel:     esc(roleLabel(r.role)),
+      Topic:         esc(r.topic || ''),
+      Timing:        esc(r.time || ''),
+      SessionName:   esc(((r.session_code || '') + ' ' + (r.session_name || '')).trim()),
+      Hall:          esc(r.session_hall || 'TBD'),
+      Date:          esc(r.date || ''),
+      SessionTime:   esc(r.session_time || ''),
+      ExtraRows:     extraRows(r),
+      CoordName:     esc(r.coordName || ''),
+      CoordPhone:    esc(r.coordPhone || ''),
+      CoordEmail:    esc(r.coordEmail || '')
+    });
+  });
+
+  var html = template.substring(0, sm.index) + blocks + template.substring(em.index + em[0].length);
+  html = fill(html, {
+    FacultyName: esc(o.name),
+    Role:        esc(o.role || 'Faculty'),
+    LetterDate:  Utilities.formatDate(new Date(), "Asia/Kolkata", "dd/MM/yyyy"),
+    EmailTitle:  o.title,
+    Greeting:    o.greeting,
+    IntroText:   o.intro,
+    ChangesBox:  changesBox(o.changes)
+  });
+  html = html.replace('https://forms.gle/REPLACE_WITH_YOUR_GOOGLE_FORM_LINK', function () { return o.formLink || '#'; });
+  return resolveImages(html);
+}
+
+// Letterhead shell for short emails (reminder, report, thank-you)
+function buildShellHtml(title, bodyHtml) {
+  var html = readTemplate('ReportTemplate');
+  html = fill(html, {
+    Title: esc(title),
+    Body: bodyHtml,
+    LetterDate: Utilities.formatDate(new Date(), "Asia/Kolkata", "dd/MM/yyyy")
+  });
+  return resolveImages(html);
+}
+
+function confirmButton(label, link) {
+  return '<a href="' + link + '" style="background:#4a2c6e; color:#ffffff; padding:10px 18px; text-decoration:none; border-radius:4px; font-size:13px; font-weight:bold;">' + esc(label) + '</a>';
+}
+
+// Link the faculty can use to change their form answers. Needs the Forms
+// permission (authorizeAll) and "Allow response editing" on the form (switched on here).
+function getEditResponseUrl(email, fallbackLink) {
+  try {
+    var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+    var formUrl = ss.getFormUrl();
+    if (!formUrl) return fallbackLink;
+    var form = FormApp.openByUrl(formUrl);
+    if (!form.canEditResponse()) form.setAllowResponseEdits(true);
+    var responses = form.getResponses();
+    var e = String(email || '').trim().toLowerCase();
+    if (!e) return fallbackLink;
+    // Newest first. Match the collected respondent email, or an answer that is
+    // exactly this email (forms that ask for it as a question). Never fall back
+    // to "the latest response": that can be someone else's answers.
+    for (var i = responses.length - 1; i >= 0; i--) {
+      var re = String(responses[i].getRespondentEmail() || '').trim().toLowerCase();
+      if (re && re === e) return responses[i].getEditResponseUrl();
+      var answers = responses[i].getItemResponses();
+      for (var j = 0; j < answers.length; j++) {
+        if (String(answers[j].getResponse() || '').trim().toLowerCase() === e) return responses[i].getEditResponseUrl();
+      }
+    }
+  } catch (err) {
+    Logger.log("getEditResponseUrl failed: " + err);
+  }
+  return fallbackLink;
+}
+
+// ==========================================================================
+// doPost : called by the Next.js app
+// ==========================================================================
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
+    if (!isAuthorized(data.token)) return json({ status: "Error", message: "Unauthorized (token mismatch)." });
 
+    // ---- first email / schedule update -------------------------------------
     if (data.action === "sendFormLink" || data.action === "sendScheduleUpdate") {
       var isUpdate = (data.action === "sendScheduleUpdate");
 
-      // Apps Script limits emails per day. Stop with a clear message instead of failing midway.
-      if (MailApp.getRemainingDailyQuota() < 3) {
-        return ContentService.createTextOutput(JSON.stringify({
-          status: "Error",
-          message: "Daily email limit reached (" + MailApp.getRemainingDailyQuota() + " left). It resets within 24 hours."
-        })).setMimeType(ContentService.MimeType.JSON);
+      if (quotaLeft() <= SETTINGS.quotaReserve) {
+        return json({ status: "Error", quotaLeft: quotaLeft(),
+          message: "Only " + quotaLeft() + " emails left today. " + SETTINGS.quotaReserve + " are kept for faculty confirmations. Try again after the daily limit resets." });
       }
 
-      // 1. Pre-filled Google Form link
       var prefilledLink = buildPrefilledLink(data.name, data.phone, data.sessions);
-
-      // 2. Load the HTML template (raw text)
-      var template = HtmlService.createTemplateFromFile('Template').getRawContent();
-
-      // 3. Find the loop markers
-      var startMatch = /<!--\s*SESSION_START\s*-->/i.exec(template);
-      var endMatch   = /<!--\s*SESSION_END\s*-->/i.exec(template);
-      if (!startMatch || !endMatch) {
-        throw new Error("Markers not found. Template starts with: " + template.substring(0, 200));
-      }
-      var startIndex = startMatch.index;
-      var endIndex   = endMatch.index;
-
-      // 4. Build the block for each session
-      var blockTemplate = template.substring(startIndex + startMatch[0].length, endIndex);
-      var sessionBlocksHtml = '';
-
-      if (data.sessionsData && data.sessionsData.length > 0) {
-        for (var i = 0; i < data.sessionsData.length; i++) {
-          var row = data.sessionsData[i];
-          sessionBlocksHtml += fill(blockTemplate, {
-            SessionNumber: String(i + 1),
-            Topic:         esc(row.topic || ''),
-            Timing:        esc(row.time || ''),
-            SessionName:   esc(((row.session_code || '') + ' ' + (row.session_name || '')).trim()),
-            Hall:          esc(row.session_hall || 'TBD'),
-            Date:          esc(row.date || ''),
-            SessionTime:   esc(row.session_time || ''),
-            CoordName:     esc(row.coordName || ''),
-            CoordPhone:    esc(row.coordPhone || ''),
-            CoordEmail:    esc(row.coordEmail || '')
-          });
-        }
-      }
-
-      // 5. Assemble the final email
-      var htmlBody = template.substring(0, startIndex) +
-                     sessionBlocksHtml +
-                     template.substring(endIndex + endMatch[0].length);
-
-      htmlBody = fill(htmlBody, {
-        FacultyName: esc(data.name),
-        Role:        esc(data.role || 'Faculty'),
-        LetterDate:  new Date().toLocaleDateString('en-GB'),
-        EmailTitle:  isUpdate ? "Schedule Update – DERMACON International 2027" : "Faculty Scientific Commitment – DERMACON International 2027",
-        Greeting:    "Greetings from the Scientific Committee of <strong>DERMACON International 2027</strong>.",
-        IntroText:   "We are delighted to welcome you as <strong>" + esc(data.role || 'Faculty') + "</strong>. Your scientific commitment details are below."
-      });
-      // Same prefilled link for first emails and schedule updates, so a faculty
-      // who gets an update for a new topic can confirm it the same way.
-      htmlBody = htmlBody.replace('https://forms.gle/REPLACE_WITH_YOUR_GOOGLE_FORM_LINK', function () { return prefilledLink; });
-
-      // 6. Point every cid:name image at its public Drive URL
-      htmlBody = htmlBody.replace(/cid:(\w+)/g, function (match, key) {
-        return SETTINGS.images[key] ? driveImgUrl(SETTINGS.images[key]) : match;
+      var roleText = esc(data.role || 'Faculty');
+      var htmlBody = buildLetterHtml(data.sessionsData, {
+        name: data.name,
+        role: data.role,
+        title: isUpdate ? "Schedule Update – DERMACON International 2027" : "Faculty Scientific Commitment – DERMACON International 2027",
+        greeting: "Greetings from the Scientific Committee of <strong>DERMACON International 2027</strong>.",
+        intro: isUpdate
+          ? "There has been a change in your scientific commitment. Your current details are below, with the changes listed first."
+          : "We are delighted to welcome you as <strong>" + roleText + "</strong>. Your scientific commitment details are below.",
+        formLink: prefilledLink,
+        changes: isUpdate ? data.changes : []
       });
 
-      // 6b. One PDF per topic (made by the app), saved to Drive and attached
       var pdfBlobs = savePdfs(data);
 
-      // 7. Send to faculty
       MailApp.sendEmail({
         to: data.email,
-        subject: "[DERMACON International 2027] Scientific Commitments - " + data.name,
-        body: "Dear " + data.name + ",\n\nYour scientific commitment details are included in this email (PDF attached for each topic).\n\nConfirm your attendance here: " + prefilledLink,
+        subject: (isUpdate ? "[DERMACON International 2027] Schedule Update - " : "[DERMACON International 2027] Scientific Commitments - ") + data.name,
+        body: "Dear " + data.name + ",\n\nYour scientific commitment details are included in this email (PDF attached).\n\nConfirm your attendance here: " + prefilledLink,
         htmlBody: htmlBody,
         attachments: pdfBlobs
       });
 
-      // 8. Record it (used for the 5-day reminder). A failure here must not break the response.
       try { logSent(data, prefilledLink); }
       catch (err1) { Logger.log("logSent failed: " + err1); }
 
-      // 9. Tell the coordinators that the faculty was emailed
-      try { notifyCoordinatorsSent(data); }
-      catch (err2) { Logger.log("notifyCoordinatorsSent failed: " + err2); }
-
-      return ContentService.createTextOutput(JSON.stringify({
-        status: "Success",
-        pdfsReceived: (data.pdfs || []).length,
-        pdfsAttached: pdfBlobs.length
-      })).setMimeType(ContentService.MimeType.JSON);
+      return json({ status: "Success", pdfsReceived: (data.pdfs || []).length, pdfsAttached: pdfBlobs.length, quotaLeft: quotaLeft() });
     }
-    if (data.action === "syncCoordinators") {
-      var expected = PropertiesService.getScriptProperties().getProperty('SYNC_TOKEN');
-      if (!expected || data.token !== expected) {
-        return ContentService.createTextOutput(JSON.stringify({ status: "Error", message: "Unauthorized" })).setMimeType(ContentService.MimeType.JSON);
+
+    // ---- reminder ----------------------------------------------------------
+    if (data.action === "sendReminder") {
+      if (quotaLeft() <= SETTINGS.quotaReserve) {
+        return json({ status: "Error", quotaLeft: quotaLeft(), message: "Not enough emails left today." });
+      }
+      var link = buildPrefilledLink(data.name, data.phone, data.sessions);
+      var body =
+        '<p style="font-size:14px; font-weight:bold; margin:0 0 12px;">Dear ' + esc(data.name) + ',</p>' +
+        '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">This is a gentle reminder. We have emailed you your scientific commitment details for <strong>DERMACON International 2027</strong> and have not yet received your confirmation.</p>' +
+        (data.sessions ? '<p style="font-size:14px; margin:0 0 12px;"><strong>Your session(s):</strong> ' + esc(String(data.sessions).replace(/,/g, ', ')) + '</p>' : '') +
+        '<p style="font-size:14px; margin:0 0 16px;">Please confirm your participation. It takes less than a minute.</p>' +
+        '<p style="margin:0 0 20px;">' + confirmButton('Confirm participation', link) + '</p>' +
+        '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
+      MailApp.sendEmail({
+        to: data.email,
+        subject: "[Reminder] [DERMACON International 2027] Please confirm your participation - " + data.name,
+        body: "Dear " + data.name + ",\n\nThis is a gentle reminder. Please confirm your participation: " + link,
+        htmlBody: buildShellHtml("Reminder – please confirm your participation", body)
+      });
+      return json({ status: "Success", quotaLeft: quotaLeft() });
+    }
+
+    // ---- report to the coordinators of one session -------------------------
+    if (data.action === "sendCoordinatorReport") {
+      var coords = (data.coordinators || []).filter(function (c) { return c.email && String(c.email).indexOf('@') > 0; });
+      if (!coords.length) return json({ status: "Error", message: "No coordinator with an email address." });
+      if (quotaLeft() - coords.length < SETTINGS.quotaReserve) {
+        return json({ status: "Error", quotaLeft: quotaLeft(), message: "Not enough emails left today for " + coords.length + " coordinator(s)." });
       }
 
-      var out = [];
+      var s = data.session || {};
+      var tbl =
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:12px; line-height:1.4;">' +
+        '<tr style="background:#4a2c6e; color:#ffffff;">' +
+        '<th align="left" style="border:1px solid #222; padding:4px 6px;">Time</th>' +
+        '<th align="left" style="border:1px solid #222; padding:4px 6px;">Topic</th>' +
+        '<th align="left" style="border:1px solid #222; padding:4px 6px;">Faculty / role</th>' +
+        '<th align="left" style="border:1px solid #222; padding:4px 6px;">Status</th></tr>';
       (data.rows || []).forEach(function (r) {
-        var code = String(r.code || '').trim();
-        var em = String(r.email || '').trim();
-        if (code && em.indexOf('@') > 0) out.push([code, em, String(r.name || '').trim()]);
-      });
-
-      // Safety: never wipe the tab if nothing was received
-      if (!out.length) {
-        return ContentService.createTextOutput(JSON.stringify({ status: "Error", message: "No rows received. The tab was NOT changed." })).setMimeType(ContentService.MimeType.JSON);
-      }
-
-      var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
-      var sh = ss.getSheetByName("CoordinatorList") || ss.insertSheet("CoordinatorList");
-      sh.clearContents();
-      sh.getRange(1, 1, 1, 3).setValues([["SessionCode", "Email", "Name"]]);
-      sh.getRange(2, 1, out.length, 3).setValues(out);
-
-      return ContentService.createTextOutput(JSON.stringify({ status: "Success", count: out.length })).setMimeType(ContentService.MimeType.JSON);
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({ status: "Error", message: "Unknown action" })).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "Error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-// ==========================================
-// 2b. COORDINATOR: "we have emailed your faculty"
-// ==========================================
-function notifyCoordinatorsSent(data) {
-  var coordSheet = SpreadsheetApp.openById(SETTINGS.sheetId).getSheetByName("CoordinatorList");
-  if (!coordSheet) return;                       // no tab: nothing is sent
-
-  var coordData = coordSheet.getDataRange().getValues();   // A = session code, B = email, C = name
-  var facultyEmail = String(data.email || '').trim().toLowerCase();
-  var byCoord = {};
-
-  (data.sessionsData || []).forEach(function (r) {
-    var code = String(r.session_code || '').trim();
-    if (!code) return;
-
-    for (var k = 1; k < coordData.length; k++) {
-      if (String(coordData[k][0]).trim() !== code) continue;
-
-      var cEmail = String(coordData[k][1] || '').trim();
-      var cName  = String(coordData[k][2] || '').trim();
-      var key = cEmail.toLowerCase();
-
-      if (cEmail.indexOf('@') < 1) continue;     // no email: nothing is sent
-      if (key === facultyEmail) continue;
-
-      if (!byCoord[key]) byCoord[key] = { email: cEmail, name: cName, rows: [], seen: {} };
-
-      // avoid listing the same topic twice for the same coordinator
-      var rowKey = code + '|' + (r.topic || '') + '|' + (r.time || '');
-      if (byCoord[key].seen[rowKey]) continue;
-      byCoord[key].seen[rowKey] = true;
-      byCoord[key].rows.push(r);
-    }
-  });
-
-  Object.keys(byCoord).forEach(function (key) {
-    var c = byCoord[key];
-    var codes = [];
-    var rowsHtml = '';
-    var rowsText = '';
-    var cell = "border:1px solid #999; padding:4px 8px;";
-
-    c.rows.forEach(function (r) {
-      var sess = ((r.session_code || '') + ' ' + (r.session_name || '')).trim();
-      if (r.session_code && codes.indexOf(r.session_code) === -1) codes.push(r.session_code);
-
-      rowsHtml += "<tr>" +
-        "<td style='" + cell + "'>" + esc(sess) + "</td>" +
-        "<td style='" + cell + "'>" + esc(r.topic || '') + "</td>" +
-        "<td style='" + cell + "'>" + esc(r.time || '') + "</td>" +
-        "<td style='" + cell + "'>" + esc(r.session_hall || '') + "</td>" +
-        "<td style='" + cell + "'>" + esc(r.date || '') + "</td>" +
-        "<td style='" + cell + "'>" + esc(r.session_time || '') + "</td>" +
-        "</tr>";
-
-      rowsText += "- " + sess + " | " + (r.topic || '') + " | " + (r.time || '') + " | Hall " + (r.session_hall || '') +
-                  " | " + (r.date || '') + " | " + (r.session_time || '') + "\n";
-    });
-
-    var html = "<div style='font-family: Arial, sans-serif; font-size:13px; line-height:1.5; color:#333;'>" +
-      "<p><strong>Dear " + esc(c.name || 'Coordinator') + ",</strong></p>" +
-      "<p>Faculty <strong>" + esc(data.name) + "</strong> has been invited for your session(s).</p>" +
-      "<table style='border-collapse:collapse; font-size:12px;'>" +
-        "<tr style='background:#e8eef7; font-weight:bold;'>" +
-          "<td style='" + cell + "'>Session</td>" +
-          "<td style='" + cell + "'>Topic</td>" +
-          "<td style='" + cell + "'>Timing</td>" +
-          "<td style='" + cell + "'>Hall</td>" +
-          "<td style='" + cell + "'>Date</td>" +
-          "<td style='" + cell + "'>Session time</td>" +
-        "</tr>" + rowsHtml +
-      "</table>" +
-      "<p>Warm regards,<br><strong>DERMACON International 2027</strong></p></div>";
-
-    MailApp.sendEmail({
-      to: c.email,
-      subject: "[DERMACON International 2027] Faculty invited: " + data.name + " (" + codes.join(', ') + ")",
-      body: "Dear " + (c.name || 'Coordinator') + ",\n\nFaculty " + data.name + " has been invited for your session(s).\n\n" + rowsText,
-      htmlBody: html
-    });
-  });
-}
-
-// ==========================================
-// 3. ON FORM SUBMIT (Triggered by Google Form)
-// ==========================================
-function onFormSubmit(e) {
-  var sheet = e.range.getSheet();
-  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  var row = e.values;
-
-  function getCol(name) {
-    for (var i = 0; i < headers.length; i++) {
-      if (String(headers[i]).toLowerCase().indexOf(name.toLowerCase()) !== -1) return i;
-    }
-    return -1;
-  }
-
-  var iName     = getCol("Full Name");
-  var iStatus   = getCol("Attendance Status");
-  var iPhone    = getCol("Mobile");
-  var iEmail    = getCol("Email address");
-  var iSessions = getCol("Sessions");
-
-  var name        = iName     >= 0 ? String(row[iName]     || "Doctor").trim() : "Doctor";
-  var status      = iStatus   >= 0 ? String(row[iStatus]   || "").trim() : "";
-  var phone       = iPhone    >= 0 ? String(row[iPhone]    || "").trim() : "";
-  var email       = iEmail    >= 0 ? String(row[iEmail]    || "").trim() : "";
-  var sessionsStr = iSessions >= 0 ? String(row[iSessions] || "").trim() : "";
-
-  if (!email) return;
-  
-  // Stop reminders for this faculty
-  try {
-    markResponded(email, name, /no/i.test(status) ? "Declined" : (/yes/i.test(status) ? "Confirmed" : "Responded"));
-  } catch (errLog) {
-    Logger.log("markResponded failed: " + errLog);
-  }
-
-  if (/no/i.test(status)) {
-    MailApp.sendEmail({
-      to: email,
-      subject: "[DERMACON International 2027] Response Received",
-      body: "Dear " + name + ",\n\nThank you for your response. We have noted your unavailability.",
-      htmlBody: "<p>Dear <strong>" + name + "</strong>,</p><p>Thank you for your response. We have noted your unavailability.</p>"
-    });
-    return;
-  }
-
-  if (/yes/i.test(status)) {
-    // 1. Fetch the topics from this faculty's latest email (EmailLog)
-    var logSheet = getLogSheet();
-    var logData = logSheet.getDataRange().getValues();
-    var sessionsData = [];
-    var savedLink = "";
-    for (var i = 1; i < logData.length; i++) {
-      if (String(logData[i][2]).trim().toLowerCase() === email.toLowerCase()) {
-        try { sessionsData = JSON.parse(logData[i][9] || "[]"); } catch (errParse) {}
-        savedLink = String(logData[i][5] || "");
-        break;
-      }
-    }
-
-    // 2. Confirm exactly those topics (topics added later stay unconfirmed)
-    try { recordTopicConfirmations(email, sessionsData); }
-    catch (errConf) { Logger.log("recordTopicConfirmations failed: " + errConf); }
-
-    // 3. Build the confirmation email from the same template as the original
-    var template = HtmlService.createTemplateFromFile('Template').getRawContent();
-    var startMatch = /<!--\s*SESSION_START\s*-->/i.exec(template);
-    var endMatch   = /<!--\s*SESSION_END\s*-->/i.exec(template);
-    var confirmedMail = false;
-
-    if (startMatch && endMatch && sessionsData.length > 0) {
-      var blockTemplate = template.substring(startMatch.index + startMatch[0].length, endMatch.index);
-      var sessionBlocksHtml = '';
-      for (var s = 0; s < sessionsData.length; s++) {
-        var srow = sessionsData[s];
-        sessionBlocksHtml += fill(blockTemplate, {
-          SessionNumber: String(s + 1),
-          Topic:         esc(srow.topic || ''),
-          Timing:        esc(srow.time || ''),
-          SessionName:   esc(((srow.session_code || '') + ' ' + (srow.session_name || '')).trim()),
-          Hall:          esc(srow.session_hall || 'TBD'),
-          Date:          esc(srow.date || ''),
-          SessionTime:   esc(srow.session_time || ''),
-          CoordName:     esc(srow.coordName || ''),
-          CoordPhone:    esc(srow.coordPhone || ''),
-          CoordEmail:    esc(srow.coordEmail || '')
+        var people = r.people && r.people.length ? r.people : [{ name: '— no faculty yet —', role: '', confirmed: null }];
+        people.forEach(function (p, i) {
+          var status = p.confirmed === null ? '' :
+            (p.confirmed ? '<span style="color:#1a7f37; font-weight:bold;">Confirmed</span>' : '<span style="color:#b45309;">Pending</span>');
+          tbl += '<tr>' +
+            (i === 0 ? '<td rowspan="' + people.length + '" valign="top" style="border:1px solid #222; padding:4px 6px; white-space:nowrap;">' + esc(r.time) + '</td>' +
+                       '<td rowspan="' + people.length + '" valign="top" style="border:1px solid #222; padding:4px 6px; font-weight:bold;">' + esc(r.topic) + '</td>' : '') +
+            '<td style="border:1px solid #222; padding:4px 6px;">' + esc(p.name) + (p.role ? ' <span style="color:#666;">(' + esc(roleLabel(p.role)) + ')</span>' : '') + '</td>' +
+            '<td style="border:1px solid #222; padding:4px 6px;">' + status + '</td></tr>';
         });
-      }
-
-      var htmlBody = template.substring(0, startMatch.index) + sessionBlocksHtml + template.substring(endMatch.index + endMatch[0].length);
-
-      htmlBody = fill(htmlBody, {
-        FacultyName: esc(name),
-        Role:        "Faculty",
-        LetterDate:  new Date().toLocaleDateString('en-GB'),
-        EmailTitle:  "Participation Confirmed – DERMACON International 2027",
-        Greeting:    "Thank you for confirming your participation for <strong>DERMACON International 2027</strong>.",
-        IntroText:   "Your participation is confirmed for the following scientific commitment(s)."
       });
-      htmlBody = htmlBody.replace(/cid:(\w+)/g, function (match, key) {
-        return SETTINGS.images[key] ? driveImgUrl(SETTINGS.images[key]) : match;
-      });
+      tbl += '</table>';
 
-      // 4. Replace the "Confirm participation" box with an "Edit your response" box
-      var editLink = getEditResponseUrl(email, savedLink);
-      var editBox =
-        '<!-- CONFIRM_BOX_START -->' +
-        '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe0ee; border-radius:6px; background:#f7fbff; margin:0 0 22px;">' +
-        '<tr><td style="padding:16px 20px;">' +
-        '<div style="font-size:15px; font-weight:bold; margin-bottom:6px;">Your participation is confirmed</div>' +
-        '<div style="font-size:13px; margin-bottom:12px;">Need to change something? You can edit your response below.</div>' +
-        (editLink
-          ? '<a href="' + editLink + '" style="background:#4a2c6e; color:#ffffff; padding:10px 18px; text-decoration:none; border-radius:4px; font-size:13px; font-weight:bold;">Edit your response</a>'
-          : '') +
-        '</td></tr></table>' +
-        '<!-- CONFIRM_BOX_END -->';
-      var confirmStart = htmlBody.indexOf('<!-- CONFIRM_BOX_START -->');
-      var confirmEnd = htmlBody.indexOf('<!-- CONFIRM_BOX_END -->');
-      if (confirmStart !== -1 && confirmEnd !== -1) {
-        htmlBody = htmlBody.substring(0, confirmStart) + editBox + htmlBody.substring(confirmEnd + '<!-- CONFIRM_BOX_END -->'.length);
-      }
-
-      // 5. Send ONE confirmation email (same layout as the original)
-      MailApp.sendEmail({
-        to: email,
-        subject: "✅ Confirmed: DERMACON International 2027",
-        body: "Thank you for confirming, " + name + ". Your confirmed sessions and topics are listed in the HTML version of this email (PDFs attached).",
-        htmlBody: htmlBody,
-        attachments: pdfsFromSnapshot(sessionsData)
+      var sent = 0;
+      coords.forEach(function (c, idx) {
+        var rep =
+          '<p style="font-size:14px; font-weight:bold; margin:0 0 12px;">Dear ' + esc(c.name || 'Coordinator') + ',</p>' +
+          '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">Here is the current status of your session <strong>' + esc((s.code || '') + ' ' + (s.name || '')) + '</strong>.</p>' +
+          '<p style="font-size:13px; margin:0 0 14px;"><strong>Date:</strong> ' + esc(s.date) + ' &nbsp; <strong>Hall:</strong> ' + esc(s.hall || 'TBD') + ' &nbsp; <strong>Time:</strong> ' + esc(s.time) + '</p>' +
+          tbl +
+          '<p style="font-size:12px; color:#666; margin:12px 0 16px;">Status is as of the last sync' + (data.syncedAt ? ' (' + esc(data.syncedAt) + ')' : '') + '.</p>' +
+          '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
+        MailApp.sendEmail({
+          to: c.email,
+          subject: "[DERMACON International 2027] Session report - " + (s.code || '') + " " + (s.name || ''),
+          body: "Session report for " + (s.code || '') + ". Please view this email in HTML.",
+          htmlBody: buildShellHtml("Session report – " + (s.code || ''), rep)
+        });
+        sent++;
+        if (idx < coords.length - 1) Utilities.sleep(1500);
       });
-      confirmedMail = true;
+      return json({ status: "Success", sent: sent, quotaLeft: quotaLeft() });
     }
 
-    if (!confirmedMail) {
-      // Fallback only when no saved sessions were found
-      MailApp.sendEmail({
-        to: email,
-        subject: "✅ Confirmed: DERMACON International 2027",
-        body: "Thank you for confirming, " + name,
-        htmlBody: "<div style='font-family: Arial, sans-serif;'><p><strong>Dear " + esc(name) + ",</strong></p>" +
-                  "<p>Thank you for confirming your participation for DERMACON International 2027.</p>" +
-                  "<p>Warm regards,<br><strong>DERMACON International 2027</strong></p></div>"
-      });
-    }
-
-    // Workshop team (your Gmail on cc)
-    MailApp.sendEmail({
-      to: SETTINGS.workshopEmail,
-      cc: SETTINGS.myEmail,
-      subject: "✅ Faculty Confirmed: " + name,
-      body: name + " has confirmed their attendance.\n\nPhone: " + phone + "\nEmail: " + email + "\nSessions: " + sessionsStr
-    });
-
-    // Coordinators (from the CoordinatorList tab)
-    if (sessionsStr) {
-      var sessionArray = sessionsStr.split(",");
-      var coordSheet = SpreadsheetApp.openById(SETTINGS.sheetId).getSheetByName("CoordinatorList");
-
-      if (coordSheet) {
-        var coordData = coordSheet.getDataRange().getValues();
-        var emailed = [];
-
-        for (var j = 0; j < sessionArray.length; j++) {
-          var sessId = sessionArray[j].trim();
-
-          for (var k = 1; k < coordData.length; k++) {
-            if (String(coordData[k][0]).trim() === sessId) {
-              var cEmail = String(coordData[k][1] || "").trim();
-              var cName = String(coordData[k][2] || "Coordinator").trim();
-
-              if (cEmail && cEmail.indexOf("@") > 0 && emailed.indexOf(cEmail) === -1) {
-                var coordHtml = "<div style='font-family: Arial, sans-serif;'>";
-                coordHtml += "<p><strong>Dear " + cName + ",</strong></p>";
-                coordHtml += "<p><strong>" + name + "</strong> has successfully confirmed their participation for your session: <strong>" + sessId + "</strong>.</p>";
-                coordHtml += "<p>Phone: " + phone + "<br>Email: " + email + "</p>";
-
-                MailApp.sendEmail({
-                  to: cEmail,
-                  subject: "✅ Faculty Confirmed: " + name + " (" + sessId + ")",
-                  body: name + " has confirmed for your session: " + sessId,
-                  htmlBody: coordHtml
-                });
-                emailed.push(cEmail);
-              }
-            }
-          }
-        }
-      }
-    }
+    return json({ status: "Error", message: "Unknown action" });
+  } catch (err) {
+    return json({ status: "Error", message: err.toString() });
   }
 }
 
-// ==========================================
-// 4. REMINDERS (run daily by a time trigger)
-// ==========================================
-function sendReminders() {
-  var sh = getLogSheet();
-  var values = sh.getDataRange().getValues();
-  var now = new Date().getTime();
-  var limitMs = SETTINGS.reminderAfterDays * 24 * 60 * 60 * 1000;
-
-  for (var i = 1; i < values.length; i++) {
-    var r = values[i];
-    var status = String(r[6]).trim();
-    if (status !== "Sent") continue;     // already confirmed / declined
-    if (r[7]) continue;                  // reminder already sent
-
-    var sentAt = new Date(r[0]);
-    if (isNaN(sentAt.getTime()) || (now - sentAt.getTime()) < limitMs) continue;
-
-    if (MailApp.getRemainingDailyQuota() < 1) {
-      Logger.log("Daily email quota reached. Remaining reminders will go out tomorrow.");
-      break;
-    }
-
-    try {
-      sendReminderEmail(String(r[1]), String(r[2]), String(r[4]), String(r[5]), sentAt);
-      sh.getRange(i + 1, 8).setValue(new Date());
-    } catch (err) {
-      Logger.log("Reminder failed for " + r[2] + ": " + err);
-    }
-  }
-}
-
-function sendReminderEmail(name, email, sessions, link, sentAt) {
-  var sentStr = Utilities.formatDate(sentAt, Session.getScriptTimeZone(), "dd MMM yyyy");
-
-  var html = "<div style='font-family: Arial, sans-serif; font-size:14px; line-height:1.6; color:#333;'>" +
-    "<p><strong>Dear " + esc(name) + ",</strong></p>" +
-    "<p>This is a gentle reminder. We emailed you your scientific commitment details for " +
-    "<strong>DERMACON International 2027</strong> on " + esc(sentStr) + ", and we have not yet received your confirmation.</p>" +
-    (sessions ? "<p><strong>Your session(s):</strong> " + esc(sessions.replace(/,/g, ', ')) + "</p>" : "") +
-    "<p>Please confirm your participation using the button below. It takes less than a minute.</p>" +
-    "<p style='margin:22px 0;'><a href='" + link + "' style='background:#4a2c6e; color:#ffffff; padding:12px 22px; text-decoration:none; border-radius:4px; font-weight:bold;'>Confirm participation</a></p>" +
-    "<p>If you have any difficulty, please reply to this email.</p>" +
-    "<p>Warm regards,<br><strong>DERMACON International 2027</strong></p></div>";
-
-  MailApp.sendEmail({
-    to: email,
-    subject: "[Reminder] [DERMACON International 2027] Please confirm your participation - " + name,
-    body: "Dear " + name + ",\n\nThis is a gentle reminder. We have not yet received your confirmation for DERMACON International 2027.\n\nPlease confirm here: " + link,
-    htmlBody: html
-  });
-}
-
-// Run this ONCE from the editor to schedule the daily reminder check (10 AM)
-function createReminderTrigger() {
-  ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (t.getHandlerFunction() === 'sendReminders') ScriptApp.deleteTrigger(t);
-  });
-  ScriptApp.newTrigger('sendReminders').timeBased().everyDays(1).atHour(10).create();
-  Logger.log("Daily reminder trigger created.");
-}
-function createFormSubmitTrigger() {
-  var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
-  var triggers = ScriptApp.getUserTriggers(ss);
-  
-  // Check if the trigger already exists to prevent duplicates
-  for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === 'onFormSubmit') {
-      Logger.log("Trigger already exists.");
-      return;
-    }
-  }
-  
-  ScriptApp.newTrigger('onFormSubmit')
-    .forSpreadsheet(ss)
-    .onFormSubmit()
-    .create();
-    
-  Logger.log("Successfully created onFormSubmit trigger.");
-}
+// ==========================================================================
+// doGet : the app's Sync button and the quota display
+//   ?action=quota  -> { quota }
+//   (default)      -> { topics: [{facultyId, topicId, confirmedAt}] }
+// ==========================================================================
 function doGet(e) {
-  var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
-  var out = { confirmed: [], topics: [] };
+  var p = (e && e.parameter) || {};
+  if (!isAuthorized(p.token)) return json({ error: "Unauthorized (token mismatch)." });
 
-  // Kept for older callers: emails whose latest response is "Confirmed"
-  var sheet = ss.getSheetByName("EmailLog");
-  if (sheet) {
-    var data = sheet.getDataRange().getValues();
-    if (data.length >= 2) {
-      var headers = data[0];
-      var iEmail = headers.indexOf("Email");
-      var iStatus = headers.indexOf("Status");
-      for (var i = 1; i < data.length; i++) {
-        if (String(data[i][iStatus]).trim().toLowerCase() === "confirmed") {
-          out.confirmed.push(String(data[i][iEmail]).trim().toLowerCase());
-        }
-      }
-    }
-  }
+  if (p.action === 'quota') return json({ quota: quotaLeft(), reserve: SETTINGS.quotaReserve });
 
-  // Per-topic confirmations: one entry per (faculty, topic)
-  var cs = ss.getSheetByName(CONFIRM_SHEET);
+  var out = { topics: [] };
+  var cs = SpreadsheetApp.openById(SETTINGS.sheetId).getSheetByName(CONFIRM_SHEET);
   if (cs) {
     var cv = cs.getDataRange().getValues();
     for (var j = 1; j < cv.length; j++) {
@@ -772,35 +532,169 @@ function doGet(e) {
       });
     }
   }
-
-  return ContentService.createTextOutput(JSON.stringify(out))
-    .setMimeType(ContentService.MimeType.JSON);
+  return json(out);
 }
 
-// ==========================================
-// 5. ONE-TIME HELPERS (run from the Apps Script editor)
-// ==========================================
+// ==========================================================================
+// onFormSubmit : faculty submitted the Google Form
+//   1. store the result  2. send ONE thank-you email to the faculty. Nothing else.
+// ==========================================================================
+function onFormSubmit(e) {
+  var sheet = e.range.getSheet();
 
-// Run this once after pasting the new code. It makes Google show the permission
-// screen for Drive and Forms, which the PDF attachment and Edit button need.
+  // Guard: never process the same response twice (duplicate triggers, retries)
+  var cache = CacheService.getScriptCache();
+  var guardKey = 'resp_' + sheet.getSheetId() + '_' + e.range.getRow();
+  if (cache.get(guardKey)) return;
+  cache.put(guardKey, '1', 21600);
+
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var row = e.values;
+
+  function getCol(name) {
+    for (var i = 0; i < headers.length; i++) {
+      if (String(headers[i]).toLowerCase().indexOf(name.toLowerCase()) !== -1) return i;
+    }
+    return -1;
+  }
+  var iName   = getCol("Full Name");
+  var iStatus = getCol("Attendance Status");
+  var iEmail  = getCol("Email address");
+
+  var name   = iName   >= 0 ? String(row[iName]   || "Doctor").trim() : "Doctor";
+  var status = iStatus >= 0 ? String(row[iStatus] || "").trim() : "";
+  var email  = iEmail  >= 0 ? String(row[iEmail]  || "").trim() : "";
+  if (!email) return;
+
+  // Whole words only: /no/ alone also matched "know", "not sure", "announce"...
+  // and turned a "Yes" answer into a decline.
+  var accepted = /\byes\b/i.test(status);
+  var declined = !accepted && /\bno\b/i.test(status);
+
+  // 1. STORE THE RESULT (before any email, so it is kept even if emailing fails)
+  try {
+    markResponded(email, name, declined ? "Declined" : (accepted ? "Confirmed" : "Responded"));
+  } catch (errLog) { Logger.log("markResponded failed: " + errLog); }
+
+  var sessionsData = [];
+  var savedLink = "";
+  if (accepted) {
+    var logData = getLogSheet().getDataRange().getValues();
+    for (var i = 1; i < logData.length; i++) {
+      if (String(logData[i][2]).trim().toLowerCase() === email.toLowerCase()) {
+        try { sessionsData = JSON.parse(logData[i][9] || "[]"); } catch (errParse) {}
+        savedLink = String(logData[i][5] || "");
+        break;
+      }
+    }
+    try { recordTopicConfirmations(email, sessionsData); }
+    catch (errConf) { Logger.log("recordTopicConfirmations failed: " + errConf); }
+  }
+
+  // 2. ONE thank-you email to the faculty. If the daily limit is reached the
+  //    result is already stored; only the thank-you is skipped.
+  if (quotaLeft() < 1) {
+    Logger.log("Daily email limit reached: thank-you for " + email + " not sent. Result IS stored.");
+    return;
+  }
+
+  try {
+    if (declined) {
+      var nb = '<p style="font-size:14px; font-weight:bold; margin:0 0 12px;">Dear ' + esc(name) + ',</p>' +
+               '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">Thank you for your response. We have noted your unavailability.</p>' +
+               '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
+      MailApp.sendEmail({
+        to: email,
+        subject: "[DERMACON International 2027] Response Received",
+        body: "Dear " + name + ",\n\nThank you for your response. We have noted your unavailability.",
+        htmlBody: buildShellHtml("Response received", nb)
+      });
+      return;
+    }
+
+    if (accepted && sessionsData.length > 0) {
+      var htmlBody = buildLetterHtml(sessionsData, {
+        name: name,
+        role: sessionsData[0].role || "Faculty",
+        title: "Participation Confirmed – DERMACON International 2027",
+        greeting: "Thank you for confirming your participation for <strong>DERMACON International 2027</strong>.",
+        intro: "Your participation is confirmed for the following scientific commitment(s).",
+        formLink: savedLink,
+        changes: []
+      });
+
+      // Replace the "Confirm participation" box with an "Edit your response" box
+      var editLink = getEditResponseUrl(email, savedLink);
+      var editBox =
+        '<!-- CONFIRM_BOX_START -->' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe0ee; border-radius:6px; background:#f7fbff; margin:0 0 22px;">' +
+        '<tr><td style="padding:16px 20px;">' +
+        '<div style="font-size:15px; font-weight:bold; margin-bottom:6px;">Your participation is confirmed</div>' +
+        '<div style="font-size:13px; margin-bottom:12px;">Need to change something? You can edit your response below.</div>' +
+        (editLink ? confirmButton('Edit your response', editLink) : '') +
+        '</td></tr></table>' +
+        '<!-- CONFIRM_BOX_END -->';
+      var a = htmlBody.indexOf('<!-- CONFIRM_BOX_START -->');
+      var b = htmlBody.indexOf('<!-- CONFIRM_BOX_END -->');
+      if (a !== -1 && b !== -1) {
+        htmlBody = htmlBody.substring(0, a) + editBox + htmlBody.substring(b + '<!-- CONFIRM_BOX_END -->'.length);
+      }
+
+      MailApp.sendEmail({
+        to: email,
+        subject: "✅ Confirmed: DERMACON International 2027",
+        body: "Thank you for confirming, " + name + ". Your confirmed sessions and topics are listed in the HTML version of this email (PDF attached).",
+        htmlBody: htmlBody,
+        attachments: pdfsFromSnapshot(sessionsData)
+      });
+      return;
+    }
+
+    // Accepted, but no saved schedule was found for this email
+    var fb = '<p style="font-size:14px; font-weight:bold; margin:0 0 12px;">Dear ' + esc(name) + ',</p>' +
+             '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">Thank you for confirming your participation for <strong>DERMACON International 2027</strong>.</p>' +
+             '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
+    MailApp.sendEmail({
+      to: email,
+      subject: "✅ Confirmed: DERMACON International 2027",
+      body: "Thank you for confirming, " + name,
+      htmlBody: buildShellHtml("Participation confirmed", fb)
+    });
+  } catch (errMail) {
+    Logger.log("Thank-you email failed for " + email + ": " + errMail);
+  }
+}
+
+// ==========================================================================
+// ONE-TIME SETUP (run these from the Apps Script editor, in this order)
+// ==========================================================================
+
+// 1. Makes Google show the permission screen for everything this script uses.
+//    Approve it. (Needed again whenever the permissions in appsscript.json change.)
 function authorizeAll() {
   DriveApp.getFoldersByName(PDF_FOLDER_NAME);
-  var url = SpreadsheetApp.openById(SETTINGS.sheetId).getFormUrl();
+  var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+  var url = ss.getFormUrl();
   if (url) FormApp.openByUrl(url);
-  Logger.log("Authorized. Emails left today: " + MailApp.getRemainingDailyQuota());
+  CacheService.getScriptCache().put('auth_test', '1', 5);
+  LockService.getScriptLock();
+  ScriptApp.getProjectTriggers();
+  Logger.log("Authorized. Emails left today: " + quotaLeft());
 }
 
-// Shows every trigger of this project and removes duplicate form-submit triggers
-// (two of them = every confirmation email is sent twice).
+// 2. Removes EVERY trigger of this project (old reminder triggers, duplicate
+//    form triggers, triggers created before the Forms permission existed) and
+//    creates one clean form-submit trigger with the current permissions.
+function installTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
+  var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+  ScriptApp.newTrigger('onFormSubmit').forSpreadsheet(ss).onFormSubmit().create();
+  Logger.log("Done: one onFormSubmit trigger installed. Automatic reminders are OFF. Emails left today: " + quotaLeft());
+}
+
+// Optional: shows the triggers and today's remaining email quota
 function checkTriggers() {
-  var seen = {};
-  ScriptApp.getProjectTriggers().forEach(function (t) {
-    var key = t.getHandlerFunction() + '|' + t.getEventType();
-    Logger.log("Trigger: " + key);
-    if (t.getHandlerFunction() === 'onFormSubmit') {
-      if (seen[key]) { ScriptApp.deleteTrigger(t); Logger.log("  -> duplicate removed"); }
-      seen[key] = true;
-    }
-  });
-  Logger.log("Emails left today: " + MailApp.getRemainingDailyQuota());
+  var list = ScriptApp.getProjectTriggers();
+  list.forEach(function (t) { Logger.log("Trigger: " + t.getHandlerFunction() + " | " + t.getEventType()); });
+  Logger.log(list.length + " trigger(s). Emails left today: " + quotaLeft());
 }

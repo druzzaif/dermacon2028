@@ -10,6 +10,13 @@ export default function MissingDataPage() {
   const [groupedData, setGroupedData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [assigningTopic, setAssigningTopic] = useState<any | null>(null);
+  const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setOpenIds((prev) => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
 
   async function fetchMissingData() {
     setLoading(true);
@@ -17,7 +24,7 @@ export default function MissingDataPage() {
       id, session_code, session_name, session_date, start_time, hall,
       session_topics ( 
         id, topic_title, sequence_no, 
-        faculty_topics ( faculty ( faculty_id, canonical_name ) ) 
+        faculty_topics ( role, faculty ( faculty_id, canonical_name ) ) 
       ),
       session_coordinators ( role, faculty ( faculty_id, canonical_name ) )
     `).order('session_date', { ascending: true }).order('start_time', { ascending: true });
@@ -36,7 +43,7 @@ export default function MissingDataPage() {
         if (s.session_topics) {
           s.session_topics.forEach((t: any) => {
             const realFaculty = t.faculty_topics?.filter((ft: any) => 
-              ft.faculty?.faculty_id !== 'FAC000' && ft.faculty?.canonical_name !== 'TBD (To Be Determined)'
+              ft.role !== 'Chairperson' && ft.faculty?.faculty_id !== 'FAC000' && ft.faculty?.canonical_name !== 'TBD (To Be Determined)'
             ) || [];
 
             if (realFaculty.length === 0) {
@@ -92,45 +99,32 @@ export default function MissingDataPage() {
                 aria-labelledby={`session-${session.id}`}
                 className="overflow-hidden rounded-2xl border border-line bg-white shadow-card"
               >
-                <div className="flex flex-col justify-between gap-4 border-b border-line bg-slate-50/70 p-5 sm:p-6 md:flex-row md:items-center">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <a
-                        href={`/sessions?code=${session.session_code}`}
-                        className="tnum inline-flex h-9 items-center gap-1 rounded-lg bg-accent px-3 text-sm font-semibold text-white transition-colors hover:bg-accent-strong"
-                        aria-label={`Open session ${session.session_code}`}
-                      >
-                        {session.session_code}
-                        <ArrowUpRightIcon width={14} height={14} />
-                      </a>
-                      <h2 id={`session-${session.id}`} className="text-xl font-semibold text-ink">
-                        {session.session_name || 'Untitled session'}
-                      </h2>
-                    </div>
-                    <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-2">
-                      <div className="flex items-center gap-1.5">
-                        <dt className="text-muted"><CalendarIcon /><span className="sr-only">Date</span></dt>
-                        <dd className="tnum">{session.session_date || 'No date'}</dd>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <dt className="text-muted"><ClockIcon /><span className="sr-only">Start time</span></dt>
-                        <dd className="tnum">{session.start_time?.slice(0, 5) || 'No time'}</dd>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <dt className="text-muted"><PinIcon /><span className="sr-only">Hall</span></dt>
-                        <dd>{session.hall || <span className="font-semibold text-red-700">No hall</span>}</dd>
-                      </div>
-                    </dl>
+                <button
+                  type="button"
+                  onClick={() => toggle(String(session.id))}
+                  aria-expanded={openIds.has(String(session.id))}
+                  className="flex w-full flex-wrap items-center gap-3 bg-slate-50/70 p-4 text-left transition-colors hover:bg-slate-100 sm:px-6"
+                >
+                  <span className="tnum inline-flex h-9 items-center rounded-lg bg-accent px-3 text-sm font-semibold text-white">
+                    {session.session_code}
+                  </span>
+                  <h2 id={`session-${session.id}`} className="min-w-0 flex-1 text-base font-semibold text-ink">
+                    {session.session_name || 'Untitled session'}
+                  </h2>
+                  <Badge tone="danger">
+                    {(session.isEmpty ? 1 : 0) + session.missingTopics.length + (session.hasCoordinators ? 0 : 1)} missing
+                  </Badge>
+                  <span aria-hidden="true" className="text-muted">{openIds.has(String(session.id)) ? '▲' : '▼'}</span>
+                </button>
+                {openIds.has(String(session.id)) && (
+                  <div className="border-t border-line px-5 pt-4 text-sm text-ink-2 sm:px-6">
+                    <span className="tnum">{session.session_date || 'No date'}</span> · <span className="tnum">{session.start_time?.slice(0, 5) || 'No time'}</span> · {session.hall || <span className="font-semibold text-red-700">No hall</span>}
+                    {' · '}
+                    <a href={`/sessions?code=${session.session_code}`} className="font-medium text-accent hover:underline">Open session</a>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {session.isEmpty && <Badge tone="danger">No topics</Badge>}
-                    {session.missingTopics.length > 0 && (
-                      <Badge tone="danger">{session.missingTopics.length} missing faculty</Badge>
-                    )}
-                    {!session.hasCoordinators && <Badge tone="warning">No coordinators</Badge>}
-                  </div>
-                </div>
+                )}
 
+                {openIds.has(String(session.id)) && (
                 <ul className="space-y-3 p-5 sm:p-6">
                   {session.isEmpty && (
                     <li className="flex flex-col justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center">
@@ -186,6 +180,7 @@ export default function MissingDataPage() {
                     </li>
                   ))}
                 </ul>
+                )}
               </section>
             ))}
           </div>

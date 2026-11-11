@@ -23,6 +23,7 @@ export function roleTone(role: string | null | undefined): BadgeTone {
   if (r === 'lead coordinator' || r === 'lead') return 'warning';
   if (r === 'local') return 'emerald';
   if (r === 'faculty') return 'blue';
+  if (r === 'chairperson') return 'orange';
   return 'neutral';
 }
 

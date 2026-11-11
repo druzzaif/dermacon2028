@@ -6,7 +6,12 @@ import { generatePDFData, generatePDFForSession } from '../actions';
 import Modal from './Modal';
 import Field, { inputCls } from './Field';
 import { AlertIcon, CheckIcon } from './Icons';
-import { sendScheduleUpdateToFaculty } from '../actions';
+import TimeField, { DurationNote } from './TimeField';
+import { addMinutes, formatTime12 as formatTimeAmPm, toMinutes } from '../lib/time';
+
+// The topic is the main thing in this form: bigger, easy-to-read text
+export const topicTitleCls =
+  'block w-full resize-y rounded-lg border border-field bg-white px-3.5 py-2.5 text-base font-medium leading-snug text-ink placeholder:font-normal placeholder:text-muted';
 
 type FacultyLite = { id: string; canonical_name: string; email: string | null };
 
@@ -45,17 +50,6 @@ function isRealHallForOverlap(hall: string | null | undefined): boolean {
   return true;
 }
 
-function formatTimeAmPm(timeStr: string | null | undefined): string {
-  if (!timeStr) return '--:--';
-  const [hStr, mStr] = timeStr.split(':');
-  let h = parseInt(hStr, 10);
-  const m = mStr || '00';
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  if (h === 0) h = 12;
-  else if (h > 12) h -= 12;
-  return `${h}:${m} ${ampm}`;
-}
-
 function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   if (!dateStr) return '--';
   const d = new Date(dateStr + 'T00:00:00');
@@ -65,76 +59,6 @@ function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   return `${dd}-${mm}-${d.getFullYear()}`;
 }
 
-
-/* ------------------------------------------------------------------
-   TimePicker lives at module level. It used to be declared inside
-   AddTopicModal, which gave it a new identity on every render, so the
-   inputs remounted and lost focus after each keystroke.
-   ------------------------------------------------------------------ */
-function TimePicker({
-  label,
-  h,
-  m,
-  ampm,
-  onChange,
-}: {
-  label: string;
-  h: number;
-  m: number;
-  ampm: string;
-  onChange: (h: number, m: number, ampm: string) => void;
-}) {
-  const clamp = (v: string, lo: number, hi: number, fallback: number) => {
-    let n = parseInt(v, 10);
-    if (isNaN(n)) n = fallback;
-    return Math.min(hi, Math.max(lo, n));
-  };
-  const seg = 'h-11 w-14 rounded-lg border border-field bg-white text-center text-lg font-semibold text-ink tnum [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
-
-  return (
-    <fieldset>
-      <legend className="mb-1.5 text-sm font-medium text-ink">{label}</legend>
-      <div className="flex items-center gap-2">
-        <input
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={12}
-          aria-label={`${label} hour`}
-          value={String(h).padStart(2, '0')}
-          onChange={(e) => onChange(clamp(e.target.value, 1, 12, 12), m, ampm)}
-          className={seg}
-        />
-        <span aria-hidden="true" className="text-lg font-semibold text-muted">:</span>
-        <input
-          type="number"
-          inputMode="numeric"
-          min={0}
-          max={59}
-          aria-label={`${label} minutes`}
-          value={String(m).padStart(2, '0')}
-          onChange={(e) => onChange(h, clamp(e.target.value, 0, 59, 0), ampm)}
-          className={seg}
-        />
-        <div role="group" aria-label={`${label} AM or PM`} className="ml-1 flex overflow-hidden rounded-lg border border-field">
-          {['AM', 'PM'].map((v) => (
-            <button
-              key={v}
-              type="button"
-              aria-pressed={ampm === v}
-              onClick={() => onChange(h, m, v)}
-              className={`h-11 w-12 text-sm font-semibold transition-colors ${
-                ampm === v ? 'bg-accent text-white' : 'bg-white text-ink-2 hover:bg-slate-50'
-              }`}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
-      </div>
-    </fieldset>
-  );
-}
 
 export default function AddTopicModal({
   session,
@@ -170,65 +94,22 @@ export default function AddTopicModal({
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [addingFaculty, setAddingFaculty] = useState(false);
-  const [emailOnSave, setEmailOnSave] = useState(true);
-  const [emailReport, setEmailReport] = useState<{ name: string; ok: boolean; message?: string }[]>([]);
 
-  // Parse initial session time
-  const parseSessionTime = (timeStr: string | null | undefined) => {
-    if (!timeStr) return { h: 9, m: 0, ampm: 'AM' };
-    const [hStr, mStr] = timeStr.split(':');
-    let h = parseInt(hStr, 10);
-    const m = parseInt(mStr || '0', 10);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    if (h === 0) h = 12;
-    else if (h > 12) h -= 12;
-    return { h, m, ampm };
-  };
+  // Times are "HH:MM:00" (24-hour) strings. Until the user touches them they
+  // default to "right after the last topic" (or the session start).
+  const sessionStart = session.start_time || '09:00:00';
+  const [newStart, setNewStart] = useState<string>(sessionStart);
+  const [newEnd, setNewEnd] = useState<string>(addMinutes(sessionStart, 10));
+  const [timeTouched, setTimeTouched] = useState(false);
+  const [suggestedAfter, setSuggestedAfter] = useState<number | null>(null);
 
-  const initSessionTime = parseSessionTime(session.start_time);
-
-  const [startH, setStartH] = useState(initSessionTime.h);
-  const [startM, setStartM] = useState(initSessionTime.m);
-  const [startAmPm, setStartAmPm] = useState(initSessionTime.ampm);
-
-  // Default end time: 10 minutes after start
-  const calcEndTime = (h: number, m: number, ampm: string) => {
-    let endM = m + 10;
-    let endH = h;
-    let endAmPm = ampm;
-    if (endM >= 60) {
-      endM -= 60;
-      endH += 1;
-      if (endH === 12 && ampm === 'AM') endAmPm = 'PM';
-      else if (endH === 12 && ampm === 'PM') endAmPm = 'AM';
-      else if (endH > 12) endH -= 12;
-    }
-    return { h: endH, m: endM, ampm: endAmPm };
-  };
-
-  const initEnd = calcEndTime(initSessionTime.h, initSessionTime.m, initSessionTime.ampm);
-
-  const [endH, setEndH] = useState(initEnd.h);
-  const [endM, setEndM] = useState(initEnd.m);
-  const [endAmPm, setEndAmPm] = useState(initEnd.ampm);
-
-  const to24Hour = (h: number, m: number, ampm: string) => {
-    let h24 = h;
-    if (ampm === 'PM' && h24 < 12) h24 += 12;
-    if (ampm === 'AM' && h24 === 12) h24 = 0;
-    return `${String(h24).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
-  };
-
-  // Changing the start time moves the end time with it
-  const handleStartChange = (h: number, m: number, ampm: string) => {
-    setStartH(h);
-    setStartM(m);
-    setStartAmPm(ampm);
-    const newEnd = calcEndTime(h, m, ampm);
-    setEndH(newEnd.h);
-    setEndM(newEnd.m);
-    setEndAmPm(newEnd.ampm);
-  };
+  // Changing the start moves the end with it, keeping the same length
+  function handleStartChange(v: string) {
+    setTimeTouched(true);
+    const len = (toMinutes(newEnd) ?? 0) - (toMinutes(newStart) ?? 0);
+    setNewStart(v);
+    if (v) setNewEnd(addMinutes(v, len > 0 ? len : 10));
+  }
 
   useEffect(() => {
     async function loadSessionTopics() {
@@ -242,9 +123,21 @@ export default function AddTopicModal({
     loadSessionTopics();
   }, [session.id]);
 
-  const newStart = to24Hour(startH, startM, startAmPm);
-  const newEnd = to24Hour(endH, endM, endAmPm);
-  const invalidRange = newEnd <= newStart;
+  // Suggest the slot right after the latest topic, unless the user already chose a time
+  useEffect(() => {
+    if (timeTouched || sessionTopics.length === 0) return;
+    const last = [...sessionTopics]
+      .filter((t) => t.end_time)
+      .sort((a, b) => String(a.end_time).localeCompare(String(b.end_time)))
+      .pop();
+    if (!last?.end_time) return;
+    setNewStart(last.end_time);
+    setNewEnd(addMinutes(last.end_time, 10));
+    setSuggestedAfter(last.sequence_no ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionTopics]);
+
+  const invalidRange = !newStart || !newEnd || newEnd <= newStart;
 
   // Overlap = the two time ranges share any minutes (touching ends do not count)
   const topicOverlaps = useMemo(() => {
@@ -379,9 +272,19 @@ export default function AddTopicModal({
     setConflicts([]);
     setOverlapBlocked(false);
 
-    const parsedStart = to24Hour(startH, startM, startAmPm);
-    const parsedEnd = to24Hour(endH, endM, endAmPm);
+    const parsedStart = newStart;
+    const parsedEnd = newEnd;
 
+    if (!topicTitle.trim()) {
+      setError('Enter the topic title.');
+      setIsSaving(false);
+      return;
+    }
+    if (!parsedStart || !parsedEnd) {
+      setError('Set the start and end time of this topic.');
+      setIsSaving(false);
+      return;
+    }
     if (parsedEnd <= parsedStart) {
       setError('The end time must be after the start time.');
       setIsSaving(false);
@@ -451,7 +354,7 @@ export default function AddTopicModal({
       .from('session_topics')
       .insert({
         session_id: session.id,
-        topic_title: topicTitle,
+        topic_title: topicTitle.trim(),
         sequence_no: newSeq,
         start_time: parsedStart,
         end_time: parsedEnd,
@@ -479,21 +382,6 @@ export default function AddTopicModal({
         return;
       }
     }
-
-// Email the updated schedule to assigned faculty (only if the box is ticked)
-if (emailOnSave) {
-  const report: { name: string; ok: boolean; message?: string }[] = [];
-  for (const link of facultyLinks) {
-    const f = link.faculty;
-    if (!f?.email) {
-      report.push({ name: f?.canonical_name || 'Unknown', ok: false, message: 'No email on file' });
-      continue;
-    }
-    const r = await sendScheduleUpdateToFaculty(f);
-    report.push({ name: f.canonical_name, ok: r.success, message: r.message });
-  }
-  setEmailReport(report);
-}
 
 setIsSaving(false);
 setShowSuccessPrompt(true);
@@ -593,15 +481,9 @@ setShowSuccessPrompt(true);
       busy={isSaving}
       footer={
         <>
-          <label className="mr-auto flex cursor-pointer items-center gap-2 text-sm text-ink-2 select-none">
-            <input
-              type="checkbox"
-              checked={emailOnSave}
-              onChange={(e) => setEmailOnSave(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
-            />
-            📧 Email updated schedule to faculty
-          </label>
+          <p className="mr-auto max-w-xs text-xs text-muted">
+            Saving does not email anyone. Use <strong>Emails</strong> to tell faculty about changes.
+          </p>
           <button type="button" onClick={onClose} disabled={isSaving} className={secondaryBtn}>Cancel</button>
           <button type="submit" form="add-topic-form" disabled={isSaving} className={primaryBtn}>
             {isSaving ? 'Saving…' : 'Save topic'}
@@ -609,37 +491,42 @@ setShowSuccessPrompt(true);
         </>
       }
     >
-      <form id="add-topic-form" onSubmit={handleSubmit} className="space-y-5">
-        <Field label="Topic title" required>
+      <form id="add-topic-form" onSubmit={handleSubmit} className="space-y-6">
+        <Field label="Topic" required>
           {(p) => (
-            <input
+            <textarea
               {...p}
+              rows={2}
               value={topicTitle}
               onChange={(e) => setTopicTitle(e.target.value)}
-              className={inputCls}
-              placeholder="e.g. Anatomy discussion"
+              className={topicTitleCls}
+              placeholder="e.g. Upper face anatomy and injection points"
             />
           )}
         </Field>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <TimePicker label="Start time" h={startH} m={startM} ampm={startAmPm} onChange={handleStartChange} />
-          <TimePicker
-            label="End time"
-            h={endH}
-            m={endM}
-            ampm={endAmPm}
-            onChange={(h, m, a) => { setEndH(h); setEndM(m); setEndAmPm(a); }}
-          />
-        </div>
-        <p className="-mt-2 text-sm text-muted">The running-order number is worked out from the start time.</p>
-
-        {invalidRange && (
-          <p role="alert" className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-            <AlertIcon className="mt-0.5 shrink-0" width={16} height={16} />
-            The end time must be after the start time.
-          </p>
-        )}
+        <section aria-label="Time" className="rounded-xl border border-line bg-canvas p-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TimeField
+              label="Start time"
+              required
+              value={newStart}
+              onChange={handleStartChange}
+              hint={!timeTouched && suggestedAfter != null ? `Right after topic No. ${suggestedAfter}.` : undefined}
+            />
+            <TimeField
+              label="End time"
+              required
+              value={newEnd}
+              onChange={(v) => { setTimeTouched(true); setNewEnd(v); }}
+              hint="Moves with the start time."
+            />
+          </div>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+            <DurationNote start={newStart} end={newEnd} />
+            <p className="text-xs text-muted">The running-order number is set from the start time.</p>
+          </div>
+        </section>
         {!overlapBlocked && topicOverlaps.length > 0 && (
           <div role="status" aria-live="polite" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
             <p className="flex items-center gap-2 font-semibold">

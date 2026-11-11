@@ -1,17 +1,22 @@
 'use client';
 
-import { syncTopicConfirmations, generateFacultyTopicPdfs } from '../actions';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
 import EditFacultyModal from '../components/EditFacultyModal';
 import FacultyProfileModal from '../components/FacultyProfileModal';
 import Badge from '../components/Badge';
+import SyncButton from '../components/SyncButton';
 import { CheckIcon, SearchIcon } from '../components/Icons';
 import { inputCls } from '../components/Field';
 
 type CountFilter = 'all' | '0' | '1' | '2' | '3+' | '4+' | '5+';
 
 const FACULTY_SELECT = `*, faculty_topic_counts ( topic_count ), faculty_topics ( confirmed )`;
+
+// Every assignment counts: speaker, moderator, panelist and chairperson
+function topicCountOf(doc: any): number {
+  return doc.faculty_topics?.length ?? doc.faculty_topic_counts?.[0]?.topic_count ?? 0;
+}
 
 function matchesCount(topicCount: number, filter: CountFilter): boolean {
   switch (filter) {
@@ -28,7 +33,6 @@ function matchesCount(topicCount: number, filter: CountFilter): boolean {
 export default function FacultyDirectoryPage() {
   const [faculty, setFaculty] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pdfBusyId, setPdfBusyId] = useState<string | null>(null);
 
   const [editingFaculty, setEditingFaculty] = useState<any | null>(null);
   const [viewingProfile, setViewingProfile] = useState<any | null>(null);
@@ -45,10 +49,7 @@ export default function FacultyDirectoryPage() {
       else setFaculty(data || []);
       setLoading(false);
     }
-    // Pull per-topic confirmations from the Google Sheet, then reload if anything changed
-    fetchFaculty().then(() =>
-      syncTopicConfirmations().then((r) => { if (r.updated > 0) fetchFaculty(); })
-    );
+    fetchFaculty();
   }, []);
 
   async function refreshFaculty() {
@@ -59,29 +60,10 @@ export default function FacultyDirectoryPage() {
     if (data) setFaculty(data);
   }
 
-  // One PDF per topic: download every file (the browser may ask once to allow multiple downloads)
-  const handleViewPDF = async (id: string, e: React.MouseEvent) => {
+  // One PDF per faculty, one page per session
+  const handleViewPDF = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (pdfBusyId) return;
-    setPdfBusyId(id);
-    try {
-      const r = await generateFacultyTopicPdfs(id);
-      if (!r.success || !r.files.length) {
-        alert(r.message || 'No topics assigned, so no PDF was generated.');
-        return;
-      }
-      for (const f of r.files) {
-        const a = document.createElement('a');
-        a.href = f.url;
-        a.download = f.name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        await new Promise((res) => setTimeout(res, 400));
-      }
-    } finally {
-      setPdfBusyId(null);
-    }
+    window.open(`/api/generate-pdf?id=${id}`, '_blank');
   };
 
   const filteredFaculty = useMemo(() => {
@@ -93,7 +75,7 @@ export default function FacultyDirectoryPage() {
         doc.email?.toLowerCase().includes(q) ||
         doc.faculty_id?.toLowerCase().includes(q);
       if (!matchesSearch) return false;
-      const topicCount = doc.faculty_topic_counts?.[0]?.topic_count || 0;
+      const topicCount = topicCountOf(doc);
       return matchesCount(topicCount, countFilter);
     });
   }, [faculty, searchTerm, countFilter]);
@@ -114,6 +96,7 @@ export default function FacultyDirectoryPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <SyncButton onSynced={refreshFaculty} />
             <div className="relative">
               <label htmlFor="faculty-search" className="sr-only">
                 Search faculty by name, email or ID
@@ -201,7 +184,7 @@ export default function FacultyDirectoryPage() {
                     .join('')
                     .slice(0, 2)
                     .toUpperCase();
-                  const topicCount = doc.faculty_topic_counts?.[0]?.topic_count || 0;
+                  const topicCount = topicCountOf(doc);
                   const phoneDigits = (doc.phone || '').replace(/[^0-9+]/g, '');
                   const confirmedCount = (doc.faculty_topics || []).filter((ft: any) => ft.confirmed).length;
                   const allConfirmed = topicCount > 0 && confirmedCount === topicCount;
@@ -308,11 +291,10 @@ export default function FacultyDirectoryPage() {
                           <button
                             type="button"
                             onClick={(e) => handleViewPDF(doc.id, e)}
-                            aria-label={`Download PDFs for ${doc.canonical_name} (one per topic)`}
-                            disabled={pdfBusyId === doc.id}
+                            aria-label={`Open PDF for ${doc.canonical_name}`}
                             className={actionBtn}
                           >
-                            {pdfBusyId === doc.id ? 'Making PDFs…' : 'PDF'}
+                            PDF
                           </button>
                         </div>
                       </td>

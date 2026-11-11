@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { sendFormLinkToFaculty } from '../actions';
+import SendEmailsDialog from './SendEmailsDialog';
+import Badge from './Badge';
 
 function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   if (!dateStr) return '--';
@@ -34,32 +35,12 @@ export default function FacultyProfileModal({
   const [speakingSessions, setSpeakingSessions] = useState<any[]>([]);
   const [coordinatingSessions, setCoordinatingSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sendingEmail, setSendingEmail] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<{type: 'success'|'error', msg: string} | null>(null);
+  const [showSend, setShowSend] = useState(false);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    async function handleSendEmail() {
-    setSendingEmail(true);
-    setEmailStatus(null);
-    
-    // Get all session codes this faculty is speaking in
-    const sessionCodes = speakingSessions
-      .map((s: any) => s.session_topics?.conference_sessions?.session_code)
-      .filter(Boolean)
-      .join(",");
-
-    const res = await sendFormLinkToFaculty(faculty, sessionCodes);
-    setSendingEmail(false);
-    
-    if (res.success) {
-      setEmailStatus({ type: 'success', msg: res.message || 'Email sent successfully!' });
-    } else {
-      setEmailStatus({ type: 'error', msg: res.message });
-    }
-  }
-  return () => {
+    return () => {
       document.body.style.overflow = originalOverflow;
     };
   }, []);
@@ -71,6 +52,7 @@ export default function FacultyProfileModal({
         .select(
           `
           role,
+          confirmed,
           session_topics (
             topic_title,
             start_time,
@@ -127,25 +109,9 @@ export default function FacultyProfileModal({
   const phone = faculty.phone || '';
   const phoneDigits = phone.replace(/[^0-9+]/g, '');
 
-  async function handleSendEmail() {
-    setSendingEmail(true);
-    setEmailStatus(null);
-    
-    // Get all session codes this faculty is speaking in
-    const sessionCodes = speakingSessions
-      .map((s: any) => s.session_topics?.conference_sessions?.session_code)
-      .filter(Boolean)
-      .join(",");
+  // Already emailed before -> send a schedule update; otherwise the first full email
+  const kind = faculty.email_sent ? 'update' : 'first';
 
-    const res = await sendFormLinkToFaculty(faculty, sessionCodes);
-    setSendingEmail(false);
-    
-    if (res.success) {
-      setEmailStatus({ type: 'success', msg: res.message || 'Email sent successfully!' });
-    } else {
-      setEmailStatus({ type: 'error', msg: res.message });
-    }
-  }
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-end z-50">
       <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-slide-in">
@@ -216,17 +182,15 @@ export default function FacultyProfileModal({
 
           <div className="pt-4 border-t border-gray-100">
             <button
-              onClick={handleSendEmail}
-              disabled={sendingEmail || speakingSessions.length === 0}
+              onClick={() => setShowSend(true)}
+              disabled={speakingSessions.length === 0}
               className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {sendingEmail ? 'Sending...' : 'Send Confirmation Email'}
+              {kind === 'update' ? 'Email schedule update…' : 'Email schedule…'}
             </button>
-            {emailStatus && (
-              <div className={`mt-2 text-sm text-center font-medium ${emailStatus.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                {emailStatus.msg}
-              </div>
-            )}
+            <p className="mt-1.5 text-center text-xs text-gray-500">
+              You will see exactly what is sent before anything goes out.
+            </p>
           </div>
         </div>
 
@@ -239,26 +203,7 @@ export default function FacultyProfileModal({
               <div className="space-y-3">
                 {coordinatingSessions.map((c, i) => {
                   const session = c.conference_sessions;
-                  async function handleSendEmail() {
-    setSendingEmail(true);
-    setEmailStatus(null);
-    
-    // Get all session codes this faculty is speaking in
-    const sessionCodes = speakingSessions
-      .map((s: any) => s.session_topics?.conference_sessions?.session_code)
-      .filter(Boolean)
-      .join(",");
-
-    const res = await sendFormLinkToFaculty(faculty, sessionCodes);
-    setSendingEmail(false);
-    
-    if (res.success) {
-      setEmailStatus({ type: 'success', msg: res.message || 'Email sent successfully!' });
-    } else {
-      setEmailStatus({ type: 'error', msg: res.message });
-    }
-  }
-  return (
+                  return (
                     <a
                       key={i}
                       href={`/sessions?code=${session?.session_code}`}
@@ -285,40 +230,21 @@ export default function FacultyProfileModal({
 
           <div>
             <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider mb-3 border-b border-blue-200 pb-2">
-              Speaking Schedule ({speakingSessions.length})
+              Schedule ({speakingSessions.length})
             </h3>
 
             {loading ? (
               <div className="text-center text-gray-500 text-sm py-4">Loading...</div>
             ) : speakingSessions.length === 0 ? (
               <div className="text-center text-gray-500 italic text-sm py-4 bg-white rounded-lg border border-gray-200">
-                No speaking topics assigned yet.
+                No topics assigned yet.
               </div>
             ) : (
               <div className="space-y-3">
                 {speakingSessions.map((s, i) => {
                   const topic = s.session_topics;
                   const session = topic?.conference_sessions;
-                  async function handleSendEmail() {
-    setSendingEmail(true);
-    setEmailStatus(null);
-    
-    // Get all session codes this faculty is speaking in
-    const sessionCodes = speakingSessions
-      .map((s: any) => s.session_topics?.conference_sessions?.session_code)
-      .filter(Boolean)
-      .join(",");
-
-    const res = await sendFormLinkToFaculty(faculty, sessionCodes);
-    setSendingEmail(false);
-    
-    if (res.success) {
-      setEmailStatus({ type: 'success', msg: res.message || 'Email sent successfully!' });
-    } else {
-      setEmailStatus({ type: 'error', msg: res.message });
-    }
-  }
-  return (
+                  return (
                     <a
                       key={i}
                       href={`/sessions?code=${session?.session_code}`}
@@ -328,8 +254,11 @@ export default function FacultyProfileModal({
                         <div className="font-bold text-blue-800 text-sm group-hover:text-blue-600 transition-colors">
                           {session?.session_code}
                         </div>
-                        <div className="text-xs font-bold text-gray-600 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
-                          {s.role}
+                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                          {s.confirmed && <Badge tone="success">Confirmed</Badge>}
+                          <div className="text-xs font-bold text-gray-600 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
+                            {s.role}
+                          </div>
                         </div>
                       </div>
                       <div className="text-sm font-medium text-gray-900 mb-2 leading-tight">
@@ -350,6 +279,13 @@ export default function FacultyProfileModal({
           </div>
         </div>
       </div>
+
+      {showSend && (
+        <SendEmailsDialog
+          items={[{ facultyId: faculty.id, kind }]}
+          onClose={() => setShowSend(false)}
+        />
+      )}
     </div>
   );
 }

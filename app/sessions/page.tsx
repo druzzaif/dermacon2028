@@ -1,11 +1,15 @@
 'use client';
-import { resequenceSession, deleteTopic, syncTopicConfirmations } from '../actions';
+import { resequenceSession, deleteTopic } from '../actions';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
 import EditSessionModal from '../components/EditSessionModal';
 import AddSessionModal from '../components/AddSessionModal';
 import AddTopicModal from '../components/AddTopicModal';
 import EditCoordinatorsModal from '../components/EditCoordinatorsModal';
+import EditChairpersonsModal from '../components/EditChairpersonsModal';
+import CoordinatorReportDialog from '../components/CoordinatorReportDialog';
+import { DEFAULT_PRINT_OPTIONS, PrintOptionsDialog, SessionPrintSheet, type PrintOptions } from '../components/SessionPrint';
+import SyncButton from '../components/SyncButton';
 import EditTopicModal from '../components/EditTopicModal';
 import { useSearchParams } from 'next/navigation';
 import ConfirmDeleteDialog from '../components/ConfirmDeleteDialog';
@@ -38,7 +42,6 @@ export default function SessionsPage() {
   const [selectedSession, setSelectedSession] = useState<any | null>(null);
   const [coordinators, setCoordinators] = useState<any[]>([]);
   const [topics, setTopics] = useState<any[]>([]);
-  const [syncTick, setSyncTick] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,23 +53,18 @@ export default function SessionsPage() {
   const [isAddingSession, setIsAddingSession] = useState(false);
   const [isAddingTopic, setIsAddingTopic] = useState(false);
   const [isEditingCoordinators, setIsEditingCoordinators] = useState(false);
+  const [isEditingChairs, setIsEditingChairs] = useState(false);
+  const [isSendingReport, setIsSendingReport] = useState(false);
   const [editingTopic, setEditingTopic] = useState<any | null>(null);
   const [deletingTopic, setDeletingTopic] = useState<any | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
+  const [printOptions, setPrintOptions] = useState<PrintOptions>(DEFAULT_PRINT_OPTIONS);
 
   const searchParams = useSearchParams();
   const targetCode = searchParams.get('code');
-
-  // Pull per-topic confirmations from the Google Sheet into the database,
-  // then re-read the open session so the badges update.
-  useEffect(() => {
-    syncTopicConfirmations().then((r) => {
-      if (r.updated > 0) setSyncTick((n) => n + 1);
-    });
-  }, []);
-
 
   useEffect(() => {
     async function fetchSessions() {
@@ -113,7 +111,7 @@ export default function SessionsPage() {
 
     const { data: coordData } = await supabase
       .from('session_coordinators')
-      .select(`role, faculty_id, faculty ( id, canonical_name, phone )`)
+      .select(`role, faculty_id, faculty ( id, canonical_name, phone, email, faculty_id )`)
       .eq('session_id', selectedSession.id);
 
     if (coordData) {
@@ -133,7 +131,7 @@ export default function SessionsPage() {
       .select(
         `
         id, topic_title, start_time, end_time, sequence_no,
-        faculty_topics ( role, confirmed, faculty ( id, canonical_name, phone, email ) )
+        faculty_topics ( role, confirmed, faculty ( id, canonical_name, phone, email, faculty_id ) )
       `
       )
       .eq('session_id', selectedSession.id)
@@ -147,7 +145,7 @@ export default function SessionsPage() {
   useEffect(() => {
     refreshDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSession, syncTick]);
+  }, [selectedSession]);
 
   const distinctHalls = useMemo(() => {
     const set = new Set<string>();
@@ -340,7 +338,8 @@ export default function SessionsPage() {
       >
         {sel ? (
           <>
-            <div className="session-header z-10 shrink-0 border-b border-line bg-white px-4 py-5 sm:px-6 print:border-0 print:px-0 print:py-2">
+            <SessionPrintSheet session={sel} topics={topics} coordinators={coordinators} options={printOptions} />
+            <div className="session-header z-10 shrink-0 border-b border-line bg-white px-4 py-5 sm:px-6 print:hidden">
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
@@ -373,9 +372,10 @@ export default function SessionsPage() {
                   </dl>
                 </div>
 
-                <div className="flex shrink-0 flex-wrap gap-2 print:hidden">
-                  <button type="button" onClick={() => window.print()} className={`${btn} border border-field bg-white text-ink hover:bg-slate-50`}>
-                    Print
+                <div className="flex shrink-0 flex-wrap items-center gap-2 print:hidden">
+                  <SyncButton onSynced={() => refreshDetails()} />
+                  <button type="button" onClick={() => setPrintOpen(true)} className={`${btn} border border-field bg-white text-ink hover:bg-slate-50`}>
+                    Print…
                   </button>
                   <button type="button" onClick={() => setIsEditingSession(true)} className={`${btn} border border-field bg-white text-ink hover:bg-slate-50`}>
                     Edit session
@@ -400,17 +400,33 @@ export default function SessionsPage() {
                     ))
                   )}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingCoordinators(true)}
-                  className={`${rowBtn} ml-auto shrink-0 text-accent hover:bg-accent-tint print:hidden`}
-                >
-                  Edit coordinators
-                </button>
+                <div className="ml-auto flex shrink-0 flex-wrap gap-1 print:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingCoordinators(true)}
+                    className={`${rowBtn} text-accent hover:bg-accent-tint`}
+                  >
+                    Edit coordinators
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingChairs(true)}
+                    className={`${rowBtn} text-accent hover:bg-accent-tint`}
+                  >
+                    Chairpersons
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsSendingReport(true)}
+                    className={`${rowBtn} text-accent hover:bg-accent-tint`}
+                  >
+                    Send report to coordinators
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-6 print:overflow-visible print:p-0">
+            <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-6 print:hidden">
               <div role="status" aria-live="polite" className="sr-only">
                 {loadingDetails ? 'Loading schedule' : `${topics.length} topics loaded`}
               </div>
@@ -445,7 +461,9 @@ export default function SessionsPage() {
                       </tr>
                     ) : (
                       topics.map((t) => {
-                        const facultyList = t.faculty_topics || [];
+                        const allLinks = t.faculty_topics || [];
+                        const facultyList = allLinks.filter((ft: any) => ft.role !== 'Chairperson');
+                        const chairList = allLinks.filter((ft: any) => ft.role === 'Chairperson');
                         return (
                           <tr key={t.id} className="align-top transition-colors hover:bg-slate-50/70">
                             <td className="tnum px-3 py-3 text-center text-sm font-semibold text-muted">{t.sequence_no}</td>
@@ -456,7 +474,7 @@ export default function SessionsPage() {
                               {t.topic_title}
                             </th>
                             <td className="px-3 py-3">
-                              {facultyList.length === 0 ? (
+                              {facultyList.length === 0 && chairList.length === 0 ? (
                                 <span className="text-sm italic text-ink-2">Unassigned</span>
                               ) : (
                                 <ul className="space-y-1.5">
@@ -472,7 +490,29 @@ export default function SessionsPage() {
                                       )}
                                     </li>
                                   ))}
+                                  {facultyList.length === 0 && (
+                                    <li className="text-sm italic text-ink-2">No speaker yet</li>
+                                  )}
                                 </ul>
+                              )}
+                              {chairList.length > 0 && (
+                                <div className="mt-2 border-t border-line pt-2">
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">Chair</p>
+                                  <ul className="mt-1 space-y-1.5">
+                                    {chairList.map((ft: any, i: number) => (
+                                      <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                        <span className="text-sm font-medium text-ink">{ft.faculty?.canonical_name}</span>
+                                        <Badge tone="orange">Chairperson</Badge>
+                                        {ft.confirmed && (
+                                          <Badge tone="success">
+                                            <CheckIcon width={12} height={12} strokeWidth={3} />
+                                            Confirmed
+                                          </Badge>
+                                        )}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
                               )}
                             </td>
                             <td className="whitespace-nowrap px-3 py-1.5 text-right print:hidden">
@@ -557,6 +597,31 @@ export default function SessionsPage() {
               setIsEditingCoordinators(false);
             }}
           />
+        )}
+        {isEditingChairs && sel && (
+          <EditChairpersonsModal
+            session={sel}
+            onClose={() => setIsEditingChairs(false)}
+            onSaved={async () => {
+              await refreshDetails();
+              setIsEditingChairs(false);
+            }}
+          />
+        )}
+        {printOpen && sel && (
+          <PrintOptionsDialog
+            initial={printOptions}
+            onCancel={() => setPrintOpen(false)}
+            onPrint={(o) => {
+              setPrintOptions(o);
+              setPrintOpen(false);
+              // let the dialog close and the print sheet re-render before printing
+              setTimeout(() => window.print(), 150);
+            }}
+          />
+        )}
+        {isSendingReport && sel && (
+          <CoordinatorReportDialog session={sel} onClose={() => setIsSendingReport(false)} />
         )}
         {editingTopic && sel && (
           <EditTopicModal

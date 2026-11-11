@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import NavLinks from "./components/NavLinks";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +15,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DERMACON 2028 Dashboard",
+  title: {
+    default: "DERMACON 2028 Dashboard",
+    template: "%s · DERMACON 2028",
+  },
   description: "Automated system for scientific commitments",
 };
 
@@ -26,32 +30,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <header className="fixed top-0 left-0 right-0 h-12 bg-gray-800 text-white z-50 flex items-center px-5 shadow-sm">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-ink focus:shadow-pop"
+        >
+          Skip to main content
+        </a>
+        <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center border-b border-white/10 bg-header px-4 text-white sm:px-6">
           <Link
             href="/sessions"
-            className="font-bold tracking-wide text-base hover:text-blue-300 transition-colors"
+            className="shrink-0 text-[15px] font-semibold tracking-[0.12em] text-white"
           >
-            DERMACON 2028
+            DERMACON <span className="text-indigo-300">2028</span>
           </Link>
-          <nav className="ml-8 flex items-center gap-5 text-sm font-medium">
-            <Link href="/faculty" className="text-gray-200 hover:text-white transition-colors">
-              Faculty
-            </Link>
-            <Link href="/sessions" className="text-gray-200 hover:text-white transition-colors">
-              Sessions
-            </Link>
-            <Link href="/overlaps" className="text-gray-200 hover:text-white transition-colors">
-              Overlaps
-            </Link>
-            <Link href="/missing" className="text-gray-200 hover:text-white transition-colors">
-              Missing Data
-            </Link>
-          </nav>
+          <NavLinks />
         </header>
-        <div className="pt-12">{children}</div>
+        <div className="pt-14">{children}</div>
       </body>
     </html>
   );

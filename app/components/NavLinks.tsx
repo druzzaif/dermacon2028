@@ -8,6 +8,8 @@ const links = [
   { href: '/sessions', label: 'Sessions' },
   { href: '/overlaps', label: 'Overlaps' },
   { href: '/missing', label: 'Missing data' },
+  { href: '/emails', label: 'Emails' },
+  { href: '/backup', label: 'Backup' },
 ];
 
 export default function NavLinks() {
