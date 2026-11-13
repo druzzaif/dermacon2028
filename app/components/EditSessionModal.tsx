@@ -10,7 +10,7 @@ import SessionChairsPicker, { logSessionChairChanges, type ChairPerson } from '.
 import { findSessionOverlaps, type SessionOverlap } from '../lib/sessionOverlap';
 import { buttonCls } from './ui';
 
-export const SESSION_TYPES = ['MasterClass', 'Workshop', 'Plenary', 'Panel'];
+export const SESSION_TYPES = ['MasterClass', 'Workshop', 'CME', 'Plenary', 'Panel'];
 
 const secondaryBtn = buttonCls('secondary');
 const primaryBtn = buttonCls('primary');
