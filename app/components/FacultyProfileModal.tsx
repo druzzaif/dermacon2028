@@ -41,6 +41,8 @@ export default function FacultyProfileModal({
 }) {
   const [speakingSessions, setSpeakingSessions] = useState<any[]>([]);
   const [coordinatingSessions, setCoordinatingSessions] = useState<any[]>([]);
+  // Sessions this person chairs as a whole (not a single topic)
+  const [chairSessions, setChairSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSend, setShowSend] = useState(false);
   const [unconfirming, setUnconfirming] = useState<any | null>(null);
@@ -109,6 +111,18 @@ export default function FacultyProfileModal({
           return dateA.localeCompare(dateB);
         });
         setCoordinatingSessions(sortedCoords);
+      }
+
+      const { data: chairData } = await supabase
+        .from('session_chairs')
+        .select(`confirmed, conference_sessions ( session_code, session_name, session_date, hall, start_time, end_time )`)
+        .eq('faculty_id', faculty.id);
+      if (chairData) {
+        setChairSessions(
+          [...(chairData as any[])]
+            .filter((c) => c.conference_sessions)
+            .sort((a, b) => String(a.conference_sessions.session_date || '').localeCompare(String(b.conference_sessions.session_date || ''))),
+        );
       }
 
       setLoading(false);
@@ -227,7 +241,7 @@ export default function FacultyProfileModal({
               variant="primary"
               className="w-full"
               onClick={() => setShowSend(true)}
-              disabled={speakingSessions.length === 0}
+              disabled={loading || (speakingSessions.length === 0 && chairSessions.length === 0)}
             >
               {kind === 'update' ? 'Email schedule update…' : 'Email schedule…'}
             </Button>
@@ -240,7 +254,7 @@ export default function FacultyProfileModal({
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain bg-canvas p-5">
           {loading && <LoadingBlock>Loading roles…</LoadingBlock>}
 
-          {!loading && coordinatingSessions.length === 0 && speakingSessions.length === 0 && (
+          {!loading && coordinatingSessions.length === 0 && speakingSessions.length === 0 && chairSessions.length === 0 && (
             <p className="rounded-xl border border-dashed border-field bg-white p-6 text-center text-sm text-ink-2">
               No sessions or topics assigned yet.
             </p>
@@ -269,6 +283,44 @@ export default function FacultyProfileModal({
                       </div>
                       <div className="mt-2 flex justify-between gap-2 text-xs text-ink-2">
                         <span className="tnum">{formatDateDdMmYyyy(session?.session_date)}</span>
+                        <span>Hall {session?.hall || 'not set'}</span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {chairSessions.length > 0 && (
+            <section aria-labelledby="role-session-chair">
+              <h3 id="role-session-chair" className="mb-2.5 flex items-center justify-between border-b border-line pb-2 text-sm font-semibold text-ink">
+                Session chair
+                <span className="tnum rounded-full bg-slate-200 px-2 py-0.5 text-xs text-ink-2">{chairSessions.length}</span>
+              </h3>
+              <div className="space-y-2.5">
+                {chairSessions.map((c, i) => {
+                  const session = c.conference_sessions;
+                  return (
+                    <a
+                      key={i}
+                      href={`/sessions?code=${session?.session_code}`}
+                      className="block rounded-xl border border-line bg-white p-3.5 shadow-sm transition-colors hover:border-accent"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="text-sm font-semibold text-ink">
+                          <span className="tnum text-accent">{session?.session_code}</span> · {session?.session_name}
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          {c.confirmed && <Badge tone="success">Confirmed</Badge>}
+                          <Badge tone="orange">Chairperson</Badge>
+                        </div>
+                      </div>
+                      <div className="tnum mt-2 flex justify-between gap-2 border-t border-line pt-2 text-xs text-ink-2">
+                        <span>{formatDateDdMmYyyy(session?.session_date)}</span>
+                        <span className="whitespace-nowrap">
+                          {formatTimeAmPm(session?.start_time)} – {formatTimeAmPm(session?.end_time)}
+                        </span>
                         <span>Hall {session?.hall || 'not set'}</span>
                       </div>
                     </a>

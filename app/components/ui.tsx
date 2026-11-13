@@ -54,6 +54,28 @@ export function Button({
   );
 }
 
+/** A person's name that opens their profile when clicked */
+export function PersonLink({
+  name,
+  onOpen,
+  className = '',
+}: {
+  name: ReactNode;
+  onOpen: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      title="Open profile"
+      className={`rounded text-left font-medium text-ink decoration-accent/50 underline-offset-2 transition-colors hover:text-accent hover:underline ${className}`}
+    >
+      {name}
+    </button>
+  );
+}
+
 /* ------------------------------ Loading ------------------------------ */
 
 export function Spinner({ className = '' }: { className?: string }) {

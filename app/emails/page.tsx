@@ -6,6 +6,8 @@ import SendEmailsDialog from '../components/SendEmailsDialog';
 import SyncButton from '../components/SyncButton';
 import { SearchIcon } from '../components/Icons';
 import { inputCls } from '../components/Field';
+import { PersonLink } from '../components/ui';
+import FacultyProfileHost from '../components/FacultyProfileHost';
 
 type Tab = 'first' | 'changes' | 'reminders';
 
@@ -15,6 +17,7 @@ export default function EmailsPage() {
   const [tab, setTab] = useState<Tab>('first');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -141,7 +144,7 @@ export default function EmailsPage() {
                     aria-label={`Select ${r.name}`}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{r.name}</p>
+                    <p className="font-semibold"><PersonLink name={r.name} onOpen={() => setProfileId(r.id)} className="font-semibold" /></p>
                     <p className="text-sm text-ink-2">
                       {r.hasEmail ? r.email : <span className="text-red-700">No valid email</span>} ·{' '}
                       {r.topicCount} topic{r.topicCount === 1 ? '' : 's'} · {r.confirmedCount} confirmed
@@ -168,6 +171,10 @@ export default function EmailsPage() {
           )}
         </div>
       </main>
+
+      {profileId && (
+        <FacultyProfileHost facultyId={profileId} onClose={() => setProfileId(null)} onChanged={load} />
+      )}
 
       {sending && (
         <SendEmailsDialog

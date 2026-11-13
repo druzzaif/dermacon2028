@@ -81,7 +81,7 @@ input[type="radio"]:not(:disabled) { cursor: pointer; }
 
 
 /* ============================================================
-   DERMACON 2028 — Print stylesheet
+   DERMACON 2027 — Print stylesheet
    Ctrl+P on /sessions produces a clean, ink-friendly schedule.
    Screen rendering unchanged.
    ============================================================ */
@@ -152,7 +152,7 @@ input[type="radio"]:not(:disabled) { cursor: pointer; }
   /* Page footer with session code + date */
   @page {
     @bottom-left {
-      content: "DERMACON 2028 — Confidential Schedule";
+      content: "DERMACON 2027 — Confidential Schedule";
       font-size: 8pt;
       color: #777;
     }

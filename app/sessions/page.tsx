@@ -23,7 +23,8 @@ import { formatTime12, toMinutes } from '../lib/time';
 import Badge, { roleTone } from '../components/Badge';
 import { inputCls } from '../components/Field';
 import { AlertIcon, CalendarIcon, CheckIcon, ClockIcon, MailIcon, MenuIcon, PinIcon, PlusIcon, SearchIcon } from '../components/Icons';
-import { Button, EmptyState, LoadingBlock, SkeletonLines, thCls, theadRowCls } from '../components/ui';
+import { Button, EmptyState, LoadingBlock, PersonLink, SkeletonLines, thCls, theadRowCls } from '../components/ui';
+import FacultyProfileHost from '../components/FacultyProfileHost';
 
 function formatDateLabel(dateStr: string | null): string {
   if (!dateStr) return 'No date';
@@ -65,6 +66,8 @@ export default function SessionsPage() {
   const [editingTopic, setEditingTopic] = useState<any | null>(null);
   const [deletingTopic, setDeletingTopic] = useState<any | null>(null);
   const [closingSlot, setClosingSlot] = useState<EmptySlot | null>(null);
+  // Person whose profile panel is open (clicked on a name anywhere on this screen)
+  const [profileId, setProfileId] = useState<string | null>(null);
   // Which session the topic list on screen belongs to (placeholders show only while a different one loads)
   const [detailsFor, setDetailsFor] = useState<string | null>(null);
   // The topic that was just added or saved: scrolled into view and highlighted for a moment
@@ -321,7 +324,12 @@ export default function SessionsPage() {
           </div>
 
           <label htmlFor="filter-session" className="sr-only">Filter by session</label>
-          <select id="filter-session" className={inputCls} value={filterSessionCode} onChange={(e) => setFilterSessionCode(e.target.value)}>
+          <select id="filter-session" className={inputCls} value={filterSessionCode} onChange={(e) => {
+            setFilterSessionCode(e.target.value);
+            // Picking a session takes you straight to it
+            const picked = sessions.find((x) => x.session_code === e.target.value);
+            if (picked) chooseSession(picked);
+          }}>
             <option value="">All sessions</option>
             {sessionOptions.map((opt) => (
               <option key={opt.code} value={opt.code}>{opt.code} – {opt.name}</option>
@@ -454,7 +462,7 @@ export default function SessionsPage() {
                       {sessionChairs.map((c, i) => (
                         <li key={i} className="flex items-center gap-2">
                           <span className="tnum text-sm text-muted">{i + 1}.</span>
-                          <span className="text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
+                          <PersonLink className="text-sm" name={c.faculty?.canonical_name} onOpen={() => c.faculty?.id && setProfileId(c.faculty.id)} />
                         </li>
                       ))}
                     </ul>
@@ -470,7 +478,7 @@ export default function SessionsPage() {
                       coordinators.map((c, i) => (
                         <li key={i} className="flex items-center gap-2">
                           <span className="tnum text-sm text-muted">{i + 1}.</span>
-                          <span className="text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
+                          <PersonLink className="text-sm" name={c.faculty?.canonical_name} onOpen={() => c.faculty?.id && setProfileId(c.faculty.id)} />
                           <Badge tone={roleTone(c.role)}>{c.role}</Badge>
                         </li>
                       ))
@@ -561,7 +569,7 @@ export default function SessionsPage() {
                                   {facultyList.map((ft: any, i: number) => (
                                     <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                       {facultyList.length > 1 && <span className="text-sm font-semibold text-ink-2">{i + 1}.</span>}
-                                      <span className="text-sm font-medium text-ink">{ft.faculty?.canonical_name}</span>
+                                      <PersonLink className="text-sm" name={ft.faculty?.canonical_name} onOpen={() => ft.faculty?.id && setProfileId(ft.faculty.id)} />
                                       <Badge tone={roleTone(ft.role || 'Faculty')}>{roleName(ft.role)}</Badge>
                                       {ft.confirmed && (
                                         <Badge tone="success">
@@ -582,7 +590,7 @@ export default function SessionsPage() {
                                   <ul className="mt-1 space-y-1.5">
                                     {chairList.map((ft: any, i: number) => (
                                       <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                        <span className="text-sm font-medium text-ink">{ft.faculty?.canonical_name}</span>
+                                        <PersonLink className="text-sm" name={ft.faculty?.canonical_name} onOpen={() => ft.faculty?.id && setProfileId(ft.faculty.id)} />
                                         <Badge tone="orange">Chairperson</Badge>
                                         {ft.confirmed && (
                                           <Badge tone="success">
@@ -743,6 +751,14 @@ export default function SessionsPage() {
               setDeletingTopic(null);
               await refreshDetails();
             }}
+          />
+        )}
+
+        {profileId && (
+          <FacultyProfileHost
+            facultyId={profileId}
+            onClose={() => setProfileId(null)}
+            onChanged={() => { refreshDetails(); }}
           />
         )}
 
