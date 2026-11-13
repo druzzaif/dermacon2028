@@ -289,6 +289,8 @@ function SessionPrint() {
   const [confirmed, setConfirmed] = useState(true);
   const [pagePerSession, setPagePerSession] = useState(true);
   const [emptySlots, setEmptySlots] = useState(false);
+  const [coordinators, setCoordinators] = useState(true);
+  const [continuous, setContinuous] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -346,7 +348,7 @@ function SessionPrint() {
     setPdfUrl(null);
     try {
       const ordered = sessions.filter((s) => picked.has(String(s.id))).map((s) => String(s.id));
-      const r = await fetchPdf({ kind: 'sessions', sessionIds: ordered, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession, emptySlots }, 'DERMACON_Print');
+      const r = await fetchPdf({ kind: 'sessions', sessionIds: ordered, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession, emptySlots, coordinators, continuous }, 'DERMACON_Print');
       setPdfUrl(r.url);
     } catch (e: any) {
       setError(e?.message || 'The PDF could not be made.');
@@ -446,11 +448,13 @@ function SessionPrint() {
 
             <div className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
               <h2 className="mb-1 text-sm font-semibold text-ink">Schedule options</h2>
+              <Check checked={continuous} onChange={setContinuous} disabled={!schedule} title="Continuous (no page breaks)" desc="Sessions follow one another under a single heading per day, with each session's heading above its rows." />
+              <Check checked={coordinators} onChange={setCoordinators} disabled={!schedule} title="Include coordinators" desc="Each session's coordinators. Untick to print without them." />
               <Check checked={chairs} onChange={setChairs} disabled={!schedule} title="Include chairpersons" desc="A Chairperson column next to the faculty." />
               <Check checked={contacts} onChange={setContacts} disabled={!schedule} title="Include contact details" desc="Phone and email under every coordinator, faculty and chair." />
               <Check checked={confirmed} onChange={setConfirmed} disabled={!schedule} title="Show who has confirmed" desc="✓ after names (as of the last sync)." />
               <Check checked={emptySlots} onChange={setEmptySlots} disabled={!schedule} title="Show empty slots" desc="A marked row wherever no topic is scheduled." />
-              <Check checked={pagePerSession} onChange={setPagePerSession} disabled={!schedule} title="Each session on a new page" />
+              <Check checked={pagePerSession} onChange={setPagePerSession} disabled={!schedule || continuous} title="Each session on a new page" desc={continuous ? 'Not used in continuous mode.' : undefined} />
             </div>
 
             <div className="space-y-3 rounded-xl border border-line bg-white p-4 shadow-card">

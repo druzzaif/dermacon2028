@@ -18,6 +18,8 @@ export type PrintRequest = {
   confirmed: boolean;     // ✓ after people who confirmed
   pagePerSession: boolean;
   emptySlots?: boolean;   // add a marked row wherever no topic is scheduled
+  coordinators?: boolean; // show each session's coordinators (default: yes)
+  continuous?: boolean;   // no page breaks: one heading per day, a heading row above each session's rows
 };
 
 const esc = (s: any) =>
@@ -103,17 +105,24 @@ function personLine(f: any, extra: string, o: PrintRequest, confirmed?: boolean,
   return `<div class="person"><span class="pname">${esc(prefix)}${esc(f?.canonical_name || '—')}</span>${extra ? ` <span class="role">(${esc(extra)})</span>` : ''}${tick}${contact ? `<div class="contact">${contact}</div>` : ''}</div>`;
 }
 
-function sessionSchedule(s: any, o: PrintRequest, first: boolean) {
+const showCoords = (o: PrintRequest) => o.coordinators !== false;
+
+function coordBlock(s: any, o: PrintRequest) {
   const coords = s.session_coordinators.filter((c: any) => !isTbd(c.faculty));
-  const coordHtml = coords.length
+  return coords.length
     ? `<div class="coords"><div class="coords-title">Coordinators</div>${coords.map((c: any, i: number) => personLine(c.faculty, roleLabel(c.role), o, undefined, `${i + 1}. `)).join('')}</div>`
     : `<div class="coords"><div class="coords-title">Coordinators</div><span class="bad">None assigned</span></div>`;
+}
 
-  // Chairpersons of the whole session: shown once here, not on each topic
-  const chairHtml = s.session_chairs.length
+// Chairpersons of the whole session: shown once here, not on each topic
+function chairBlock(s: any, o: PrintRequest) {
+  return s.session_chairs.length
     ? `<div class="coords"><div class="coords-title">Session chair</div>${s.session_chairs.map((c: any, i: number) => personLine(c.faculty, '', o, undefined, `${i + 1}. `)).join('')}</div>`
     : '';
+}
 
+// The topic rows of one session (with empty-slot rows when asked for)
+function topicRows(s: any, o: PrintRequest) {
   // Empty slots (worked out from the times), printed only when asked for
   const slots: EmptySlot[] = o.emptySlots ? findEmptySlots(s.session_topics, s) : [];
   const slotsPrinted = new Set<string>();
@@ -124,7 +133,7 @@ function sessionSchedule(s: any, o: PrintRequest, first: boolean) {
     </tr>`;
   const trailing = slots.find((g) => g.beforeTopicId === null);
 
-  const rows = s.session_topics.map((t: any) => {
+  return s.session_topics.map((t: any) => {
     const before = slots.find((g) => g.beforeTopicId !== null && !slotsPrinted.has(g.start) && toMinutes(g.end) === toMinutes(t.start_time));
     if (before) slotsPrinted.add(before.start);
     const links = t.faculty_topics || [];
@@ -142,23 +151,61 @@ function sessionSchedule(s: any, o: PrintRequest, first: boolean) {
       ${o.chairs ? `<td>${chHtml}</td>` : ''}
     </tr>`;
   }).join('') + (trailing ? slotRow(trailing) : '');
+}
 
-  const cols = o.chairs
-    ? '<col style="width:5%"><col style="width:12%"><col style="width:35%"><col style="width:28%"><col style="width:20%">'
-    : '<col style="width:5%"><col style="width:12%"><col style="width:43%"><col style="width:40%">';
+const topicCols = (o: PrintRequest) => o.chairs
+  ? '<col style="width:5%"><col style="width:12%"><col style="width:35%"><col style="width:28%"><col style="width:20%">'
+  : '<col style="width:5%"><col style="width:12%"><col style="width:43%"><col style="width:40%">';
+const topicHead = (o: PrintRequest) =>
+  `<tr><th>No.</th><th>Time</th><th>Topic</th><th>Faculty</th>${o.chairs ? '<th>Chairperson</th>' : ''}</tr>`;
 
+function sessionSchedule(s: any, o: PrintRequest, first: boolean) {
   return `
   <section class="session ${o.pagePerSession && !first ? 'newpage' : ''}">
     ${sessionBanner(s)}
-    ${chairHtml}
-    ${coordHtml}
+    ${chairBlock(s, o)}
+    ${showCoords(o) ? coordBlock(s, o) : ''}
     ${s.session_topics.length ? `
     <table class="grid">
-      <colgroup>${cols}</colgroup>
-      <thead><tr><th>No.</th><th>Time</th><th>Topic</th><th>Faculty</th>${o.chairs ? '<th>Chairperson</th>' : ''}</tr></thead>
-      <tbody>${rows}</tbody>
+      <colgroup>${topicCols(o)}</colgroup>
+      <thead>${topicHead(o)}</thead>
+      <tbody>${topicRows(s, o)}</tbody>
     </table>` : '<p class="bad">This session has no topics yet.</p>'}
   </section>`;
+}
+
+// Continuous layout: no page breaks. One table per day with a single heading
+// (repeated if the day runs onto another page); every session gets a heading row
+// above its own rows.
+function continuousSchedule(sessions: any[], o: PrintRequest) {
+  const ncols = o.chairs ? 5 : 4;
+  const days = new Map<string, any[]>();
+  sessions.forEach((s) => { const k = s.session_date || ''; days.set(k, [...(days.get(k) || []), s]); });
+
+  return [...days.entries()].map(([day, list]) => {
+    const body = list.map((s) => {
+      const info = [chairBlock(s, o), showCoords(o) ? coordBlock(s, o) : ''].join('');
+      return `<tbody class="sess">
+        <tr class="sess-head"><td colspan="${ncols}">
+          <span class="code">${esc(s.session_code)}</span>
+          <span class="sname">${esc(s.session_name || 'Untitled session')}</span>
+          ${s.session_type ? `<span class="stype">${esc(s.session_type)}</span>` : ''}
+          <span class="swhen">${esc(range(s.start_time, s.end_time))} · ${hallText(s.hall)}</span>
+        </td></tr>
+        ${info ? `<tr class="sess-info"><td colspan="${ncols}">${info}</td></tr>` : ''}
+        ${s.session_topics.length ? topicRows(s, o) : `<tr><td colspan="${ncols}" class="bad">This session has no topics yet.</td></tr>`}
+      </tbody>`;
+    }).join('');
+    return `
+    <table class="grid day">
+      <colgroup>${topicCols(o)}</colgroup>
+      <thead>
+        <tr><th colspan="${ncols}" class="day-th">${day ? esc(fmtDate(day)) : '<span class="bad">Date not set</span>'}</th></tr>
+        ${topicHead(o)}
+      </thead>
+      ${body}
+    </table>`;
+  }).join('');
 }
 
 // ---------- missing data ----------
@@ -326,6 +373,16 @@ const CSS = `
   ul.issues { margin: 0; padding-left: 16px; }
   ul.issues li { margin-bottom: 2px; }
   .legend { margin-top: 4px; font-size: 8.5pt; color: #444; }
+  /* continuous layout */
+  table.day { margin-bottom: 16px; }
+  table.grid th.day-th { background: #fff3c4; color: #2d1a47; border-left: 5px solid #e0b100; font-size: 11pt; text-transform: none; letter-spacing: 0; padding: 5px 8px; }
+  table.grid tbody.sess tr.sess-head td { background: #4a2c6e; color: #fff; border-color: #4a2c6e; padding: 6px 8px; break-after: avoid; }
+  table.grid tr.sess-head .code { font-size: 10pt; margin-right: 6px; }
+  table.grid tr.sess-head .sname { font-size: 11pt; font-weight: 700; margin-right: 6px; }
+  table.grid tr.sess-head .swhen { float: right; font-weight: 700; }
+  table.grid tr.sess-head .bad { color: #ffd9d4; }
+  table.grid tbody.sess tr.sess-info td { background: #f4f0fa; padding: 4px 8px; break-after: avoid; }
+  table.grid tr.sess-info .coords { margin: 0; padding: 2px 0; background: none; border: 0; }
 `;
 
 // ---------- by faculty (simple PDF) ----------
@@ -450,7 +507,8 @@ export async function buildPrintHtml(o: PrintRequest) {
 
   let firstBlock = true;
   if (o.schedule) {
-    selected.forEach((s) => { parts.push(sessionSchedule(s, o, firstBlock)); firstBlock = false; });
+    if (o.continuous && selected.length) { parts.push(continuousSchedule(selected, o)); firstBlock = false; }
+    else selected.forEach((s) => { parts.push(sessionSchedule(s, o, firstBlock)); firstBlock = false; });
   }
   if (o.missing) parts.push(missingSection(scoped, scopeLabel).replace('report newpage', firstBlock ? 'report' : 'report newpage'));
   if (o.missing) firstBlock = false;

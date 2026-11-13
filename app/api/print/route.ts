@@ -44,6 +44,8 @@ export async function POST(req: Request) {
         confirmed: !!b.confirmed,
         pagePerSession: !!b.pagePerSession,
         emptySlots: !!b.emptySlots,
+        coordinators: b.coordinators !== false,
+        continuous: !!b.continuous,
       };
       if (!body.schedule && !body.missing && !body.overlaps) {
         return Response.json({ error: 'Choose at least one thing to print.' }, { status: 400 });
