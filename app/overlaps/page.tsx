@@ -5,15 +5,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import Badge from '../components/Badge';
-import { AlertIcon, CheckIcon, ClockIcon, PinIcon } from '../components/Icons';
+import { AlertIcon, ClockIcon, PinIcon } from '../components/Icons';
+import { EmptyState, LoadingBlock, PageHeader, PageShell, Tabs, cardCls } from '../components/ui';
 
 function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   if (!dateStr) return '--';
   const d = new Date(dateStr + 'T00:00:00');
   if (isNaN(d.getTime())) return dateStr;
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  return `${dd}-${mm}-${d.getFullYear()}`;
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function formatTimeAmPm(timeStr: string | null | undefined): string {
@@ -60,14 +59,6 @@ export default function OverlapsPage() {
   const [hallOverlaps, setHallOverlaps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'faculty' | 'hall'>('faculty');
-
-  function onTabKey(e: React.KeyboardEvent) {
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
-    e.preventDefault();
-    const next: 'faculty' | 'hall' = e.key === 'Home' ? 'faculty' : e.key === 'End' ? 'hall' : activeTab === 'faculty' ? 'hall' : 'faculty';
-    setActiveTab(next);
-    document.getElementById(`tab-${next}`)?.focus();
-  }
 
   useEffect(() => {
     async function checkOverlaps() {
@@ -163,19 +154,18 @@ export default function OverlapsPage() {
     checkOverlaps();
   }, []);
 
-  const tabCls = (on: boolean, tone: 'red' | 'orange') =>
-    `inline-flex h-12 items-center gap-2 border-b-2 px-4 text-sm font-medium transition-colors ${
-      on
-        ? tone === 'red' ? 'border-red-700 text-red-800' : 'border-orange-700 text-orange-800'
-        : 'border-transparent text-ink-2 hover:text-ink'
-    }`;
-
   function SessionCard({ t, showHall }: { t: any; showHall?: boolean }) {
     const cs = t.conference_sessions;
     return (
-      <div className="rounded-xl bg-canvas p-4 ring-1 ring-inset ring-line">
-        <div className="tnum text-sm font-semibold text-accent">{cs.session_code}</div>
-        <div className="mt-0.5 font-medium text-ink">{cs.session_name}</div>
+      <div className="rounded-lg bg-canvas p-4 ring-1 ring-inset ring-line">
+        <a
+          href={`/sessions?code=${encodeURIComponent(cs.session_code)}`}
+          className="tnum inline-flex h-7 items-center rounded-md bg-accent px-2 text-sm font-semibold text-white hover:bg-accent-strong"
+          title={`Open session ${cs.session_code}`}
+        >
+          {cs.session_code}
+        </a>
+        <div className="mt-2 font-medium text-ink">{cs.session_name}</div>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-2">
           <span className="tnum inline-flex items-center gap-1.5">
             <ClockIcon /> <span className="sr-only">Time:</span>
@@ -196,92 +186,76 @@ export default function OverlapsPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-canvas text-ink">
-      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl p-4 outline-none sm:p-8">
-        <h1 className="text-3xl font-semibold">Schedule conflicts</h1>
-        <p className="mb-8 mt-1.5 max-w-prose text-ink-2">
-          Clashes in faculty schedules and hall bookings, detected automatically. Sessions without a hall are skipped.
-        </p>
+    <PageShell>
+      <PageHeader
+        title="Conflicts"
+        description="Faculty booked in two places at once, and halls booked twice at the same time. Checked automatically; sessions without a hall are skipped."
+      />
 
-        <div role="tablist" aria-label="Conflict type" onKeyDown={onTabKey} className="mb-6 flex gap-2 border-b border-line">
-          <button
-            id="tab-faculty"
-            role="tab"
-            type="button"
-            aria-selected={activeTab === 'faculty'}
-            aria-controls="panel-faculty"
-            tabIndex={activeTab === 'faculty' ? 0 : -1}
-            onClick={() => setActiveTab('faculty')}
-            className={tabCls(activeTab === 'faculty', 'red')}
-          >
-            Faculty overlaps
-            {overlaps.length > 0 && <Badge tone="danger" className="tnum">{overlaps.length}</Badge>}
-          </button>
-          <button
-            id="tab-hall"
-            role="tab"
-            type="button"
-            aria-selected={activeTab === 'hall'}
-            aria-controls="panel-hall"
-            tabIndex={activeTab === 'hall' ? 0 : -1}
-            onClick={() => setActiveTab('hall')}
-            className={tabCls(activeTab === 'hall', 'orange')}
-          >
-            Hall overlaps
-            {hallOverlaps.length > 0 && <Badge tone="orange" className="tnum">{hallOverlaps.length}</Badge>}
-          </button>
-        </div>
+      <Tabs
+        label="Conflict type"
+        idPrefix="conflict"
+        items={[
+          { key: 'faculty' as const, label: 'Faculty double-booked', count: loading ? undefined : overlaps.length },
+          { key: 'hall' as const, label: 'Hall double-booked', count: loading ? undefined : hallOverlaps.length },
+        ]}
+        value={activeTab}
+        onChange={setActiveTab}
+      />
 
-        {loading ? (
-          <div role="status" className="py-16 text-center text-ink-2">Scanning the schedule for conflicts…</div>
-        ) : (
-          <>
-            <div id="panel-faculty" role="tabpanel" aria-labelledby="tab-faculty" hidden={activeTab !== 'faculty'} className="space-y-4">
-              {overlaps.length === 0 ? (
-                <div className="flex items-center justify-center gap-2 rounded-2xl border border-green-200 bg-green-50 p-8 font-medium text-green-800">
-                  <CheckIcon width={20} height={20} /> No faculty members are double-booked.
-                </div>
-              ) : (
-                overlaps.map((issue, idx) => (
-                  <article key={idx} className="rounded-2xl border border-line border-l-4 border-l-red-700 bg-white p-5 shadow-card">
-                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-ink">
-                      <AlertIcon className="text-red-700" width={20} height={20} />
-                      {issue.name}
-                      <span className="text-sm font-normal text-ink-2">is booked twice</span>
-                    </h2>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <SessionCard t={issue.a} showHall />
-                      <SessionCard t={issue.b} showHall />
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
+      {loading ? (
+        <LoadingBlock>Checking the whole schedule for clashes…</LoadingBlock>
+      ) : (
+        <>
+          <div id="conflict-panel-faculty" role="tabpanel" aria-labelledby="conflict-faculty" hidden={activeTab !== 'faculty'} className="space-y-4">
+            {overlaps.length === 0 ? (
+              <div className={cardCls}>
+                <EmptyState tone="success" title="No faculty member is double-booked">
+                  Nobody is scheduled in two sessions at the same time.
+                </EmptyState>
+              </div>
+            ) : (
+              overlaps.map((issue, idx) => (
+                <article key={idx} className={`border-l-4 border-l-danger p-5 ${cardCls}`}>
+                  <h2 className="mb-4 flex flex-wrap items-center gap-2 text-lg font-semibold text-ink">
+                    <AlertIcon className="text-danger" width={20} height={20} />
+                    {issue.name}
+                    <span className="text-sm font-normal text-ink-2">is booked twice</span>
+                  </h2>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <SessionCard t={issue.a} showHall />
+                    <SessionCard t={issue.b} showHall />
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
 
-            <div id="panel-hall" role="tabpanel" aria-labelledby="tab-hall" hidden={activeTab !== 'hall'} className="space-y-4">
-              {hallOverlaps.length === 0 ? (
-                <div className="flex items-center justify-center gap-2 rounded-2xl border border-green-200 bg-green-50 p-8 font-medium text-green-800">
-                  <CheckIcon width={20} height={20} /> No halls are double-booked.
-                </div>
-              ) : (
-                hallOverlaps.map((issue, idx) => (
-                  <article key={idx} className="rounded-2xl border border-line border-l-4 border-l-orange-700 bg-white p-5 shadow-card">
-                    <h2 className="mb-4 flex flex-wrap items-center gap-2 text-lg font-semibold text-ink">
-                      <AlertIcon className="text-orange-700" width={20} height={20} />
-                      Hall {issue.hall}
-                      <span className="tnum text-sm font-normal text-ink-2">on {formatDateDdMmYyyy(issue.date)}</span>
-                    </h2>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <SessionCard t={issue.a} />
-                      <SessionCard t={issue.b} />
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </>
-        )}
-      </main>
-    </div>
+          <div id="conflict-panel-hall" role="tabpanel" aria-labelledby="conflict-hall" hidden={activeTab !== 'hall'} className="space-y-4">
+            {hallOverlaps.length === 0 ? (
+              <div className={cardCls}>
+                <EmptyState tone="success" title="No hall is double-booked">
+                  No two sessions use the same hall at the same time.
+                </EmptyState>
+              </div>
+            ) : (
+              hallOverlaps.map((issue, idx) => (
+                <article key={idx} className={`border-l-4 border-l-orange-600 p-5 ${cardCls}`}>
+                  <h2 className="mb-4 flex flex-wrap items-center gap-2 text-lg font-semibold text-ink">
+                    <AlertIcon className="text-orange-700" width={20} height={20} />
+                    Hall {issue.hall}
+                    <Badge tone="orange" className="tnum">{formatDateDdMmYyyy(issue.date)}</Badge>
+                  </h2>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <SessionCard t={issue.a} />
+                    <SessionCard t={issue.b} />
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </>
+      )}
+    </PageShell>
   );
 }
