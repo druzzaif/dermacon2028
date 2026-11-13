@@ -42,6 +42,15 @@ export const ArrowUpRightIcon = (p: P) => (
 export const MenuIcon = (p: P) => (
   <svg {...base(p)}><path d="M3 6h18M3 12h18M3 18h18" /></svg>
 );
-export const PlusIcon = (p: P) => (
+export const MailIcon = (p: P) => (
+  <svg {...base(p)}><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-10 6L2 7" /></svg>
+);
+export const ChevronDownIcon = (p: P) => (
+  <svg {...base(p)}><path d="m6 9 6 6 6-6" /></svg>
+);
+export const DownloadIcon = (p: P) => (
+  <svg {...base(p)}><path d="M12 3v12M7 10l5 5 5-5M4 21h16" /></svg>
+);
+export const PlusIcon =(p: P) => (
   <svg {...base(p)}><path d="M12 5v14M5 12h14" /></svg>
 );

@@ -19,15 +19,14 @@ import { useSearchParams } from 'next/navigation';
 import ConfirmDeleteDialog from '../components/ConfirmDeleteDialog';
 import Badge, { roleTone } from '../components/Badge';
 import { inputCls } from '../components/Field';
-import { CalendarIcon, CheckIcon, ClockIcon, MenuIcon, PinIcon, PlusIcon, SearchIcon } from '../components/Icons';
+import { CalendarIcon, CheckIcon, ClockIcon, MailIcon, MenuIcon, PinIcon, PlusIcon, SearchIcon } from '../components/Icons';
+import { Button, EmptyState, LoadingBlock, Notice, SkeletonLines, thCls, theadRowCls } from '../components/ui';
 
 function formatDateLabel(dateStr: string | null): string {
   if (!dateStr) return 'No date';
   const d = new Date(dateStr + 'T00:00:00');
   if (isNaN(d.getTime())) return dateStr;
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  return `${dd}-${mm}-${d.getFullYear()}`;
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function formatTimeAmPm(timeStr: string | null | undefined): string {
@@ -209,16 +208,10 @@ export default function SessionsPage() {
 
   if (loading)
     return (
-      <div role="status" className="flex h-[calc(100vh-3.5rem)] items-center justify-center text-ink-2">
-        Loading master schedule…
-      </div>
+      <LoadingBlock className="h-[calc(100vh-3.5rem)]">Loading sessions…</LoadingBlock>
     );
 
   const sel = selectedSession;
-  const btn =
-    'inline-flex h-11 items-center gap-1.5 rounded-lg px-4 text-sm font-medium transition-colors';
-  const rowBtn =
-    'inline-flex h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors';
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-canvas text-ink print:h-auto print:overflow-visible">
@@ -237,21 +230,14 @@ export default function SessionsPage() {
           sidebarOpen ? 'translate-x-0' : 'invisible -translate-x-full lg:visible lg:translate-x-0'
         }`}
       >
-        <div className="flex items-center justify-between border-b border-line px-4 py-3">
-          <h2 className="text-base font-semibold text-ink">Master schedule</h2>
-          <a href="/faculty" className="inline-flex h-11 items-center rounded-lg px-2 text-sm font-medium text-accent hover:underline">
-            Faculty
-          </a>
+        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-line pl-4 pr-3">
+          <h2 className="text-base font-semibold text-ink">Sessions</h2>
+          <Button size="sm" onClick={() => setIsAddingSession(true)}>
+            <PlusIcon /> Add session
+          </Button>
         </div>
 
         <div className="space-y-2 border-b border-line p-3">
-          <button
-            type="button"
-            onClick={() => setIsAddingSession(true)}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white hover:opacity-90"
-          >
-            <PlusIcon /> Add session
-          </button>
           <div className="relative">
             <label htmlFor="session-search" className="sr-only">Search sessions by code or name</label>
             <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
@@ -294,21 +280,24 @@ export default function SessionsPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-muted">
+          <div className="flex min-h-9 items-center justify-between text-sm text-muted">
             <span role="status" aria-live="polite" className="tnum">
               Showing <span className="font-semibold text-ink">{filteredSessions.length}</span> of {sessions.length}
             </span>
             {hasActiveFilter && (
-              <button type="button" onClick={clearFilters} className="inline-flex h-11 items-center rounded-lg px-2 font-medium text-accent hover:underline">
-                Clear filters
-              </button>
+              <Button variant="quiet" size="sm" onClick={clearFilters}>Clear filters</Button>
             )}
           </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {filteredSessions.length === 0 ? (
-            <p className="p-5 text-center text-sm text-ink-2">No sessions match your filters.</p>
+            <EmptyState
+              title="No sessions match"
+              action={hasActiveFilter ? <Button size="sm" onClick={clearFilters}>Clear filters</Button> : undefined}
+            >
+              Try a different search or filter.
+            </EmptyState>
           ) : (
             <ul>
               {filteredSessions.map((s) => {
@@ -319,15 +308,15 @@ export default function SessionsPage() {
                       type="button"
                       aria-current={active ? 'true' : undefined}
                       onClick={() => { setSelectedSession(s); setSidebarOpen(false); }}
-                      className={`flex min-h-14 w-full flex-col justify-center border-b border-line px-4 py-2 text-left transition-colors ${
-                        active
-                          ? 'border-l-4 border-l-accent bg-accent-tint pl-3'
-                          : 'hover:bg-slate-50'
+                      className={`flex min-h-14 w-full flex-col justify-center border-b border-l-4 border-b-line py-2 pl-3 pr-4 text-left transition-colors ${
+                        active ? 'border-l-accent bg-accent-tint' : 'border-l-transparent hover:bg-slate-50'
                       }`}
                     >
-                      <span className="tnum text-sm font-semibold text-accent">{s.session_code}</span>
-                      <span className="truncate text-sm text-ink">{s.session_name}</span>
-                      <span className="tnum text-xs text-muted">{formatDateLabel(s.session_date)}</span>
+                      <span className="flex items-baseline justify-between gap-2">
+                        <span className="tnum text-sm font-semibold text-accent">{s.session_code}</span>
+                        <span className="tnum text-xs text-muted">{formatDateLabel(s.session_date)}</span>
+                      </span>
+                      <span className={`truncate text-sm text-ink ${active ? 'font-medium' : ''}`}>{s.session_name}</span>
                     </button>
                   </li>
                 );
@@ -346,22 +335,22 @@ export default function SessionsPage() {
           <>
             <SessionPrintSheet session={sel} topics={topics} coordinators={coordinators} sessionChairs={sessionChairs} options={printOptions} />
             <div className="session-header z-10 shrink-0 border-b border-line bg-white px-4 py-5 sm:px-6 print:hidden">
-              <button
-                type="button"
+              <Button
+                size="sm"
                 onClick={() => setSidebarOpen(true)}
                 aria-expanded={sidebarOpen}
                 aria-controls="session-list"
-                className={`${btn} mb-3 border border-field bg-white text-ink hover:bg-slate-50 lg:hidden print:hidden`}
+                className="mb-3 lg:hidden print:hidden"
               >
-                <MenuIcon /> Sessions
-              </button>
+                <MenuIcon /> All sessions
+              </Button>
 
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-3xl font-semibold text-ink">
-                    <span className="tnum">{sel.session_code}</span>
-                    <span className="text-xl font-normal text-ink-2">{sel.session_name}</span>
-                  </h2>
+                  <h1 className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-2xl font-semibold text-ink">
+                    <span className="tnum inline-flex h-8 items-center rounded-lg bg-accent px-2.5 text-base font-semibold text-white">{sel.session_code}</span>
+                    <span>{sel.session_name}</span>
+                  </h1>
                   <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 text-sm text-ink-2">
                     <div className="flex items-center gap-1.5">
                       <dt className="flex items-center gap-1.5 text-muted"><CalendarIcon /><span className="sr-only">Date</span></dt>
@@ -373,76 +362,63 @@ export default function SessionsPage() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <dt className="flex items-center gap-1.5 text-muted"><PinIcon /><span className="sr-only">Hall</span></dt>
-                      <dd>{sel.hall ? `Hall ${sel.hall}` : 'Hall TBD'}</dd>
+                      <dd>{sel.hall ? `Hall ${sel.hall}` : 'Hall not set'}</dd>
                     </div>
                   </dl>
                 </div>
 
                 <div className="flex shrink-0 flex-wrap items-center gap-2 print:hidden">
                   <SyncButton onSynced={() => refreshDetails()} />
-                  <button type="button" onClick={() => setPrintOpen(true)} className={`${btn} border border-field bg-white text-ink hover:bg-slate-50`}>
-                    Print…
-                  </button>
-                  <button type="button" onClick={() => setIsEditingSession(true)} className={`${btn} border border-field bg-white text-ink hover:bg-slate-50`}>
-                    Edit session
-                  </button>
-                  <button type="button" onClick={() => setIsAddingTopic(true)} className={`${btn} bg-accent text-white shadow-sm hover:bg-accent-strong`}>
+                  <Button onClick={() => setPrintOpen(true)}>Print…</Button>
+                  <Button onClick={() => setIsEditingSession(true)}>Edit session</Button>
+                  <Button variant="primary" onClick={() => setIsAddingTopic(true)}>
                     <PlusIcon /> Add topic
-                  </button>
+                  </Button>
                 </div>
               </div>
 
-              {sessionChairs.length > 0 && (
-                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl bg-canvas px-4 py-2.5 ring-1 ring-inset ring-line print:bg-white">
-                  <h3 className="shrink-0 text-sm font-semibold text-ink">Session chair</h3>
-                  <ul className="flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-1">
-                    {sessionChairs.map((c, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-ink-2">{i + 1}.</span>
-                        <span className="text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
-                      </li>
-                    ))}
+              <div className="coordinator-strip mt-4 divide-y divide-line rounded-xl bg-canvas ring-1 ring-inset ring-line">
+                {sessionChairs.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2.5">
+                    <h2 className="w-28 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">Session chairs</h2>
+                    <ul className="flex min-w-0 flex-1 flex-wrap gap-x-5 gap-y-1">
+                      {sessionChairs.map((c, i) => (
+                        <li key={i} className="flex items-center gap-2">
+                          <span className="tnum text-sm text-muted">{i + 1}.</span>
+                          <span className="text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5">
+                  <h2 className="w-28 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">Coordinators</h2>
+                  <ul className="flex min-w-0 flex-1 flex-wrap gap-x-5 gap-y-1.5">
+                    {coordinators.length === 0 ? (
+                      <li className="text-sm text-ink-2">None assigned yet.</li>
+                    ) : (
+                      coordinators.map((c, i) => (
+                        <li key={i} className="flex items-center gap-2">
+                          <span className="tnum text-sm text-muted">{i + 1}.</span>
+                          <span className="text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
+                          <Badge tone={roleTone(c.role)}>{c.role}</Badge>
+                        </li>
+                      ))
+                    )}
                   </ul>
                 </div>
-              )}
 
-              <div className="coordinator-strip mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-canvas px-4 py-2.5 ring-1 ring-inset ring-line print:bg-white">
-                <h3 className="shrink-0 text-sm font-semibold text-ink">Coordinators</h3>
-                <ul className="flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-1.5">
-                  {coordinators.length === 0 ? (
-                    <li className="text-sm text-ink-2">None assigned yet.</li>
-                  ) : (
-                    coordinators.map((c, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-ink-2">{i + 1}.</span>
-                        <span className="text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
-                        <Badge tone={roleTone(c.role)}>{c.role}</Badge>
-                      </li>
-                    ))
-                  )}
-                </ul>
-                <div className="ml-auto flex shrink-0 flex-wrap gap-1 print:hidden">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingCoordinators(true)}
-                    className={`${rowBtn} text-accent hover:bg-accent-tint`}
-                  >
+                <div className="flex flex-wrap items-center gap-2 px-3 py-2 print:hidden">
+                  <Button variant="quiet" size="sm" onClick={() => setIsEditingCoordinators(true)}>
                     Edit coordinators
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingChairs(true)}
-                    className={`${rowBtn} text-accent hover:bg-accent-tint`}
-                  >
-                    Chairpersons
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsSendingReport(true)}
-                    className={`${rowBtn} text-accent hover:bg-accent-tint`}
-                  >
-                    Send report to coordinators
-                  </button>
+                  </Button>
+                  <Button variant="quiet" size="sm" onClick={() => setIsEditingChairs(true)}>
+                    Edit topic chairpersons
+                  </Button>
+                  <Button size="sm" className="ml-auto" onClick={() => setIsSendingReport(true)}>
+                    <MailIcon /> Email report to coordinators…
+                  </Button>
                 </div>
               </div>
             </div>
@@ -451,33 +427,36 @@ export default function SessionsPage() {
               <div role="status" aria-live="polite" className="sr-only">
                 {loadingDetails ? 'Loading schedule' : `${topics.length} topics loaded`}
               </div>
-              <div className="overflow-x-auto rounded-2xl border border-line bg-white shadow-card print:border-0 print:shadow-none">
+              <div className="overflow-x-auto rounded-xl border border-line bg-white shadow-card print:border-0 print:shadow-none">
                 <table className="w-full min-w-[720px] border-collapse text-left print:min-w-0">
                   <caption className="sr-only">
                     Topics in session {sel.session_code}, in running order
                   </caption>
                   <thead>
-                    <tr className="border-b border-line bg-slate-50/70 text-xs text-muted">
-                      <th scope="col" className="w-14 px-3 py-3 text-center font-semibold">No.</th>
-                      <th scope="col" className="w-40 px-3 py-3 font-semibold">Time</th>
-                      <th scope="col" className="px-3 py-3 font-semibold">Topic</th>
-                      <th scope="col" className="w-80 px-3 py-3 font-semibold">Faculty and role</th>
-                      <th scope="col" className="w-44 px-3 py-3 text-right font-semibold print:hidden">
+                    <tr className={theadRowCls}>
+                      <th scope="col" className={`${thCls} w-14 text-center`}>No.</th>
+                      <th scope="col" className={`${thCls} w-44`}>Time</th>
+                      <th scope="col" className={thCls}>Topic</th>
+                      <th scope="col" className={`${thCls} w-80`}>Faculty and role</th>
+                      <th scope="col" className={`${thCls} w-40 text-right print:hidden`}>
                         <span className="sr-only">Actions</span>
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line" aria-busy={loadingDetails}>
                     {loadingDetails ? (
-                      Array.from({ length: 4 }).map((_, i) => (
-                        <tr key={i} aria-hidden="true">
-                          <td colSpan={5} className="px-3 py-4"><div className="h-6 animate-pulse rounded-md bg-slate-100" /></td>
-                        </tr>
-                      ))
+                      <tr>
+                        <td colSpan={5} className="px-4 py-4"><SkeletonLines rows={4} /></td>
+                      </tr>
                     ) : topics.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-3 py-14 text-center text-ink-2">
-                          No topics yet. Use “Add topic” to build this session’s programme.
+                        <td colSpan={5}>
+                          <EmptyState
+                            title="No topics yet"
+                            action={<Button variant="primary" onClick={() => setIsAddingTopic(true)}><PlusIcon /> Add topic</Button>}
+                          >
+                            Add the first topic to start building this session’s programme.
+                          </EmptyState>
                         </td>
                       </tr>
                     ) : (
@@ -487,16 +466,16 @@ export default function SessionsPage() {
                         const chairList = allLinks.filter((ft: any) => ft.role === 'Chairperson');
                         return (
                           <tr key={t.id} className="align-top transition-colors hover:bg-slate-50/70">
-                            <td className="tnum px-3 py-3 text-center text-sm font-semibold text-muted">{t.sequence_no}</td>
-                            <td className="tnum whitespace-nowrap px-3 py-3 text-sm font-medium text-accent">
+                            <td className="tnum px-4 py-3.5 text-center text-sm font-semibold text-muted">{t.sequence_no}</td>
+                            <td className="tnum whitespace-nowrap px-4 py-3.5 text-sm font-medium text-ink-2">
                               {formatTimeAmPm(t.start_time)} – {formatTimeAmPm(t.end_time)}
                             </td>
-                            <th scope="row" className="px-3 py-3 text-left text-[15px] font-medium leading-snug text-ink">
+                            <th scope="row" className="px-4 py-3.5 text-left text-[15px] font-medium leading-snug text-ink">
                               {t.topic_title}
                             </th>
-                            <td className="px-3 py-3">
+                            <td className="px-4 py-3.5">
                               {facultyList.length === 0 && chairList.length === 0 ? (
-                                <span className="text-sm italic text-ink-2">Unassigned</span>
+                                <Badge tone="warning">No speaker yet</Badge>
                               ) : (
                                 <ul className="space-y-1.5">
                                   {facultyList.map((ft: any, i: number) => (
@@ -513,7 +492,7 @@ export default function SessionsPage() {
                                     </li>
                                   ))}
                                   {facultyList.length === 0 && (
-                                    <li className="text-sm italic text-ink-2">No speaker yet</li>
+                                    <li><Badge tone="warning">No speaker yet</Badge></li>
                                   )}
                                 </ul>
                               )}
@@ -537,23 +516,23 @@ export default function SessionsPage() {
                                 </div>
                               )}
                             </td>
-                            <td className="whitespace-nowrap px-3 py-1.5 text-right print:hidden">
-                              <button
-                                type="button"
+                            <td className="whitespace-nowrap px-3 py-2.5 text-right print:hidden">
+                              <Button
+                                variant="quiet"
+                                size="sm"
                                 onClick={() => setEditingTopic(t)}
                                 aria-label={`Edit topic ${t.sequence_no}: ${t.topic_title}`}
-                                className={`${rowBtn} text-accent hover:bg-accent-tint`}
                               >
                                 Edit
-                              </button>
-                              <button
-                                type="button"
+                              </Button>
+                              <Button
+                                variant="danger-quiet"
+                                size="sm"
                                 onClick={() => { setDeleteError(null); setDeletingTopic(t); }}
                                 aria-label={`Delete topic ${t.sequence_no}: ${t.topic_title}`}
-                                className={`${rowBtn} text-red-700 hover:bg-red-50`}
                               >
                                 Delete
-                              </button>
+                              </Button>
                             </td>
                           </tr>
                         );
@@ -565,7 +544,13 @@ export default function SessionsPage() {
             </div>
           </>
         ) : (
-          <div className="flex flex-1 items-center justify-center text-ink-2">Select a session to view it.</div>
+          <EmptyState
+            className="flex-1 justify-center"
+            title={sessions.length === 0 ? 'No sessions yet' : 'Select a session'}
+            action={sessions.length === 0 ? <Button variant="primary" onClick={() => setIsAddingSession(true)}><PlusIcon /> Add session</Button> : undefined}
+          >
+            {sessions.length === 0 ? 'Add the first session to start the programme.' : 'Choose a session from the list to see its topics.'}
+          </EmptyState>
         )}
 
         {isAddingSession && (
@@ -674,9 +659,7 @@ export default function SessionsPage() {
                   </div>
                 </div>
                 <div>This cannot be undone. Remaining topics in this session will renumber automatically.</div>
-                {deleteError && (
-                  <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{deleteError}</div>
-                )}
+                {deleteError && <Notice tone="danger">{deleteError}</Notice>}
               </div>
             }
             confirmLabel="Delete topic"

@@ -25,7 +25,7 @@ export default function DemoToggle({ mode }: { mode: AppMode }) {
       }`}
     >
       <span aria-hidden="true" className={`h-2 w-2 rounded-full ${demo ? 'bg-slate-900' : 'bg-slate-400'}`} />
-      {demo ? 'Demo mode ON — exit' : 'Demo mode'}
+      {demo ? <>Demo mode ON<span className="hidden lg:inline"> — exit</span></> : 'Demo mode'}
     </button>
   );
 }
