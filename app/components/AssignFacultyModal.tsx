@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
+import Modal from './Modal';
+import Field, { inputCls } from './Field';
+import { Button, Notice, Tabs } from './ui';
+import { CloseIcon } from './Icons';
 
 const COUNTRY_CODES = [
   { code: '+91', country: 'India' },
@@ -42,6 +46,7 @@ export default function AssignFacultyModal({
   const [searchFaculty, setSearchFaculty] = useState('');
   const [selectedFaculty, setSelectedFaculty] = useState<any | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // New Faculty Form State
   const [newName, setNewName] = useState('');
@@ -59,7 +64,7 @@ export default function AssignFacultyModal({
     loadFaculty();
   }, []);
 
-  const filteredFaculty = facultyList.filter(f => 
+  const filteredFaculty = facultyList.filter(f =>
     f.canonical_name.toLowerCase().includes(searchFaculty.toLowerCase()) ||
     f.email?.toLowerCase().includes(searchFaculty.toLowerCase())
   ).slice(0, 5);
@@ -67,6 +72,7 @@ export default function AssignFacultyModal({
   async function handleAssign() {
     if (!selectedFaculty) return;
     setIsSaving(true);
+    setError(null);
 
     const { error } = await supabase.from('faculty_topics').insert({
       faculty_id: selectedFaculty.id,
@@ -75,7 +81,7 @@ export default function AssignFacultyModal({
     });
 
     if (error) {
-      alert("Error assigning faculty: " + error.message);
+      setError("Error assigning faculty: " + error.message);
       setIsSaving(false);
       return;
     }
@@ -89,6 +95,7 @@ export default function AssignFacultyModal({
     e.preventDefault();
     if (!newName || !newEmail || !phoneNumber) return;
     setIsSaving(true);
+    setError(null);
 
     // Combine Country Code and Phone Number
     const fullPhone = `${countryCode} ${phoneNumber}`.trim();
@@ -121,7 +128,7 @@ export default function AssignFacultyModal({
       .single();
 
     if (createError || !newFaculty) {
-      alert("Error creating faculty: " + createError?.message);
+      setError("Error creating faculty: " + createError?.message);
       setIsSaving(false);
       return;
     }
@@ -134,7 +141,7 @@ export default function AssignFacultyModal({
     });
 
     if (linkError) {
-      alert("Faculty created, but failed to link to topic: " + linkError.message);
+      setError("Faculty created, but failed to link to topic: " + linkError.message);
       setIsSaving(false);
       return;
     }
@@ -145,162 +152,156 @@ export default function AssignFacultyModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="flex justify-between items-center p-5 border-b bg-gray-50 shrink-0">
+    <Modal
+      title="Assign a speaker"
+      subtitle={topic.topic_title}
+      size="md"
+      busy={isSaving}
+      onClose={onClose}
+      footer={
+        <>
+          <Button onClick={onClose} disabled={isSaving}>Cancel</Button>
+          {mode === 'search' ? (
+            <Button variant="primary" onClick={handleAssign} busy={isSaving} disabled={!selectedFaculty}>
+              {isSaving ? 'Saving…' : 'Assign selected person'}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              type="submit"
+              form="create-faculty-form"
+              busy={isSaving}
+              disabled={!newName || !newEmail || !phoneNumber}
+            >
+              {isSaving ? 'Creating…' : 'Create and assign'}
+            </Button>
+          )}
+        </>
+      }
+    >
+      <Tabs
+        label="How to find the speaker"
+        idPrefix="assigntab"
+        items={[
+          { key: 'search' as const, label: 'Find existing faculty' },
+          { key: 'create' as const, label: 'Add a new person' },
+        ]}
+        value={mode}
+        onChange={(k) => { setMode(k); setError(null); }}
+      />
+
+      <div id={`assigntab-panel-${mode}`} role="tabpanel" aria-labelledby={`assigntab-${mode}`}>
+        {mode === 'search' ? (
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Assign Faculty</h2>
-            <p className="text-sm text-gray-500 truncate max-w-[300px]">{topic.topic_title}</p>
-          </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
-        </div>
+            <label htmlFor="assign-search" className="mb-1.5 block text-sm font-medium text-ink">Search by name or email</label>
+            <div className="relative">
+              <input
+                id="assign-search"
+                type="search"
+                placeholder="Type a name or email"
+                className={inputCls}
+                value={searchFaculty}
+                onChange={(e) => setSearchFaculty(e.target.value)}
+              />
 
-        <div className="flex border-b border-gray-200 shrink-0">
-          <button 
-            onClick={() => setMode('search')} 
-            className={`flex-1 py-3 font-bold text-sm ${mode === 'search' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:bg-gray-50'}`}
-          >
-            Search Existing
-          </button>
-          <button 
-            onClick={() => setMode('create')} 
-            className={`flex-1 py-3 font-bold text-sm ${mode === 'create' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:bg-gray-50'}`}
-          >
-            + Create New
-          </button>
-        </div>
-
-        <div className="p-6 overflow-y-auto">
-          {mode === 'search' ? (
-            <>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Search Doctor</label>
-              <div className="relative">
-                <input 
-                  type="text" 
-                  placeholder="Type name or email..." 
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 mb-2 focus:outline-none focus:border-blue-500"
-                  value={searchFaculty}
-                  onChange={(e) => setSearchFaculty(e.target.value)}
-                />
-                
-                {searchFaculty.length > 0 && !selectedFaculty && (
-                  <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    {filteredFaculty.length === 0 ? (
-                      <div className="p-3 text-sm text-gray-500">No faculty found</div>
-                    ) : (
-                      filteredFaculty.map(f => (
-                        <button
-                          key={f.id}
-                          onClick={() => { setSelectedFaculty(f); setSearchFaculty(''); }}
-                          className="w-full text-left p-3 border-b border-gray-100 hover:bg-blue-50 text-sm transition-colors"
-                        >
-                          <div className="font-semibold text-gray-900">{f.canonical_name}</div>
-                          <div className="text-xs text-gray-500">{f.email}</div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-
-                {selectedFaculty && (
-                  <div className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg mt-2">
-                    <div>
-                      <div className="font-semibold text-blue-900">{selectedFaculty.canonical_name}</div>
-                      <div className="text-xs text-blue-700">{selectedFaculty.email}</div>
-                    </div>
-                    <button onClick={() => setSelectedFaculty(null)} className="text-sm text-red-600 hover:underline">Remove</button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <form id="create-faculty-form" onSubmit={handleCreateAndAssign} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Full Name *</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="e.g. Dr. John Doe"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Email *</label>
-                <input 
-                  type="email" 
-                  required
-                  placeholder="john@example.com"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Phone *</label>
-                <div className="flex gap-2">
-                  <select 
-                    className="w-32 border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:border-blue-500 bg-white text-sm"
-                    value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                  >
-                    {COUNTRY_CODES.map(c => (
-                      <option key={c.code} value={c.code}>{c.country} ({c.code})</option>
-                    ))}
-                  </select>
-                  <input 
-                    type="tel" 
-                    required
-                    placeholder="98765 43210"
-                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
+              {searchFaculty.length > 0 && !selectedFaculty && (
+                <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-line bg-white shadow-pop">
+                  {filteredFaculty.length === 0 ? (
+                    <p className="p-3 text-sm text-ink-2">No faculty found. Use “Add a new person” instead.</p>
+                  ) : (
+                    filteredFaculty.map(f => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => { setSelectedFaculty(f); setSearchFaculty(''); }}
+                        className="block w-full border-b border-line px-3 py-2 text-left text-sm last:border-b-0 hover:bg-accent-tint"
+                      >
+                        <span className="block font-medium text-ink">{f.canonical_name}</span>
+                        <span className="block text-xs text-muted">{f.email}</span>
+                      </button>
+                    ))
+                  )}
                 </div>
-              </div>
+              )}
+            </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Alt Email (Optional)</label>
-                <input 
-                  type="email" 
-                  placeholder="alt@example.com"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
-                  value={newAltEmail}
-                  onChange={(e) => setNewAltEmail(e.target.value)}
+            {selectedFaculty && (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-accent-tint p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-ink">{selectedFaculty.canonical_name}</p>
+                  <p className="truncate text-xs text-ink-2">{selectedFaculty.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedFaculty(null)}
+                  aria-label={`Remove ${selectedFaculty.canonical_name}`}
+                  title="Remove"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-danger hover:text-white"
+                >
+                  <CloseIcon width={20} height={20} strokeWidth={2.25} />
+                </button>
+              </div>
+            )}
+            <p className="mt-3 text-sm text-ink-2">The person is added to this topic as a speaker. You can change their role later in Edit topic.</p>
+          </div>
+        ) : (
+          <form id="create-faculty-form" onSubmit={handleCreateAndAssign} className="space-y-4">
+            <Field label="Full name" required>
+              {(p) => (
+                <input {...p} type="text" placeholder="e.g. Dr. John Doe" className={inputCls} value={newName} onChange={(e) => setNewName(e.target.value)} />
+              )}
+            </Field>
+
+            <Field label="Email" required>
+              {(p) => (
+                <input {...p} type="email" placeholder="john@example.com" className={inputCls} value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+              )}
+            </Field>
+
+            <div>
+              <span className="mb-1.5 block text-sm font-medium text-ink">Phone <span className="font-normal text-muted">(required)</span></span>
+              <div className="flex gap-2">
+                <label className="sr-only" htmlFor="assign-code">Country code</label>
+                <select
+                  id="assign-code"
+                  className={`${inputCls} w-44 shrink-0`}
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                >
+                  {COUNTRY_CODES.map(c => (
+                    <option key={c.code} value={c.code}>{c.country} ({c.code})</option>
+                  ))}
+                </select>
+                <label className="sr-only" htmlFor="assign-phone">Phone number</label>
+                <input
+                  id="assign-phone"
+                  type="tel"
+                  required
+                  placeholder="98765 43210"
+                  className={inputCls}
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Country (Optional)</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. IN"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
-                  value={newCountry}
-                  onChange={(e) => setNewCountry(e.target.value)}
-                />
-              </div>
-            </form>
-          )}
-        </div>
-
-        <div className="p-5 border-t bg-gray-50 flex justify-end gap-3 shrink-0">
-          <button onClick={onClose} className="px-5 py-2.5 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 bg-white">Cancel</button>
-          
-          {mode === 'search' ? (
-            <button onClick={handleAssign} disabled={isSaving || !selectedFaculty} className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-              {isSaving ? 'Saving...' : 'Assign Existing'}
-            </button>
-          ) : (
-            <button type="submit" form="create-faculty-form" disabled={isSaving || !newName || !newEmail || !phoneNumber} className="px-5 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">
-              {isSaving ? 'Creating...' : 'Create & Assign'}
-            </button>
-          )}
-        </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Alternative email">
+                {(p) => (
+                  <input {...p} type="email" placeholder="alt@example.com" className={inputCls} value={newAltEmail} onChange={(e) => setNewAltEmail(e.target.value)} />
+                )}
+              </Field>
+              <Field label="Country">
+                {(p) => (
+                  <input {...p} type="text" placeholder="e.g. IN" className={inputCls} value={newCountry} onChange={(e) => setNewCountry(e.target.value)} />
+                )}
+              </Field>
+            </div>
+          </form>
+        )}
       </div>
-    </div>
+
+      {error && <Notice tone="danger" className="mt-4">{error}</Notice>}
+    </Modal>
   );
 }
