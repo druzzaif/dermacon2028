@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
 import { formatTime12 } from '../lib/time';
 import { inputCls } from '../components/Field';
-import { Notice, PageHeader, PageShell, Spinner, Tabs, buttonCls, EmptyState, LoadingBlock } from '../components/ui';
+import { Notice, Spinner, Tabs, buttonCls, EmptyState, LoadingBlock } from '../components/ui';
 
 type Sess = {
   id: string;
@@ -77,26 +77,34 @@ function PdfResult({ url, error, note }: { url: string | null; error: string | n
 
 export default function PrintPage() {
   const [mode, setMode] = useState<'sessions' | 'faculty'>('sessions');
+  // On wide screens the page is exactly one screen tall and the two panels below the tabs
+  // scroll on their own. On narrow screens everything stacks and the page scrolls as usual.
   return (
-    <PageShell>
-      <PageHeader
-        title="Print"
-        description="Choose what to print, then make one PDF. The date, time and hall are highlighted."
-      />
-      <Tabs
-        label="Print by"
-        idPrefix="printtab"
-        items={[
-          { key: 'sessions' as const, label: 'By session' },
-          { key: 'faculty' as const, label: 'By faculty' },
-        ]}
-        value={mode}
-        onChange={setMode}
-      />
-      <div id={`printtab-panel-${mode}`} role="tabpanel" aria-labelledby={`printtab-${mode}`}>
-        {mode === 'sessions' ? <SessionPrint /> : <FacultyPrint />}
-      </div>
-    </PageShell>
+    <div className="bg-canvas text-ink lg:h-[calc(100vh-3.5rem)] lg:overflow-hidden">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-6xl flex-col px-4 pb-6 pt-3 outline-none sm:px-8 lg:h-full lg:pb-4"
+      >
+        <div className="mb-4 flex shrink-0 items-end gap-5 border-b border-line">
+          <h1 className="pb-2.5 text-base font-semibold text-ink">Print</h1>
+          <Tabs
+            label="Print by"
+            idPrefix="printtab"
+            className="!mb-0 flex-1 !border-b-0"
+            items={[
+              { key: 'sessions' as const, label: 'By session' },
+              { key: 'faculty' as const, label: 'By faculty' },
+            ]}
+            value={mode}
+            onChange={setMode}
+          />
+        </div>
+        <div id={`printtab-panel-${mode}`} role="tabpanel" aria-labelledby={`printtab-${mode}`} className="lg:min-h-0 lg:flex-1">
+          {mode === 'sessions' ? <SessionPrint /> : <FacultyPrint />}
+        </div>
+      </main>
+    </div>
   );
 }
 
@@ -179,8 +187,8 @@ function FacultyPrint() {
   const pickedList = list.filter((f) => picked.has(f.id));
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-      <section aria-label="Faculty" className="rounded-xl border border-line bg-white p-4 shadow-card sm:p-5">
+    <div className="grid gap-6 lg:h-full lg:grid-cols-[1fr_22rem] lg:grid-rows-[minmax(0,1fr)]">
+      <section aria-label="Faculty" className="rounded-xl border border-line bg-white p-4 shadow-card sm:p-5 lg:overflow-y-auto lg:overscroll-contain">
         <div className="mb-3 flex flex-wrap items-end gap-2">
           <div className="min-w-[12rem] flex-1">
             <label htmlFor="fsearch" className="mb-1 block text-xs font-medium text-ink-2">Search faculty</label>
@@ -211,7 +219,7 @@ function FacultyPrint() {
         ) : visible.length === 0 ? (
           <EmptyState title="No faculty match">Try a different search, or untick “Only faculty with topics or coordinator roles”.</EmptyState>
         ) : (
-          <ul className="grid max-h-[65vh] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
+          <ul className="grid max-h-[65vh] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2 lg:max-h-none lg:overflow-visible">
             {visible.map((f) => (
               <li key={f.id}>
                 <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-2.5 ${picked.has(f.id) ? 'border-accent bg-accent-tint' : 'border-line bg-white hover:bg-slate-50'}`}>
@@ -229,7 +237,7 @@ function FacultyPrint() {
         )}
       </section>
 
-      <aside aria-label="Print options" className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+      <aside aria-label="Print options" className="space-y-5 lg:overflow-y-auto lg:overscroll-contain lg:pb-1 lg:pr-1">
         <fieldset className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
           <legend className="sr-only">Format</legend>
           <h2 className="mb-1 text-sm font-semibold text-ink">Format</h2>
@@ -290,7 +298,9 @@ function SessionPrint() {
   const [pagePerSession, setPagePerSession] = useState(true);
   const [emptySlots, setEmptySlots] = useState(false);
   const [coordinators, setCoordinators] = useState(true);
+  const [topicsOnly, setTopicsOnly] = useState(false);
   const [continuous, setContinuous] = useState(false);
+  const [groupBy, setGroupBy] = useState<'time' | 'hall'>('time');
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -348,7 +358,7 @@ function SessionPrint() {
     setPdfUrl(null);
     try {
       const ordered = sessions.filter((s) => picked.has(String(s.id))).map((s) => String(s.id));
-      const r = await fetchPdf({ kind: 'sessions', sessionIds: ordered, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession, emptySlots, coordinators, continuous }, 'DERMACON_Print');
+      const r = await fetchPdf({ kind: 'sessions', sessionIds: ordered, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession, emptySlots, coordinators, topicsOnly, continuous, groupBy }, 'DERMACON_Print');
       setPdfUrl(r.url);
     } catch (e: any) {
       setError(e?.message || 'The PDF could not be made.');
@@ -358,9 +368,9 @@ function SessionPrint() {
   }
 
   return (
-        <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+        <div className="grid gap-6 lg:h-full lg:grid-cols-[1fr_22rem] lg:grid-rows-[minmax(0,1fr)]">
           {/* ---- sessions ---- */}
-          <section aria-label="Sessions" className="rounded-xl border border-line bg-white p-4 shadow-card sm:p-5">
+          <section aria-label="Sessions" className="rounded-xl border border-line bg-white p-4 shadow-card sm:p-5 lg:overflow-y-auto lg:overscroll-contain">
             <div className="mb-3 flex flex-wrap items-end gap-2">
               <div className="min-w-[12rem] flex-1">
                 <label htmlFor="psearch" className="mb-1 block text-xs font-medium text-ink-2">Search</label>
@@ -429,7 +439,7 @@ function SessionPrint() {
           </section>
 
           {/* ---- options ---- */}
-          <aside aria-label="Print options" className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+          <aside aria-label="Print options" className="space-y-5 lg:overflow-y-auto lg:overscroll-contain lg:pb-1 lg:pr-1">
             <div className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
               <h2 className="mb-1 text-sm font-semibold text-ink">What to print</h2>
               <Check checked={schedule} onChange={setSchedule} title="Session schedules" desc="Each selected session: topics, times, faculty." />
@@ -448,8 +458,16 @@ function SessionPrint() {
 
             <div className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
               <h2 className="mb-1 text-sm font-semibold text-ink">Schedule options</h2>
+              <div className={schedule ? '' : 'opacity-50'}>
+                <label htmlFor="pgroup" className="mb-1 block text-xs font-medium text-ink-2">Order each day by</label>
+                <select id="pgroup" value={groupBy} disabled={!schedule} onChange={(e) => setGroupBy(e.target.value as 'time' | 'hall')} className={inputCls}>
+                  <option value="time">Start time</option>
+                  <option value="hall">Hall (a heading for each hall)</option>
+                </select>
+              </div>
               <Check checked={continuous} onChange={setContinuous} disabled={!schedule} title="Continuous (no page breaks)" desc="Sessions follow one another under a single heading per day, with each session's heading above its rows." />
-              <Check checked={coordinators} onChange={setCoordinators} disabled={!schedule} title="Include coordinators" desc="Each session's coordinators. Untick to print without them." />
+              <Check checked={topicsOnly} onChange={setTopicsOnly} disabled={!schedule} title="Topics only" desc="Just the topics, with their times and faculty. Leaves out each session's chair and coordinators." />
+              <Check checked={coordinators && !topicsOnly} onChange={setCoordinators} disabled={!schedule || topicsOnly} title="Include coordinators" desc="Each session's coordinators. Untick to print without them." />
               <Check checked={chairs} onChange={setChairs} disabled={!schedule} title="Include chairpersons" desc="A Chairperson column next to the faculty." />
               <Check checked={contacts} onChange={setContacts} disabled={!schedule} title="Include contact details" desc="Phone and email under every coordinator, faculty and chair." />
               <Check checked={confirmed} onChange={setConfirmed} disabled={!schedule} title="Show who has confirmed" desc="✓ after names (as of the last sync)." />

@@ -54,6 +54,41 @@ export function Button({
   );
 }
 
+/**
+ * A small square button that shows only an icon. `label` is its tooltip and its
+ * accessible name, so it is always required.
+ */
+export function IconButton({
+  label,
+  tone = 'default',
+  size = 'md',
+  className = '',
+  children,
+  type = 'button',
+  ...rest
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
+  label: string;
+  tone?: 'default' | 'danger';
+  size?: 'md' | 'sm';
+  children: ReactNode;
+}) {
+  const tones = tone === 'danger'
+    ? 'text-danger hover:bg-danger-tint'
+    : 'text-ink-2 hover:bg-slate-100 hover:text-ink';
+  const sizes = size === 'sm' ? 'h-8 w-8' : 'h-9 w-9';
+  return (
+    <button
+      type={type}
+      title={label}
+      aria-label={label}
+      className={`inline-flex shrink-0 items-center justify-center rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${sizes} ${tones} ${className}`.trim()}
+      {...rest}
+    >
+      {children}
+    </button>
+  );
+}
+
 /** A person's name that opens their profile when clicked */
 export function PersonLink({
   name,
@@ -124,7 +159,7 @@ export function PageShell({ children, wide = false, narrow = false }: { children
       <main
         id="main-content"
         tabIndex={-1}
-        className={`mx-auto w-full ${wide ? 'max-w-7xl' : narrow ? 'max-w-3xl' : 'max-w-6xl'} px-4 py-6 outline-none sm:px-8 sm:py-8`}
+        className={`mx-auto w-full ${wide ? 'max-w-7xl' : narrow ? 'max-w-3xl' : 'max-w-6xl'} px-4 py-3 outline-none sm:px-8 sm:py-4`}
       >
         {children}
       </main>
@@ -143,12 +178,12 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-      <div className="min-w-0">
-        <h1 className="text-2xl font-semibold text-ink sm:text-[1.75rem]">{title}</h1>
-        {description && <p className="mt-1.5 max-w-prose text-ink-2">{description}</p>}
+    <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+        <h1 className="text-base font-semibold text-ink">{title}</h1>
+        {description && <p className="min-w-0 text-[13px] leading-snug text-ink-2">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2.5">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }
@@ -193,7 +228,7 @@ export function Tabs<K extends string>({
     document.getElementById(`${idPrefix}-${items[next].key}`)?.focus();
   }
   return (
-    <div role="tablist" aria-label={label} onKeyDown={onKey} className={`mb-5 flex gap-1 overflow-x-auto border-b border-line ${className}`}>
+    <div role="tablist" aria-label={label} onKeyDown={onKey} className={`mb-3 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line pb-px ${className}`}>
       {items.map((t) => {
         const on = t.key === value;
         return (
@@ -206,7 +241,7 @@ export function Tabs<K extends string>({
             aria-controls={`${idPrefix}-panel-${t.key}`}
             tabIndex={on ? 0 : -1}
             onClick={() => onChange(t.key)}
-            className={`-mb-px inline-flex h-11 shrink-0 items-center gap-2 border-b-2 px-3.5 text-sm font-medium transition-colors ${
+            className={`-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3.5 text-sm font-medium transition-colors ${
               on ? 'border-accent text-accent' : 'border-transparent text-ink-2 hover:border-field hover:text-ink'
             }`}
           >

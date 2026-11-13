@@ -646,7 +646,7 @@ export default function EditTopicModal({
               </p>
               <p className="mt-2 text-muted">
                 This happens now, without clicking Save, and changes your PC only. The next{' '}
-                <strong>Sync confirmations</strong> also removes it from the Google sheet.
+                <strong>Sync</strong> also removes it from the Google sheet.
               </p>
             </>
           }

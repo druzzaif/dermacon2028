@@ -408,7 +408,7 @@ export default function FacultyProfileModal({
                 </strong>.
               </p>
               <p className="mt-2 text-muted">
-                This changes your PC only, so it is instant. The next <strong>Sync confirmations</strong> also
+                This changes your PC only, so it is instant. The next <strong>Sync</strong> also
                 removes it from the Google sheet. If they confirm again on the form after that, it comes back.
               </p>
             </>

@@ -45,7 +45,9 @@ export async function POST(req: Request) {
         pagePerSession: !!b.pagePerSession,
         emptySlots: !!b.emptySlots,
         coordinators: b.coordinators !== false,
+        topicsOnly: !!b.topicsOnly,
         continuous: !!b.continuous,
+        groupBy: b.groupBy === 'hall' ? 'hall' : 'time',
       };
       if (!body.schedule && !body.missing && !body.overlaps) {
         return Response.json({ error: 'Choose at least one thing to print.' }, { status: 400 });

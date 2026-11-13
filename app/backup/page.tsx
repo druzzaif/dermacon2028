@@ -27,13 +27,13 @@ export default function BackupPage() {
       />
       <div className="space-y-4">
         {downloads.map((d) => (
-          <section key={d.title} className={`${cardCls} flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6`}>
+          <section key={d.title} className={`${cardCls} flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5`}>
             <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-ink">{d.title}</h2>
+              <h2 className="text-base font-semibold text-ink">{d.title}</h2>
               <p className="mt-1 text-sm text-ink-2">{d.description}</p>
               <p className="mt-2 text-xs text-muted">{d.detail}</p>
             </div>
-            <a href={d.href} className={buttonCls('primary', 'md', 'shrink-0')}>
+            <a href={d.href} className={buttonCls('primary', 'sm', 'shrink-0')}>
               <DownloadIcon /> {d.button}
             </a>
           </section>

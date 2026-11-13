@@ -8,8 +8,8 @@ import { findEmptySlots, type EmptySlot } from '../lib/slots';
 import { Fragment } from 'react';
 import { Button } from './ui';
 
-export type PrintOptions = { chairs: boolean; confirmed: boolean; contacts: boolean; emptySlots: boolean };
-export const DEFAULT_PRINT_OPTIONS: PrintOptions = { chairs: true, confirmed: true, contacts: false, emptySlots: false };
+export type PrintOptions = { chairs: boolean; confirmed: boolean; contacts: boolean; emptySlots: boolean; topicsOnly: boolean };
+export const DEFAULT_PRINT_OPTIONS: PrintOptions = { chairs: true, confirmed: true, contacts: false, emptySlots: false, topicsOnly: false };
 
 const isTbd = (f: any) => !f || f.faculty_id === 'FAC000' || /^TBD/i.test(String(f.canonical_name || '').trim());
 const roleLabel = (r: string | null | undefined) => {
@@ -35,6 +35,7 @@ export function PrintOptionsDialog({
 }) {
   const [o, setO] = useState<PrintOptions>(initial);
   const choices: { k: keyof PrintOptions; title: string; desc: string }[] = [
+    { k: 'topicsOnly', title: 'Topics only', desc: 'Just the table of topics. Leaves out the session chair and coordinator lines above it.' },
     { k: 'chairs', title: 'Include chairpersons', desc: 'Shown under each topic they chair.' },
     { k: 'confirmed', title: 'Show who has confirmed', desc: 'Adds ✓ after faculty who confirmed (as of the last sync).' },
     { k: 'emptySlots', title: 'Show empty slots', desc: 'Adds a marked row wherever no topic is scheduled. Leave unticked to print the topics only.' },
@@ -160,7 +161,7 @@ export function SessionPrintSheet({
     <div className="session-print-sheet hidden text-black print:block">
       {titleBlock}
 
-      {sessionChairs.length > 0 && (
+      {!options.topicsOnly && sessionChairs.length > 0 && (
         <p className="mb-1 text-[9.5pt]">
           <strong>Session chair: </strong>
           {sessionChairs.map((c, i) => (
@@ -169,7 +170,7 @@ export function SessionPrintSheet({
         </p>
       )}
 
-      {coordinators.length > 0 && (
+      {!options.topicsOnly && coordinators.length > 0 && (
         <p className="mb-3 text-[9.5pt]">
           <strong>Coordinators: </strong>
           {coordinators.filter((c) => !isTbd(c.faculty)).map((c, i) => (

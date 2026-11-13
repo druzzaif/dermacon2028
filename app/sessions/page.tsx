@@ -22,8 +22,8 @@ import { findEmptySlots, type EmptySlot } from '../lib/slots';
 import { formatTime12, toMinutes } from '../lib/time';
 import Badge, { roleTone } from '../components/Badge';
 import { inputCls } from '../components/Field';
-import { AlertIcon, CalendarIcon, CheckIcon, ClockIcon, MailIcon, MenuIcon, PinIcon, PlusIcon, SearchIcon } from '../components/Icons';
-import { Button, EmptyState, LoadingBlock, PersonLink, SkeletonLines, thCls, theadRowCls } from '../components/ui';
+import { AlertIcon, CalendarIcon, CheckIcon, ClockIcon, MailIcon, MenuIcon, PencilIcon, PinIcon, PlusIcon, PrinterIcon, SearchIcon, TrashIcon } from '../components/Icons';
+import { Button, EmptyState, IconButton, LoadingBlock, PersonLink, SkeletonLines, thCls, theadRowCls } from '../components/ui';
 import FacultyProfileHost from '../components/FacultyProfileHost';
 
 function formatDateLabel(dateStr: string | null): string {
@@ -267,7 +267,7 @@ export default function SessionsPage() {
         <td className="tnum whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-danger-strong">
           {formatTime12(g.start)} – {formatTime12(g.end)}
         </td>
-        <td colSpan={2} className="px-4 py-3.5">
+        <td className="px-4 py-3.5">
           <p className="text-[15px] font-semibold text-danger-strong">Empty slot · {g.minutes} minute{g.minutes === 1 ? '' : 's'}</p>
           <p className="mt-0.5 text-sm text-danger-strong">
             {later > 0
@@ -275,8 +275,8 @@ export default function SessionsPage() {
               : 'No topic is scheduled up to the end of the session. Add a topic here, or change the session end time in Edit session.'}
           </p>
         </td>
-        <td className="whitespace-nowrap px-3 py-2.5 text-right print:hidden">
-          <Button size="sm" onClick={() => setIsAddingTopic(true)}><PlusIcon /> Add topic</Button>
+        <td className="whitespace-nowrap px-4 py-3 print:hidden">
+          <Button size="sm" onClick={() => setIsAddingTopic(true)}><PlusIcon /> Topic</Button>
           {later > 0 && (
             <Button variant="danger-quiet" size="sm" className="ml-1" onClick={() => setClosingSlot(g)}>Close gap</Button>
           )}
@@ -411,24 +411,24 @@ export default function SessionsPage() {
         {sel ? (
           <>
             <SessionPrintSheet session={sel} topics={topics} coordinators={coordinators} sessionChairs={sessionChairs} options={printOptions} />
-            <div className="session-header z-10 shrink-0 border-b border-line bg-white px-4 py-5 sm:px-6 print:hidden">
+            <div className="session-header z-10 shrink-0 border-b border-line bg-white px-4 py-3 sm:px-6 print:hidden">
               <Button
                 size="sm"
                 onClick={() => setSidebarOpen(true)}
                 aria-expanded={sidebarOpen}
                 aria-controls="session-list"
-                className="mb-3 lg:hidden print:hidden"
+                className="mb-2 lg:hidden print:hidden"
               >
                 <MenuIcon /> All sessions
               </Button>
 
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <h1 className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-2xl font-semibold text-ink">
-                    <span className="tnum inline-flex h-8 items-center rounded-lg bg-accent px-2.5 text-base font-semibold text-white">{sel.session_code}</span>
+              <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                <div className="min-w-0 flex-1 basis-96">
+                  <h1 className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xl font-semibold leading-snug text-ink sm:text-2xl">
+                    <span className="tnum inline-flex h-7 items-center rounded-lg bg-accent px-2.5 text-sm font-semibold text-white">{sel.session_code}</span>
                     <span>{sel.session_name}</span>
                   </h1>
-                  <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 text-sm text-ink-2">
+                  <dl className="mt-1.5 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-2">
                     <div className="flex items-center gap-1.5">
                       <dt className="flex items-center gap-1.5 text-muted"><CalendarIcon /><span className="sr-only">Date</span></dt>
                       <dd className="tnum">{formatDateLabel(sel.session_date)}</dd>
@@ -444,58 +444,60 @@ export default function SessionsPage() {
                   </dl>
                 </div>
 
-                <div className="flex shrink-0 flex-wrap items-center gap-2 print:hidden">
+                <div className="flex shrink-0 items-center gap-1 print:hidden">
                   <SyncButton onSynced={() => refreshDetails()} />
-                  <Button onClick={() => setPrintOpen(true)}>Print…</Button>
-                  <Button onClick={() => setIsEditingSession(true)}>Edit session</Button>
-                  <Button variant="primary" onClick={() => setIsAddingTopic(true)}>
-                    <PlusIcon /> Add topic
+                  <IconButton label="Print session…" onClick={() => setPrintOpen(true)}><PrinterIcon /></IconButton>
+                  <IconButton label="Edit session" onClick={() => setIsEditingSession(true)}><PencilIcon /></IconButton>
+                  <Button variant="primary" size="sm" className="ml-1" onClick={() => setIsAddingTopic(true)}>
+                    <PlusIcon /> Topic
                   </Button>
                 </div>
               </div>
 
-              <div className="coordinator-strip mt-4 divide-y divide-line rounded-xl bg-canvas ring-1 ring-inset ring-line">
+              <div className="coordinator-strip mt-2.5 divide-y divide-line rounded-lg bg-canvas ring-1 ring-inset ring-line">
                 {sessionChairs.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2.5">
-                    <h2 className="w-28 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">Session chairs</h2>
-                    <ul className="flex min-w-0 flex-1 flex-wrap gap-x-5 gap-y-1">
+                  <div className="flex items-center gap-x-3 px-3 py-1.5">
+                    <h2 className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-muted">Chairs</h2>
+                    <ul className="flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-0.5">
                       {sessionChairs.map((c, i) => (
-                        <li key={i} className="flex items-center gap-2">
+                        <li key={i} className="flex items-center gap-1.5">
                           <span className="tnum text-sm text-muted">{i + 1}.</span>
                           <PersonLink className="text-sm" name={c.faculty?.canonical_name} onOpen={() => c.faculty?.id && setProfileId(c.faculty.id)} />
                         </li>
                       ))}
                     </ul>
+                    <IconButton size="sm" label="Edit session chairs (in Edit session)" onClick={() => setIsEditingSession(true)}><PencilIcon width={14} height={14} /></IconButton>
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5">
-                  <h2 className="w-28 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted">Coordinators</h2>
-                  <ul className="flex min-w-0 flex-1 flex-wrap gap-x-5 gap-y-1.5">
-                    {coordinators.length === 0 ? (
-                      <li className="text-sm text-ink-2">None assigned yet.</li>
-                    ) : (
-                      coordinators.map((c, i) => (
-                        <li key={i} className="flex items-center gap-2">
+                <div className="flex items-center gap-x-3 px-3 py-1.5">
+                  <h2 className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-muted">Coordinators</h2>
+                  {coordinators.length === 0 ? (
+                    <div className="flex min-w-0 flex-1 items-center">
+                      <Button variant="quiet" size="sm" className="!h-7 !px-2 text-xs" onClick={() => setIsEditingCoordinators(true)}>
+                        <PlusIcon width={13} height={13} /> Coordinator
+                      </Button>
+                    </div>
+                  ) : (
+                    <ul className="flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-0.5">
+                      {coordinators.map((c, i) => (
+                        <li key={i} className="flex items-center gap-1.5">
                           <span className="tnum text-sm text-muted">{i + 1}.</span>
                           <PersonLink className="text-sm" name={c.faculty?.canonical_name} onOpen={() => c.faculty?.id && setProfileId(c.faculty.id)} />
                           <Badge tone={roleTone(c.role)}>{c.role}</Badge>
                         </li>
-                      ))
+                      ))}
+                    </ul>
+                  )}
+                  <div className="flex shrink-0 items-center gap-0.5 print:hidden">
+                    <Button variant="quiet" size="sm" className="!h-7 !px-2 text-xs" onClick={() => setIsEditingChairs(true)}>Topic chairs</Button>
+                    {coordinators.length > 0 && (
+                      <>
+                        <IconButton size="sm" label="Edit coordinators" onClick={() => setIsEditingCoordinators(true)}><PencilIcon width={14} height={14} /></IconButton>
+                        <IconButton size="sm" label="Email report to coordinators…" onClick={() => setIsSendingReport(true)}><MailIcon width={14} height={14} /></IconButton>
+                      </>
                     )}
-                  </ul>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 px-3 py-2 print:hidden">
-                  <Button variant="quiet" size="sm" onClick={() => setIsEditingCoordinators(true)}>
-                    Edit coordinators
-                  </Button>
-                  <Button variant="quiet" size="sm" onClick={() => setIsEditingChairs(true)}>
-                    Edit topic chairpersons
-                  </Button>
-                  <Button size="sm" className="ml-auto" onClick={() => setIsSendingReport(true)}>
-                    <MailIcon /> Email report to coordinators…
-                  </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -505,7 +507,7 @@ export default function SessionsPage() {
                 {loadingDetails ? 'Loading schedule' : `${topics.length} topics loaded${emptySlots.length ? `, ${emptySlots.length} empty slot${emptySlots.length === 1 ? '' : 's'}` : ''}`}
               </div>
               <div className="overflow-x-auto rounded-xl border border-line bg-white shadow-card print:border-0 print:shadow-none">
-                <table className="w-full min-w-[720px] border-collapse text-left print:min-w-0">
+                <table className="w-full min-w-[620px] border-collapse text-left print:min-w-0">
                   <caption className="sr-only">
                     Topics in session {sel.session_code}, in running order
                   </caption>
@@ -515,19 +517,16 @@ export default function SessionsPage() {
                       <th scope="col" className={`${thCls} w-44`}>Time</th>
                       <th scope="col" className={thCls}>Topic</th>
                       <th scope="col" className={`${thCls} w-80`}>Faculty and role</th>
-                      <th scope="col" className={`${thCls} w-40 text-right print:hidden`}>
-                        <span className="sr-only">Actions</span>
-                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line" aria-busy={loadingDetails}>
                     {showPlaceholders ? (
                       <tr>
-                        <td colSpan={5} className="px-4 py-4"><SkeletonLines rows={4} /></td>
+                        <td colSpan={4} className="px-4 py-4"><SkeletonLines rows={4} /></td>
                       </tr>
                     ) : topics.length === 0 ? (
                       <tr>
-                        <td colSpan={5}>
+                        <td colSpan={4}>
                           <EmptyState
                             title="No topics yet"
                             action={<Button variant="primary" onClick={() => setIsAddingTopic(true)}><PlusIcon /> Add topic</Button>}
@@ -555,8 +554,16 @@ export default function SessionsPage() {
                             className={`align-top transition-colors duration-700 ${justSaved ? 'bg-accent-tint' : 'hover:bg-slate-50/70'}`}
                           >
                             <td className="tnum px-4 py-3.5 text-center text-sm font-semibold text-muted">{t.sequence_no}</td>
-                            <td className="tnum whitespace-nowrap px-4 py-3.5 text-sm font-medium text-ink-2">
+                            <td className="tnum whitespace-nowrap px-4 py-3 text-sm font-medium text-ink-2">
                               {formatTimeAmPm(t.start_time)} – {formatTimeAmPm(t.end_time)}
+                              <div className="-ml-1.5 mt-1 flex items-center gap-0.5 print:hidden">
+                                <IconButton size="sm" label={`Edit topic ${t.sequence_no}: ${t.topic_title}`} onClick={() => setEditingTopic(t)}>
+                                  <PencilIcon width={15} height={15} />
+                                </IconButton>
+                                <IconButton size="sm" tone="danger" label={`Delete topic ${t.sequence_no}: ${t.topic_title}`} onClick={() => setDeletingTopic(t)}>
+                                  <TrashIcon width={15} height={15} />
+                                </IconButton>
+                              </div>
                             </td>
                             <th scope="row" className="px-4 py-3.5 text-left text-[15px] font-medium leading-snug text-ink">
                               {t.topic_title}
@@ -603,24 +610,6 @@ export default function SessionsPage() {
                                   </ul>
                                 </div>
                               )}
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-2.5 text-right print:hidden">
-                              <Button
-                                variant="quiet"
-                                size="sm"
-                                onClick={() => setEditingTopic(t)}
-                                aria-label={`Edit topic ${t.sequence_no}: ${t.topic_title}`}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="danger-quiet"
-                                size="sm"
-                                onClick={() => setDeletingTopic(t)}
-                                aria-label={`Delete topic ${t.sequence_no}: ${t.topic_title}`}
-                              >
-                                Delete
-                              </Button>
                             </td>
                           </tr>
                           </Fragment>

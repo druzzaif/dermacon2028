@@ -155,7 +155,7 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
             )}
             <p className="mt-3 text-ink-2">
               One email each (no PDF attached). <strong>Generate PDF</strong> makes the session sheet on its own and emails nobody. Confirmation status is as of the last sync
-              {data.syncedAt ? <> (<strong>{data.syncedAt}</strong>)</> : <> (<strong>never synced</strong>)</>}. Click <strong>Sync confirmations</strong> first if you want the latest.
+              {data.syncedAt ? <> (<strong>{data.syncedAt}</strong>)</> : <> (<strong>never synced</strong>)</>}. Click <strong>Sync</strong> first if you want the latest.
             </p>
             <p className="mt-2 text-ink-2">Emails left today: <strong className="tnum">{data.quota}</strong></p>
           </fieldset>

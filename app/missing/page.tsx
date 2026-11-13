@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
 import AssignFacultyModal from '../components/AssignFacultyModal';
+import { inputCls } from '../components/Field';
 import { ArrowUpRightIcon, CalendarIcon, ChevronDownIcon, ClockIcon, PinIcon, PlusIcon } from '../components/Icons';
 import { Button, EmptyState, LoadingBlock, PageHeader, PageShell, buttonCls, cardCls } from '../components/ui';
 import { formatTime12 } from '../lib/time';
@@ -33,7 +34,8 @@ export default function MissingDataPage() {
         id, topic_title, sequence_no,
         faculty_topics ( role, faculty ( faculty_id, canonical_name ) )
       ),
-      session_coordinators ( role, faculty ( faculty_id, canonical_name ) )
+      session_coordinators ( role, faculty ( faculty_id, canonical_name ) ),
+      session_chairs ( faculty ( faculty_id, canonical_name ) )
     `).order('session_date', { ascending: true }).order('start_time', { ascending: true });
 
     if (sessions) {
@@ -60,7 +62,16 @@ export default function MissingDataPage() {
         }
 
         if (isEmpty || missingTopics.length > 0 || !hasCoordinators) {
-          issuesBySession.push({ ...s, isEmpty, hasCoordinators, missingTopics });
+          // Everyone already in this session (coordinators, session chairs, speakers), for the Faculty filter
+          const people = new Set<string>();
+          const add = (f: any) => {
+            const n = String(f?.canonical_name || '').trim();
+            if (n && f?.faculty_id !== 'FAC000' && !/^TBD/i.test(n)) people.add(n);
+          };
+          (s.session_coordinators || []).forEach((c: any) => add(c.faculty));
+          ((s as any).session_chairs || []).forEach((c: any) => add(c.faculty));
+          (s.session_topics || []).forEach((t: any) => (t.faculty_topics || []).forEach((ft: any) => add(ft.faculty)));
+          issuesBySession.push({ ...s, isEmpty, hasCoordinators, missingTopics, people: [...people] });
         }
       });
 
@@ -73,6 +84,41 @@ export default function MissingDataPage() {
     fetchMissingData();
   }, []);
 
+  // ---- filters (all optional; they combine) ----
+  const NONE = '__none';
+  const [fDate, setFDate] = useState('');
+  const [fHall, setFHall] = useState('');
+  const [fSession, setFSession] = useState('');
+  const [fFaculty, setFFaculty] = useState('');
+  const filtering = !!(fDate || fHall || fSession.trim() || fFaculty.trim());
+  const clearFilters = () => { setFDate(''); setFHall(''); setFSession(''); setFFaculty(''); };
+
+  const dateOptions = useMemo(() => {
+    const ds = [...new Set(groupedData.map((s) => s.session_date || ''))].sort((a, b) => (a || '9999').localeCompare(b || '9999'));
+    return ds.map((d) => ({ value: d || NONE, label: d ? dateLabel(d) || d : 'No date' }));
+  }, [groupedData]);
+  const hallOptions = useMemo(() => {
+    const hs = [...new Set(groupedData.map((s) => String(s.hall || '').trim()))]
+      .sort((a, b) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b, undefined, { numeric: true })));
+    return hs.map((h) => ({ value: h || NONE, label: !h ? 'No hall' : h.toLowerCase() === 'all' ? 'All halls (plenary)' : `Hall ${h}` }));
+  }, [groupedData]);
+  const sessionSuggestions = useMemo(
+    () => groupedData.map((s) => `${s.session_code} – ${s.session_name || 'Untitled session'}`),
+    [groupedData]);
+  const facultySuggestions = useMemo(
+    () => [...new Set<string>(groupedData.flatMap((s) => s.people as string[]))].sort((a, b) => a.localeCompare(b)),
+    [groupedData]);
+
+  const visible = useMemo(() => {
+    const qs = fSession.trim().toLowerCase();
+    const qf = fFaculty.trim().toLowerCase();
+    return groupedData.filter((s) =>
+      (!fDate || (s.session_date || NONE) === fDate) &&
+      (!fHall || (String(s.hall || '').trim() || NONE) === fHall) &&
+      (!qs || `${s.session_code} ${s.session_name || ''}`.toLowerCase().includes(qs)) &&
+      (!qf || (s.people as string[]).some((n) => n.toLowerCase().includes(qf))));
+  }, [groupedData, fDate, fHall, fSession, fFaculty]);
+
   if (loading) {
     return (
       <PageShell>
@@ -83,8 +129,8 @@ export default function MissingDataPage() {
   }
 
   const countFor = (s: any) => (s.isEmpty ? 1 : 0) + s.missingTopics.length + (s.hasCoordinators ? 0 : 1);
-  const totalItems = groupedData.reduce((n, s) => n + countFor(s), 0);
-  const allOpen = groupedData.length > 0 && groupedData.every((s) => openIds.has(String(s.id)));
+  const totalItems = visible.reduce((n, s) => n + countFor(s), 0);
+  const allOpen = visible.length > 0 && visible.every((s) => openIds.has(String(s.id)));
 
   // One quiet row per thing to fix: plain white, a thin marker on the left, and a small button
   const row = 'flex flex-col justify-between gap-3 border-l-2 border-l-blue-300 py-3 pl-4 pr-1 sm:flex-row sm:items-center';
@@ -97,12 +143,13 @@ export default function MissingDataPage() {
           description={
             groupedData.length === 0
               ? 'Sessions and topics that still need your attention.'
-              : `${totalItems} thing${totalItems === 1 ? '' : 's'} to fix in ${groupedData.length} session${groupedData.length === 1 ? '' : 's'}: sessions without topics, topics without a speaker, and sessions without coordinators.`
+              : `${totalItems} thing${totalItems === 1 ? '' : 's'} to fix in ${visible.length} session${visible.length === 1 ? '' : 's'}: sessions without topics, topics without a speaker, and sessions without coordinators.`
           }
           actions={
-            groupedData.length > 0 ? (
+            visible.length > 0 ? (
               <Button
-                onClick={() => setOpenIds(allOpen ? new Set() : new Set(groupedData.map((s) => String(s.id))))}
+                size="sm"
+                onClick={() => setOpenIds(allOpen ? new Set() : new Set(visible.map((s) => String(s.id))))}
               >
                 {allOpen ? 'Collapse all' : 'Expand all'}
               </Button>
@@ -117,8 +164,51 @@ export default function MissingDataPage() {
             </EmptyState>
           </div>
         ) : (
+          <>
+          <section aria-label="Filter the to-do list" className={`${cardCls} mb-4 p-3 sm:p-4`}>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label htmlFor="fdate" className="mb-1 block text-xs font-medium text-ink-2">Date</label>
+                <select id="fdate" value={fDate} onChange={(e) => setFDate(e.target.value)} className={inputCls}>
+                  <option value="">All dates</option>
+                  {dateOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="fhall" className="mb-1 block text-xs font-medium text-ink-2">Hall</label>
+                <select id="fhall" value={fHall} onChange={(e) => setFHall(e.target.value)} className={inputCls}>
+                  <option value="">All halls</option>
+                  {hallOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="fsession" className="mb-1 block text-xs font-medium text-ink-2">Session</label>
+                <input id="fsession" type="search" list="fsession-list" placeholder="Code or name" value={fSession}
+                  onChange={(e) => setFSession(e.target.value)} className={inputCls} autoComplete="off" />
+                <datalist id="fsession-list">{sessionSuggestions.map((s) => <option key={s} value={s.split(' – ')[0]} label={s} />)}</datalist>
+              </div>
+              <div>
+                <label htmlFor="ffaculty" className="mb-1 block text-xs font-medium text-ink-2">Faculty in the session</label>
+                <input id="ffaculty" type="search" list="ffaculty-list" placeholder="Name" value={fFaculty}
+                  onChange={(e) => setFFaculty(e.target.value)} className={inputCls} autoComplete="off" />
+                <datalist id="ffaculty-list">{facultySuggestions.map((n) => <option key={n} value={n} />)}</datalist>
+              </div>
+            </div>
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-2" role="status" aria-live="polite">
+              <span>Showing <strong className="text-ink">{visible.length}</strong> of {groupedData.length} sessions</span>
+              {filtering && <button type="button" onClick={clearFilters} className="font-medium text-accent hover:underline">Clear filters</button>}
+            </div>
+          </section>
+
+          {visible.length === 0 ? (
+            <div className={cardCls}>
+              <EmptyState title="No sessions match" action={<Button onClick={clearFilters}>Clear filters</Button>}>
+                Nothing to fix for this combination. Try removing a filter.
+              </EmptyState>
+            </div>
+          ) : (
           <div className={`divide-y divide-line overflow-hidden ${cardCls}`}>
-            {groupedData.map((session) => {
+            {visible.map((session) => {
               const open = openIds.has(String(session.id));
               const date = dateLabel(session.session_date);
               return (
@@ -219,6 +309,8 @@ export default function MissingDataPage() {
               );
             })}
           </div>
+          )}
+          </>
         )}
       </PageShell>
 

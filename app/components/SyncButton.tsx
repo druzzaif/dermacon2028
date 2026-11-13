@@ -49,16 +49,17 @@ export default function SyncButton({ onSynced, className = '' }: { onSynced?: ()
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex h-11 items-center rounded-lg border border-field bg-white px-4 text-sm font-medium text-ink hover:bg-slate-50"
+          title={`Sync confirmations from the Google sheet. Last synced: ${whenLabel(last)}`}
+          className="inline-flex h-9 items-center rounded-lg border border-field bg-white px-3 text-sm font-medium text-ink hover:bg-slate-50"
         >
-          Sync confirmations
+          Sync
         </button>
-        <span className="hidden text-xs text-muted sm:inline">Last synced: {whenLabel(last)}</span>
+        <span className="hidden text-xs text-muted lg:inline">Synced {whenLabel(last)}</span>
       </span>
 
       {open && (
         <Modal
-          title="Sync confirmations"
+          title="Sync"
           size="md"
           busy={busy}
           onClose={close}

@@ -121,8 +121,8 @@ export default function FacultyDirectoryPage() {
           actions={
             <>
               <SyncButton onSynced={refreshFaculty} />
-              <a href="/api/export" className={buttonCls('secondary')}>
-                <DownloadIcon /> Export to Excel
+              <a href="/api/export" className={buttonCls('secondary', 'sm')} title="Export to Excel" aria-label="Export to Excel">
+                <DownloadIcon /> Excel
               </a>
             </>
           }

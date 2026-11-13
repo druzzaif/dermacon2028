@@ -61,3 +61,12 @@ export const GripIcon = (p: P) => (
 export const PlusIcon = (p: P) => (
   <svg {...base(p)}><path d="M12 5v14M5 12h14" /></svg>
 );
+export const PencilIcon = (p: P) => (
+  <svg {...base(p)}><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+);
+export const TrashIcon = (p: P) => (
+  <svg {...base(p)}><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>
+);
+export const PrinterIcon = (p: P) => (
+  <svg {...base(p)}><path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+);

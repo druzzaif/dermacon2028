@@ -19,6 +19,8 @@ export type PrintRequest = {
   pagePerSession: boolean;
   emptySlots?: boolean;   // add a marked row wherever no topic is scheduled
   coordinators?: boolean; // show each session's coordinators (default: yes)
+  topicsOnly?: boolean;   // just the topic rows: no session chair, coordinators or contact lines
+  groupBy?: 'time' | 'hall'; // order sessions within a day by start time, or by hall (hall heading in continuous mode)
   continuous?: boolean;   // no page breaks: one heading per day, a heading row above each session's rows
 };
 
@@ -50,7 +52,8 @@ function fmtDate(d: string | null | undefined, long = true) {
     : { weekday: 'short', day: 'numeric', month: 'short' });
 }
 const t12 = (t: string | null | undefined) => (t ? formatTime12(t) : '--:--');
-const range = (a: any, b: any) => `${t12(a)} – ${t12(b)}`;
+const range = (a: any, b: any) => (!a && !b ? 'Time not set' : `${t12(a)} – ${t12(b)}`);
+const hallTitle = (h: any) => !realHall(h) ? 'Hall not set' : String(h).trim().toLowerCase() === 'all' ? 'All halls' : `Hall ${String(h).trim()}`;
 const hallText = (h: any) => (realHall(h) ? `Hall ${esc(h)}` : '<span class="bad">Hall not set</span>');
 
 async function loadProgramme() {
@@ -75,7 +78,7 @@ async function loadProgramme() {
   });
   sessions.sort((a, b) =>
     String(a.session_date || '9999').localeCompare(String(b.session_date || '9999')) ||
-    String(a.start_time || '').localeCompare(String(b.start_time || '')) ||
+    String(a.start_time || '99').localeCompare(String(b.start_time || '99')) ||
     String(a.hall || '').localeCompare(String(b.hall || ''), undefined, { numeric: true }));
   return sessions;
 }
@@ -105,7 +108,7 @@ function personLine(f: any, extra: string, o: PrintRequest, confirmed?: boolean,
   return `<div class="person"><span class="pname">${esc(prefix)}${esc(f?.canonical_name || '—')}</span>${extra ? ` <span class="role">(${esc(extra)})</span>` : ''}${tick}${contact ? `<div class="contact">${contact}</div>` : ''}</div>`;
 }
 
-const showCoords = (o: PrintRequest) => o.coordinators !== false;
+const showCoords = (o: PrintRequest) => o.coordinators !== false && !o.topicsOnly;
 
 function coordBlock(s: any, o: PrintRequest) {
   const coords = s.session_coordinators.filter((c: any) => !isTbd(c.faculty));
@@ -116,7 +119,7 @@ function coordBlock(s: any, o: PrintRequest) {
 
 // Chairpersons of the whole session: shown once here, not on each topic
 function chairBlock(s: any, o: PrintRequest) {
-  return s.session_chairs.length
+  return s.session_chairs.length && !o.topicsOnly
     ? `<div class="coords"><div class="coords-title">Session chair</div>${s.session_chairs.map((c: any, i: number) => personLine(c.faculty, '', o, undefined, `${i + 1}. `)).join('')}</div>`
     : '';
 }
@@ -183,17 +186,22 @@ function continuousSchedule(sessions: any[], o: PrintRequest) {
   sessions.forEach((s) => { const k = s.session_date || ''; days.set(k, [...(days.get(k) || []), s]); });
 
   return [...days.entries()].map(([day, list]) => {
+    let prevHall: string | null = null;
     const body = list.map((s) => {
       const info = [chairBlock(s, o), showCoords(o) ? coordBlock(s, o) : ''].join('');
-      return `<tbody class="sess">
+      const hallKey = String(s.hall ?? '').trim();
+      const hallHead = o.groupBy === 'hall' && hallKey !== prevHall
+        ? `<tbody class="hall"><tr class="hall-head"><td colspan="${ncols}">${esc(hallTitle(s.hall))}</td></tr></tbody>` : '';
+      prevHall = hallKey;
+      return `${hallHead}<tbody class="sess${s.session_topics.length ? '' : ' empty'}">
         <tr class="sess-head"><td colspan="${ncols}">
           <span class="code">${esc(s.session_code)}</span>
           <span class="sname">${esc(s.session_name || 'Untitled session')}</span>
-          ${s.session_type ? `<span class="stype">${esc(s.session_type)}</span>` : ''}
-          <span class="swhen">${esc(range(s.start_time, s.end_time))} · ${hallText(s.hall)}</span>
+          ${s.session_type && s.session_type !== 'Scientific Programme' ? `<span class="stype">${esc(s.session_type)}</span>` : ''}
+          <span class="swhen">${esc(range(s.start_time, s.end_time))}${o.groupBy === 'hall' ? '' : ` · ${hallText(s.hall)}`}</span>
         </td></tr>
         ${info ? `<tr class="sess-info"><td colspan="${ncols}">${info}</td></tr>` : ''}
-        ${s.session_topics.length ? topicRows(s, o) : `<tr><td colspan="${ncols}" class="bad">This session has no topics yet.</td></tr>`}
+        ${topicRows(s, o)}
       </tbody>`;
     }).join('');
     return `
@@ -376,12 +384,15 @@ const CSS = `
   /* continuous layout */
   table.day { margin-bottom: 16px; }
   table.grid th.day-th { background: #fff3c4; color: #2d1a47; border-left: 5px solid #e0b100; font-size: 11pt; text-transform: none; letter-spacing: 0; padding: 5px 8px; }
-  table.grid tbody.sess tr.sess-head td { background: #4a2c6e; color: #fff; border-color: #4a2c6e; padding: 6px 8px; break-after: avoid; }
+  table.grid tbody.sess tr.sess-head td { background: #4a2c6e; color: #fff; border-color: #4a2c6e; padding: 6px 8px; }
   table.grid tr.sess-head .code { font-size: 10pt; margin-right: 6px; }
   table.grid tr.sess-head .sname { font-size: 11pt; font-weight: 700; margin-right: 6px; }
   table.grid tr.sess-head .swhen { float: right; font-weight: 700; }
   table.grid tr.sess-head .bad { color: #ffd9d4; }
-  table.grid tbody.sess tr.sess-info td { background: #f4f0fa; padding: 4px 8px; break-after: avoid; }
+  table.grid tbody.sess tr.sess-info td { background: #f4f0fa; padding: 4px 8px; }
+  /* keep a heading with its first row, but only when rows follow (else a day of empty sessions becomes one unbreakable block) */
+  table.grid tbody.sess:not(.empty) tr.sess-head td, table.grid tbody.sess:not(.empty) tr.sess-info td { break-after: avoid; }
+  table.grid tbody.hall tr.hall-head td { background: #d9cdea; color: #2d1a47; border-left: 5px solid #4a2c6e; font-size: 11pt; font-weight: 800; padding: 5px 8px; break-after: avoid; }
   table.grid tr.sess-info .coords { margin: 0; padding: 2px 0; background: none; border: 0; }
 `;
 
@@ -491,6 +502,15 @@ export async function buildPrintHtml(o: PrintRequest) {
   const all = await loadProgramme();
   const selectedIds = new Set(o.sessionIds.map(String));
   const selected = all.filter((s) => selectedIds.has(String(s.id)));
+  if (o.groupBy === 'hall') {
+    // day, then hall ("All" = plenary first, then A, B1, B2...), then start time (unknown times last)
+    const rank = (s: any) => (String(s.hall ?? '').trim().toLowerCase() === 'all' ? 0 : 1);
+    selected.sort((a, b) =>
+      String(a.session_date || '9999').localeCompare(String(b.session_date || '9999')) ||
+      rank(a) - rank(b) ||
+      String(a.hall || '').localeCompare(String(b.hall || ''), undefined, { numeric: true }) ||
+      String(a.start_time || '99').localeCompare(String(b.start_time || '99')));
+  }
   const scopeAll = o.scope === 'all' || selected.length === 0;
   const scoped = scopeAll ? all : selected;
   const scopeIds = new Set(scoped.map((s) => s.id));
