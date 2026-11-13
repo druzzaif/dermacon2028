@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import Badge, { roleTone } from './Badge';
 import { AlertIcon, CheckIcon } from './Icons';
-import { previewCoordinatorReport, sendCoordinatorReport } from '../actions';
+import { generatePDFForSession, previewCoordinatorReport, sendCoordinatorReport } from '../actions';
 
 const roleLabel = (r: string) => (r === 'Lead Coordinator' ? 'Lead' : r);
 
@@ -18,6 +18,20 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  // Separate from sending: only makes the session PDF, emails nobody
+  async function makePdf() {
+    setPdfBusy(true);
+    setPdfError(null);
+    setPdfUrl(null);
+    const r: any = await generatePDFForSession(session.id);
+    setPdfBusy(false);
+    if (r.success) setPdfUrl(r.url);
+    else setPdfError(r.message || 'The PDF could not be generated.');
+  }
 
   useEffect(() => {
     let alive = true;
@@ -54,15 +68,19 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
       title="Send report to coordinators"
       subtitle={`${session.session_code} – ${session.session_name}`}
       size="lg"
-      busy={busy}
+      busy={busy || pdfBusy}
       onClose={onClose}
       footer={
         result?.ok ? (
-          <button type="button" onClick={onClose} className={primary}>Close</button>
+          <>
+            <button type="button" onClick={makePdf} disabled={pdfBusy} className={secondary}>{pdfBusy ? 'Making PDF…' : 'Generate PDF'}</button>
+            <button type="button" onClick={onClose} className={primary}>Close</button>
+          </>
         ) : (
           <>
-            <button type="button" onClick={onClose} disabled={busy} className={secondary}>Cancel</button>
-            <button type="button" onClick={send} disabled={busy || !data?.success || count === 0 || !enough} className={primary}>
+            <button type="button" onClick={onClose} disabled={busy || pdfBusy} className="mr-auto inline-flex h-11 items-center justify-center rounded-lg px-4 text-sm font-medium text-ink-2 hover:bg-slate-100 disabled:opacity-50">Cancel</button>
+            <button type="button" onClick={makePdf} disabled={busy || pdfBusy} className={secondary}>{pdfBusy ? 'Making PDF…' : 'Generate PDF'}</button>
+            <button type="button" onClick={send} disabled={busy || pdfBusy || !data?.success || count === 0 || !enough} className={primary}>
               {busy ? 'Sending…' : `Send to ${count} coordinator${count === 1 ? '' : 's'}`}
             </button>
           </>
@@ -118,7 +136,7 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
               </ul>
             )}
             <p className="mt-3 text-ink-2">
-              One email each, no PDF. Confirmation status is as of the last sync
+              One email each (no PDF attached). <strong>Generate PDF</strong> makes the session sheet on its own and emails nobody. Confirmation status is as of the last sync
               {data.syncedAt ? <> (<strong>{data.syncedAt}</strong>)</> : <> (<strong>never synced</strong>)</>}. Click <strong>Sync confirmations</strong> first if you want the latest.
             </p>
             <p className="mt-2 text-ink-2">Emails left today: <strong className="tnum">{data.quota}</strong></p>
@@ -168,6 +186,15 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
           </div>
         </div>
       )}
+      {pdfUrl && (
+        <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+          PDF ready.{' '}
+          <a href={pdfUrl} target="_blank" rel="noreferrer" className="font-semibold underline">
+            Open or download<span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </p>
+      )}
+      {pdfError && <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{pdfError}</p>}
       {result && (
         <p role={result.ok ? 'status' : 'alert'} className={`mt-4 rounded-lg p-3 text-sm ${result.ok ? 'bg-green-50 text-green-800' : 'border border-red-200 bg-red-50 text-red-800'}`}>
           {result.message}

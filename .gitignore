@@ -7,6 +7,9 @@ dist/
 .env
 .env.local
 .env*.local
+.env.*
+!.env.example
+.clasprc.json
 .DS_Store
 Thumbs.db
 

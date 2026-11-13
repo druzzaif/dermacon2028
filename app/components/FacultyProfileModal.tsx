@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import SendEmailsDialog from './SendEmailsDialog';
 import Badge from './Badge';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { removeConfirmation } from '../actions';
 
 function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   if (!dateStr) return '--';
@@ -28,14 +30,28 @@ function formatTimeAmPm(timeStr: string | null | undefined): string {
 export default function FacultyProfileModal({
   faculty,
   onClose,
+  onChanged,
 }: {
   faculty: any;
   onClose: () => void;
+  onChanged?: () => void;
 }) {
   const [speakingSessions, setSpeakingSessions] = useState<any[]>([]);
   const [coordinatingSessions, setCoordinatingSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSend, setShowSend] = useState(false);
+  const [unconfirming, setUnconfirming] = useState<any | null>(null);
+
+  async function handleRemoveConfirmation() {
+    const s = unconfirming;
+    const res = await removeConfirmation(faculty.id, s.topic_id);
+    if (!res.success) throw new Error(res.message);
+    setSpeakingSessions((prev) =>
+      prev.map((x) => (x.topic_id === s.topic_id ? { ...x, confirmed: false } : x))
+    );
+    setUnconfirming(null);
+    onChanged?.();
+  }
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -51,6 +67,7 @@ export default function FacultyProfileModal({
         .from('faculty_topics')
         .select(
           `
+          topic_id,
           role,
           confirmed,
           session_topics (
@@ -271,6 +288,21 @@ export default function FacultyProfileModal({
                         </span>
                         <span>Hall {session?.hall || 'TBD'}</span>
                       </div>
+                      {s.confirmed && (
+                        <div className="mt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setUnconfirming(s);
+                            }}
+                            className="text-xs font-medium text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded"
+                          >
+                            Remove confirmation
+                          </button>
+                        </div>
+                      )}
                     </a>
                   );
                 })}
@@ -284,6 +316,31 @@ export default function FacultyProfileModal({
         <SendEmailsDialog
           items={[{ facultyId: faculty.id, kind }]}
           onClose={() => setShowSend(false)}
+        />
+      )}
+
+      {unconfirming && (
+        <ConfirmDeleteDialog
+          title="Remove confirmation?"
+          description={
+            <>
+              <p>
+                <strong>{faculty.canonical_name}</strong> will be shown as <strong>not confirmed</strong> for{' '}
+                <strong>
+                  {unconfirming.session_topics?.conference_sessions?.session_code} –{' '}
+                  {unconfirming.session_topics?.topic_title}
+                </strong>.
+              </p>
+              <p className="mt-2 text-gray-500">
+                This changes your PC only, so it is instant. The next <strong>Sync confirmations</strong> also
+                removes it from the Google sheet. If they confirm again on the form after that, it comes back.
+              </p>
+            </>
+          }
+          confirmLabel="Remove confirmation"
+          busyLabel="Removing..."
+          onConfirm={handleRemoveConfirmation}
+          onCancel={() => setUnconfirming(null)}
         />
       )}
     </div>

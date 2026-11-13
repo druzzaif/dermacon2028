@@ -1,8 +1,9 @@
 // scripts/seed-local.mjs
-// Rebuild local Supabase from CSVs in scripts/seed-data/.
+// Rebuild local Supabase from a named CSV dataset.
 //
-//   node scripts/seed-local.mjs              # dry-run, no writes
-//   node scripts/seed-local.mjs --force      # truncate + reseed
+//   node scripts/seed-local.mjs --dataset=dummy              # dry-run
+//   node scripts/seed-local.mjs --dataset=dummy --force      # truncate + reseed
+//   node scripts/seed-local.mjs --dataset=original           # dry-run
 //
 // Idempotent: safe to re-run. Respects FK order.
 // Uses @supabase/supabase-js (already a dependency).
@@ -31,9 +32,17 @@ if (!key) {
   process.exit(1);
 }
 
-const supabase = createClient(url, key);
+const schemaOption = process.argv.find(arg => arg.startsWith("--schema="));
+const SCHEMA = schemaOption ? schemaOption.slice("--schema=".length) : "public";
+const supabase = createClient(url, key, { db: { schema: SCHEMA } });
 const FORCE = process.argv.includes("--force");
-const DATA_DIR = path.join(process.cwd(), "scripts", "seed-data");
+const datasetOption = process.argv.find(arg => arg.startsWith("--dataset="));
+const DATASET = datasetOption ? datasetOption.slice("--dataset=".length) : "dummy";
+if (DATASET !== "original" && DATASET !== "dummy") {
+  console.error(`Unknown dataset "${DATASET}". Use --dataset=original or --dataset=dummy.`);
+  process.exit(1);
+}
+const DATA_DIR = path.join(process.cwd(), "scripts", `seed-data-${DATASET}`);
 
 // ---- tiny CSV parser (handles quoted commas, CRLF) ------------------
 function parseCsv(text) {
@@ -116,6 +125,8 @@ async function count(table) {
 // ---- main -----------------------------------------------------------
 async function main() {
   console.log(`Supabase target: ${url}`);
+  console.log(`Schema: ${SCHEMA}`);
+  console.log(`Dataset: ${DATASET} (${DATA_DIR})`);
   console.log(`Mode: ${FORCE ? "APPLY (--force)" : "DRY RUN (no writes)"}\n`);
 
   // Read all CSVs first so a missing file aborts before we truncate
@@ -139,7 +150,9 @@ async function main() {
 
   if (!FORCE) {
     console.log("\nDry run - no changes. Re-run with --force to apply:");
-    console.log("  npm run seed:local -- --force");
+    console.log(DATASET === "original"
+      ? "  npm run seed:local:original:apply"
+      : "  npm run seed:local:apply");
     return;
   }
 
@@ -149,7 +162,7 @@ async function main() {
   const NEVER = "00000000-0000-0000-0000-000000000000";
   for (const t of ["faculty_topics", "session_coordinators", "session_topics", "conference_sessions", "faculty"]) {
     // faculty_topics has composite PK, so use faculty_id; others use id
-    const col = t === "faculty_topics" ? "faculty_id" : "id";
+    const col = (t === "faculty_topics" || t === "session_coordinators") ? (t === "faculty_topics" ? "faculty_id" : "session_id") : "id";
     const { error } = await supabase.from(t).delete().neq(col, NEVER);
     if (error) {
       console.error(`  FAIL truncate ${t}: ${error.message}`);
@@ -217,7 +230,6 @@ async function main() {
     start_time:  clean(r.start_time),
     end_time:    clean(r.end_time),
     sequence_no: cleanInt(r.sequence_no),
-    topic_uid:   clean(r.topic_uid),
   }));
   if (topicRows.length > 0) {
     const r = await chunkInsert("session_topics", topicRows);

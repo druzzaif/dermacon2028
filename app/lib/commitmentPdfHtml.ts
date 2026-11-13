@@ -20,6 +20,7 @@ type CommitmentInput = {
       sequence_no: number | null;
       role?: string | null;        // Faculty, Moderator, Panelist, Chairperson
       speakers?: string[];         // shown under topics the person chairs
+      panel?: { moderators: string[]; panelists: string[]; debaters: string[] }; // the others on a panel / debate
     }>;
     role: string;
     coordinator: { name: string; phone: string; email: string };
@@ -72,15 +73,43 @@ const FIRST_PAGE_MM = 26;
 const NEXT_PAGE_MM = 150;
 
 // Estimated height of one topic row in mm (one text line = 3.75 mm, plus padding)
-function rowCostMm(topic: { topic_title: string; speakers?: string[] }, showRole: boolean): number {
+// "Moderator: A" / "Panelists: B, C" lines shown under a panel or debate topic
+function panelLines(panel?: { moderators: string[]; panelists: string[]; debaters: string[] }): string[] {
+  if (!panel) return [];
+  const out: string[] = [];
+  if (panel.moderators.length) out.push(`${panel.moderators.length > 1 ? 'Moderators' : 'Moderator'}: ${panel.moderators.join(', ')}`);
+  if (panel.panelists.length) out.push(`Panelists: ${panel.panelists.join(', ')}`);
+  if (panel.debaters.length) out.push(`Debaters: ${panel.debaters.join(', ')}`);
+  return out;
+}
+
+function rowCostMm(topic: { topic_title: string; speakers?: string[]; panel?: { moderators: string[]; panelists: string[]; debaters: string[] } }, showRole: boolean): number {
   const titleLines = Math.max(1, Math.ceil(String(topic.topic_title || '').length / (showRole ? 37 : 50)));
   const speakerText = (topic.speakers || []).join(', ');
   const speakerLines = speakerText ? Math.ceil(`Speakers: ${speakerText}`.length / (showRole ? 40 : 54)) : 0;
-  return 2.4 + 3.75 * titleLines + (speakerLines ? 0.8 + 3.4 * speakerLines : 0);
+  const panelLineCount = panelLines(topic.panel).reduce((n, l) => n + Math.ceil(l.length / (showRole ? 40 : 54)), 0);
+  const extra = speakerLines + panelLineCount;
+  return 2.4 + 3.75 * titleLines + (extra ? 0.8 + 3.4 * extra : 0);
 }
 
 export function renderCommitmentHTML(input: CommitmentInput): string {
+  return renderCommitmentDocument([input]);
+}
+
+// Several faculty letters in one document (Print page). One letterhead background, set once in CSS.
+export function renderCommitmentDocument(inputs: CommitmentInput[]): string {
   const background = getBackgroundDataUri();
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>${commitmentCss(background)}</style>
+</head>
+<body>${inputs.map(commitmentPages).join('')}</body>
+</html>`;
+}
+
+function commitmentPages(input: CommitmentInput): string {
   const today = new Date().toLocaleDateString('en-GB');
 
   // One page per session. A session with many topics continues on extra pages
@@ -111,7 +140,7 @@ export function renderCommitmentHTML(input: CommitmentInput): string {
     const tableFor = (list: typeof sorted) => {
       const rows = list.map((topic) => `
         <tr>
-          <td>${escapeHtml(topic.topic_title)}${(topic.speakers || []).length ? `<div class="speakers">Speakers: ${escapeHtml(topic.speakers!.join(', '))}</div>` : ''}</td>
+          <td>${escapeHtml(topic.topic_title)}${(topic.speakers || []).length ? `<div class="speakers">Speakers: ${escapeHtml(topic.speakers!.join(', '))}</div>` : ''}${panelLines(topic.panel).map((l) => `<div class="speakers">${escapeHtml(l)}</div>`).join('')}</td>
           ${showRole ? `<td class="role">${escapeHtml(topic.role || 'Faculty')}</td>` : ''}
           <td class="timing">${formatTime(topic.start_time)} &ndash; ${formatTime(topic.end_time)}</td>
         </tr>`).join('');
@@ -181,11 +210,11 @@ export function renderCommitmentHTML(input: CommitmentInput): string {
     });
   });
 
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8"/>
-<style>
+  return pages.join('');
+}
+
+function commitmentCss(background: string): string {
+  return `
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -210,8 +239,5 @@ export function renderCommitmentHTML(input: CommitmentInput): string {
   .signature p { margin-bottom: 1mm; }
   .signature-row { display: grid; grid-template-columns: 47mm 1fr; }
   a { color: #0b57d0; text-decoration: underline; font-weight: bold; }
-</style>
-</head>
-<body>${pages.join('')}</body>
-</html>`;
+`;
 }

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import NavLinks from "./components/NavLinks";
+import DemoToggle from "./components/DemoToggle";
+import { MODE_COOKIE } from "./lib/mode";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,11 +25,12 @@ export const metadata: Metadata = {
   description: "Automated system for scientific commitments",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const mode = (await cookies()).get(MODE_COOKIE)?.value === "demo" ? "demo" : "live";
   return (
     <html lang="en">
       <body
@@ -44,11 +48,17 @@ export default function RootLayout({
             href="/sessions"
             className="shrink-0 text-[15px] font-semibold tracking-[0.12em] text-white"
           >
-            DERMACON <span className="text-indigo-300">2028</span>
+            CON <span className="text-indigo-300">2028</span>
           </Link>
           <NavLinks />
+          <DemoToggle mode={mode} />
         </header>
-        <div className="pt-14">{children}</div>
+        {mode === "demo" && (
+          <div className="fixed inset-x-0 top-14 z-40 bg-amber-400 py-0.5 text-center text-[11px] font-semibold tracking-wide text-slate-900">
+            DEMO MODE — sample data only. Changes here are saved separately and never touch your real data.
+          </div>
+        )}
+        <div className={mode === "demo" ? "pt-[4.5rem]" : "pt-14"}>{children}</div>
       </body>
     </html>
   );

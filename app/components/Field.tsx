@@ -6,6 +6,10 @@ import { useId, type ReactNode } from 'react';
 export const inputCls =
   'block h-11 w-full rounded-lg border border-field bg-white px-3 text-sm text-ink placeholder:text-muted disabled:bg-slate-50 disabled:text-muted';
 
+/** Compact version: 36px tall, for dense dialogs */
+export const inputCompactCls =
+  'block h-9 w-full rounded-lg border border-field bg-white px-3 text-sm text-ink placeholder:text-muted disabled:bg-slate-50 disabled:text-muted';
+
 type ControlProps = {
   id: string;
   required?: boolean;
@@ -21,6 +25,7 @@ export default function Field({
   required,
   hint,
   srOnlyLabel,
+  compact,
   className = '',
   children,
 }: {
@@ -28,6 +33,7 @@ export default function Field({
   required?: boolean;
   hint?: string;
   srOnlyLabel?: boolean;
+  compact?: boolean;
   className?: string;
   children: (p: ControlProps) => ReactNode;
 }) {
@@ -37,10 +43,10 @@ export default function Field({
     <div className={className}>
       <label
         htmlFor={id}
-        className={srOnlyLabel ? 'sr-only' : 'mb-1.5 block text-sm font-medium text-ink'}
+        className={srOnlyLabel ? 'sr-only' : compact ? 'mb-1 block text-xs font-medium text-ink' : 'mb-1.5 block text-sm font-medium text-ink'}
       >
         {label}
-        {required && <span className="font-normal text-muted"> (required)</span>}
+        {required && <span className="font-normal text-muted">{compact ? ' *' : ' (required)'}</span>}
       </label>
       {children({ id, required, 'aria-describedby': hintId })}
       {hint && (

@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS faculty_topics (
   role TEXT DEFAULT 'Faculty',
   confirmed BOOLEAN NOT NULL DEFAULT false,
   confirmed_at TIMESTAMPTZ,
+  sort_order INTEGER,
   PRIMARY KEY (faculty_id, topic_id)
 );
 
@@ -79,3 +80,14 @@ GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT SELECT ON faculty_topic_counts TO anon, authenticated, service_role;
+
+-- Chairpersons for a whole session (see scripts/add_session_chairs.sql)
+CREATE TABLE IF NOT EXISTS session_chairs (
+  session_id UUID REFERENCES conference_sessions(id) ON DELETE CASCADE,
+  faculty_id UUID REFERENCES faculty(id) ON DELETE CASCADE,
+  sort_order INTEGER,
+  confirmed BOOLEAN NOT NULL DEFAULT false,
+  confirmed_at TIMESTAMPTZ,
+  PRIMARY KEY (session_id, faculty_id)
+);
+ALTER TABLE session_chairs DISABLE ROW LEVEL SECURITY;

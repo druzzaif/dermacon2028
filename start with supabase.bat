@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 title DERMACON 2028 - Server
 color 0A
 echo =======================================================
@@ -9,5 +10,6 @@ echo [1/2] Starting Local Database (Docker)...
 call npx supabase start
 echo.
 echo [2/2] Starting Website (Next.js)...
-start http://localhost:3000
+
 npm run dev
+start http://localhost:3000

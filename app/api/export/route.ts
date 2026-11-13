@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/app/supabase';
+import { supabase } from '@/app/supabaseServer';
 import * as XLSX from 'xlsx';
+import { sortTopicPeople, roleName } from '@/app/lib/topicPeople';
 
 export async function GET() {
   try {
@@ -8,7 +9,7 @@ export async function GET() {
     const { data: topics } = await supabase.from('session_topics').select(`
       *,
       conference_sessions ( session_code, session_name, session_date, hall ),
-      faculty_topics ( role, faculty ( canonical_name, email ) )
+      faculty_topics ( role, sort_order, faculty ( canonical_name, email ) )
     `);
 
     const wb = XLSX.utils.book_new();
@@ -29,20 +30,20 @@ export async function GET() {
     const scheduleData: any[] = [];
     topics?.forEach(t => {
       const session = t.conference_sessions as any;
-      const ftList = t.faculty_topics || [];
+      const ftList = sortTopicPeople(t.faculty_topics || []);
       
       if (ftList.length === 0) {
         scheduleData.push({
-          'Session': session?.session_code, 'Date': session?.session_date, 'Hall': session?.hall,
+          'Session': session?.session_code, 'Session Name': session?.session_name, 'Date': session?.session_date, 'Hall': session?.hall,
           'Seq': t.sequence_no, 'Time': `${t.start_time} - ${t.end_time}`, 'Topic': t.topic_title,
           'Faculty': 'Unassigned', 'Email': '', 'Role': ''
         });
       } else {
         ftList.forEach((ft: any) => {
           scheduleData.push({
-            'Session': session?.session_code, 'Date': session?.session_date, 'Hall': session?.hall,
+            'Session': session?.session_code, 'Session Name': session?.session_name, 'Date': session?.session_date, 'Hall': session?.hall,
             'Seq': t.sequence_no, 'Time': `${t.start_time} - ${t.end_time}`, 'Topic': t.topic_title,
-            'Faculty': ft.faculty?.canonical_name, 'Email': ft.faculty?.email, 'Role': ft.role
+            'Faculty': ft.faculty?.canonical_name, 'Email': ft.faculty?.email, 'Role': roleName(ft.role)
           });
         });
       }

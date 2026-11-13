@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
-import { syncFromGoogle, getLastSync } from '../actions';
+import { syncFromGoogle, getLastSync, getQueuedRemovalCount } from '../actions';
 
 function whenLabel(iso: string | null) {
   if (!iso) return 'never';
@@ -20,8 +20,10 @@ export default function SyncButton({ onSynced, className = '' }: { onSynced?: ()
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<any | null>(null);
   const [last, setLast] = useState<string | null>(null);
+  const [queued, setQueued] = useState(0);
 
   useEffect(() => { getLastSync().then(setLast).catch(() => {}); }, []);
+  useEffect(() => { if (open && !result) getQueuedRemovalCount().then(setQueued).catch(() => {}); }, [open, result]);
 
   async function run() {
     setBusy(true);
@@ -74,9 +76,14 @@ export default function SyncButton({ onSynced, className = '' }: { onSynced?: ()
             <div className="space-y-3 text-sm text-ink">
               <p className="font-semibold">This is what will happen:</p>
               <ol className="list-decimal space-y-1.5 pl-5 text-ink-2">
-                <li>The app asks your Google Script for the list of topics faculty have confirmed (read only).</li>
-                <li>Those topics are marked <strong>Confirmed</strong> in your database.</li>
-                <li><strong>No emails are sent</strong> and nothing is changed in Google.</li>
+                {queued > 0 && (
+                  <li>
+                    <strong>{queued} confirmation{queued === 1 ? '' : 's'} you removed</strong> in the app {queued === 1 ? 'is' : 'are'} deleted from the Google sheet (one call).
+                  </li>
+                )}
+                <li>The app asks your Google Script for the list of topics faculty have confirmed.</li>
+                <li>Those topics are marked <strong>Confirmed</strong> in your database. Topics whose faculty later declined go back to unconfirmed.</li>
+                <li><strong>No emails are sent</strong>{queued > 0 ? '.' : ' and nothing is changed in Google.'}</li>
               </ol>
               <p className="text-muted">Last synced: {whenLabel(last)}</p>
             </div>
@@ -86,8 +93,13 @@ export default function SyncButton({ onSynced, className = '' }: { onSynced?: ()
           )}
           {result?.success && (
             <div role="status" className="space-y-3 text-sm">
+              {result.pushedRemovals > 0 && (
+                <p className="text-ink-2">
+                  {result.pushedRemovals} removed confirmation{result.pushedRemovals === 1 ? '' : 's'} sent to Google.
+                </p>
+              )}
               <p className="font-semibold text-ink">
-                {result.count === 0 ? 'Nothing new. You are up to date.' : `${result.count} new topic confirmation${result.count === 1 ? '' : 's'}`}
+                {result.count === 0 && !result.revokedCount ? 'Nothing new. You are up to date.' : result.count === 0 ? 'No new confirmations' : `${result.count} new topic confirmation${result.count === 1 ? '' : 's'}`}
               </p>
               {result.groups.length > 0 && (
                 <ul className="space-y-2">
@@ -100,6 +112,23 @@ export default function SyncButton({ onSynced, className = '' }: { onSynced?: ()
                     </li>
                   ))}
                 </ul>
+              )}
+              {result.revokedCount > 0 && (
+                <>
+                  <p className="font-semibold text-red-800">
+                    {result.revokedCount} topic{result.revokedCount === 1 ? '' : 's'} un-confirmed (faculty declined)
+                  </p>
+                  <ul className="space-y-2">
+                    {result.revoked.map((g: any, i: number) => (
+                      <li key={i} className="rounded-lg border border-red-200 bg-red-50 p-3">
+                        <p className="font-medium text-ink">{g.name}</p>
+                        <ul className="mt-1 list-disc pl-5 text-ink-2">
+                          {g.topics.map((t: string, j: number) => <li key={j}>{t}</li>)}
+                        </ul>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
             </div>
           )}

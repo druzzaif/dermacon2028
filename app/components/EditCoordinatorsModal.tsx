@@ -60,16 +60,26 @@ export default function EditCoordinatorsModal({
     setCoordinators(coordinators.filter(c => c.faculty_id !== faculty_id));
   }
 
+  function moveCoordinator(index: number, dir: -1 | 1) {
+    const target = index + dir;
+    if (target < 0 || target >= coordinators.length) return;
+    const next = [...coordinators];
+    [next[index], next[target]] = [next[target], next[index]];
+    setCoordinators(next);
+  }
+
   async function handleSave() {
     setIsSaving(true);
 
     await supabase.from('session_coordinators').delete().eq('session_id', session.id);
 
     if (coordinators.length > 0) {
-      const payload = coordinators.map(c => ({
+      // coord_id stores the order the lead coordinator arranged (1, 2, 3 …)
+      const payload = coordinators.map((c, i) => ({
         session_id: session.id,
         faculty_id: c.faculty.id || c.faculty_id,
-        role: c.role
+        role: c.role,
+        coord_id: i + 1
       }));
 
       const { error } = await supabase.from('session_coordinators').insert(payload);
@@ -113,13 +123,22 @@ export default function EditCoordinatorsModal({
               <div className="space-y-2">
                 {coordinators.map((c, i) => (
                   <div key={i} className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                    <div>
-                      <div className="font-semibold text-blue-900">{c.faculty?.canonical_name}</div>
-                      <div className="text-xs font-bold text-blue-700 bg-blue-200 px-2 py-0.5 rounded inline-block mt-1 uppercase">{c.role}</div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 text-center text-sm font-bold text-blue-700">{i + 1}</span>
+                      <div>
+                        <div className="font-semibold text-blue-900">{c.faculty?.canonical_name}</div>
+                        <div className="text-xs font-bold text-blue-700 bg-blue-200 px-2 py-0.5 rounded inline-block mt-1 uppercase">{c.role}</div>
+                      </div>
                     </div>
-                    <button onClick={() => handleRemoveCoordinator(c.faculty_id || c.faculty.id)} className="text-sm text-red-600 hover:underline font-medium">
-                      Remove
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button type="button" onClick={() => moveCoordinator(i, -1)} disabled={i === 0} title="Move up"
+                        className="px-2 py-1 rounded border border-blue-200 bg-white text-blue-700 hover:bg-blue-100 disabled:opacity-30">▲</button>
+                      <button type="button" onClick={() => moveCoordinator(i, 1)} disabled={i === coordinators.length - 1} title="Move down"
+                        className="px-2 py-1 rounded border border-blue-200 bg-white text-blue-700 hover:bg-blue-100 disabled:opacity-30">▼</button>
+                      <button onClick={() => handleRemoveCoordinator(c.faculty_id || c.faculty.id)} className="text-sm text-red-600 hover:underline font-medium ml-1">
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

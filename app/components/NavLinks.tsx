@@ -8,6 +8,7 @@ const links = [
   { href: '/sessions', label: 'Sessions' },
   { href: '/overlaps', label: 'Overlaps' },
   { href: '/missing', label: 'Missing data' },
+  { href: '/print', label: 'Print' },
   { href: '/emails', label: 'Emails' },
   { href: '/backup', label: 'Backup' },
 ];

@@ -11,8 +11,12 @@
         "fix:null-times": "node scripts/fix_null_times.mjs",
         "fix:null-times:dry": "node scripts/fix_null_times.mjs --dry",
         "resequence:all": "node scripts/task7_resequence_all.mjs",
-        "seed:local": "node scripts/seed-local.mjs",
-        "seed:local:apply": "node scripts/seed-local.mjs --force"
+        "seed:local": "node scripts/seed-local.mjs --dataset=dummy",
+        "seed:local:apply": "node scripts/seed-local.mjs --dataset=dummy --force",
+        "seed:local:original": "node scripts/seed-local.mjs --dataset=original",
+        "seed:local:original:apply": "node scripts/seed-local.mjs --dataset=original --force",
+        "demo:setup": "node scripts/setup-demo-schema.mjs",
+        "demo:reset": "node scripts/seed-local.mjs --dataset=dummy --schema=demo --force"
     },
     "dependencies": {
         "@react-pdf/renderer": "^4.9.0",

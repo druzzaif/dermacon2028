@@ -4,12 +4,16 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../supabase';
 import { generatePDFData, generatePDFForSession } from '../actions';
 import Modal from './Modal';
-import Field, { inputCls } from './Field';
+import Field, { inputCompactCls } from './Field';
 import { AlertIcon, CheckIcon } from './Icons';
-import TimeField, { DurationNote } from './TimeField';
-import { addMinutes, formatTime12 as formatTimeAmPm, toMinutes } from '../lib/time';
+import { TimeRange } from './TimeField';
+import { addMinutes, formatTime12 as formatTimeAmPm } from '../lib/time';
 
 // The topic is the main thing in this form: bigger, easy-to-read text
+const smallLinkBtn =
+  'inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-red-700 hover:bg-red-50';
+const titleCls =
+  'block w-full resize-none rounded-lg border border-field bg-white px-3 py-1.5 text-sm font-medium leading-snug text-ink placeholder:font-normal placeholder:text-muted';
 export const topicTitleCls =
   'block w-full resize-y rounded-lg border border-field bg-white px-3.5 py-2.5 text-base font-medium leading-snug text-ink placeholder:font-normal placeholder:text-muted';
 
@@ -103,14 +107,6 @@ export default function AddTopicModal({
   const [timeTouched, setTimeTouched] = useState(false);
   const [suggestedAfter, setSuggestedAfter] = useState<number | null>(null);
 
-  // Changing the start moves the end with it, keeping the same length
-  function handleStartChange(v: string) {
-    setTimeTouched(true);
-    const len = (toMinutes(newEnd) ?? 0) - (toMinutes(newStart) ?? 0);
-    setNewStart(v);
-    if (v) setNewEnd(addMinutes(v, len > 0 ? len : 10));
-  }
-
   useEffect(() => {
     async function loadSessionTopics() {
       const { data } = await supabase
@@ -180,7 +176,22 @@ export default function AddTopicModal({
   }
 
   function updateRole(id: string, role: string) {
-    setFacultyLinks(facultyLinks.map((l) => (l.faculty_id === id ? { ...l, role } : l)));
+    const updated = facultyLinks.map((l) => (l.faculty_id === id ? { ...l, role } : l));
+    // A moderator goes to the top of the list (you can still move them)
+    if (role === 'Moderator') {
+      const mod = updated.find((l) => l.faculty_id === id)!;
+      setFacultyLinks([mod, ...updated.filter((l) => l.faculty_id !== id)]);
+    } else {
+      setFacultyLinks(updated);
+    }
+  }
+
+  function moveFaculty(index: number, dir: -1 | 1) {
+    const target = index + dir;
+    if (target < 0 || target >= facultyLinks.length) return;
+    const next = [...facultyLinks];
+    [next[index], next[target]] = [next[target], next[index]];
+    setFacultyLinks(next);
   }
 
   async function handleAddNewFaculty() {
@@ -370,10 +381,11 @@ export default function AddTopicModal({
 
     // 3. Link Faculty
     if (facultyLinks.length > 0 && newTopic) {
-      const payload = facultyLinks.map((l) => ({
+      const payload = facultyLinks.map((l, i) => ({
         topic_id: newTopic.id,
         faculty_id: l.faculty_id,
         role: l.role,
+        sort_order: i + 1,
       }));
       const { error: linkError } = await supabase.from('faculty_topics').insert(payload);
       if (linkError) {
@@ -404,9 +416,9 @@ setShowSuccessPrompt(true);
   }
 
   const secondaryBtn =
-    'inline-flex h-11 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
+    'inline-flex h-10 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
   const primaryBtn =
-    'inline-flex h-11 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
+    'inline-flex h-10 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
 
   if (showSuccessPrompt) {
     return (
@@ -477,6 +489,8 @@ setShowSuccessPrompt(true);
     <Modal
       title="Add topic"
       subtitle={`${session.session_code} – ${session.session_name}`}
+      size="xl"
+      dense
       onClose={onClose}
       busy={isSaving}
       footer={
@@ -491,42 +505,155 @@ setShowSuccessPrompt(true);
         </>
       }
     >
-      <form id="add-topic-form" onSubmit={handleSubmit} className="space-y-6">
-        <Field label="Topic" required>
+      <form id="add-topic-form" onSubmit={handleSubmit} className="space-y-3">
+        <Field label="Topic" required compact>
           {(p) => (
             <textarea
               {...p}
               rows={2}
               value={topicTitle}
               onChange={(e) => setTopicTitle(e.target.value)}
-              className={topicTitleCls}
+              className={titleCls}
               placeholder="e.g. Upper face anatomy and injection points"
             />
           )}
         </Field>
 
-        <section aria-label="Time" className="rounded-xl border border-line bg-canvas p-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TimeField
-              label="Start time"
-              required
-              value={newStart}
-              onChange={handleStartChange}
-              hint={!timeTouched && suggestedAfter != null ? `Right after topic No. ${suggestedAfter}.` : undefined}
+        <div className="grid gap-4 md:grid-cols-[16.5rem_1fr]">
+          {/* Left: time. Setting the start moves the end; the Minutes box sets the length. */}
+          <section aria-label="Time" className="h-fit rounded-xl border border-line bg-canvas p-3">
+            <TimeRange
+              layout="stack"
+              start={newStart}
+              end={newEnd}
+              onStart={(v) => { setTimeTouched(true); setNewStart(v); }}
+              onEnd={(v) => { setTimeTouched(true); setNewEnd(v); }}
+              defaultMinutes={10}
             />
-            <TimeField
-              label="End time"
-              required
-              value={newEnd}
-              onChange={(v) => { setTimeTouched(true); setNewEnd(v); }}
-              hint="Moves with the start time."
-            />
-          </div>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
-            <DurationNote start={newStart} end={newEnd} />
-            <p className="text-xs text-muted">The running-order number is set from the start time.</p>
-          </div>
-        </section>
+            {!timeTouched && suggestedAfter != null && (
+              <p className="mt-2 text-xs text-muted">Starts right after topic No. {suggestedAfter}.</p>
+            )}
+          </section>
+
+          {/* Right: faculty and chairpersons. Search is at the top so its results are easy to see. */}
+          <section aria-label="Faculty on this topic" className="min-w-0">
+            <div className="mb-1.5 flex items-center justify-between gap-3">
+              <h3 className="text-xs font-medium text-ink">Faculty and chairpersons</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddNew(!showAddNew)}
+                aria-expanded={showAddNew}
+                className="inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-accent hover:bg-accent-tint"
+              >
+                {showAddNew ? 'Hide new faculty form' : 'Add new faculty'}
+              </button>
+            </div>
+
+            {showAddNew && (
+              <div className="mb-2 space-y-2 rounded-xl bg-accent-tint p-3">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <Field label="Full name" required compact>
+                    {(p) => <input {...p} placeholder="e.g. Dr. Jane Doe" value={newName} onChange={(e) => setNewName(e.target.value)} className={inputCompactCls} />}
+                  </Field>
+                  <Field label="Email (optional)" compact>
+                    {(p) => <input {...p} type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className={inputCompactCls} />}
+                  </Field>
+                  <Field label="Phone (optional)" compact>
+                    {(p) => <input {...p} type="tel" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} className={inputCompactCls} />}
+                  </Field>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={() => setShowAddNew(false)} className={secondaryBtn}>Cancel</button>
+                  <button type="button" onClick={handleAddNewFaculty} disabled={addingFaculty} className={primaryBtn}>
+                    {addingFaculty ? 'Adding…' : 'Add and attach'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <Field label="Search faculty by name or email" srOnlyLabel>
+              {(p) => (
+                <input
+                  {...p}
+                  type="search"
+                  placeholder="Search by name or email to add"
+                  value={searchFaculty}
+                  onChange={(e) => setSearchFaculty(e.target.value)}
+                  className={inputCompactCls}
+                />
+              )}
+            </Field>
+            {searchFaculty.length > 0 && (
+              <div className="mt-1 max-h-52 overflow-y-auto rounded-xl border border-line bg-white shadow-card">
+                {filteredFaculty.length === 0 ? (
+                  <p className="p-2.5 text-sm text-ink-2">No faculty found.</p>
+                ) : (
+                  <ul>
+                    {filteredFaculty.map((f) => (
+                      <li key={f.id}>
+                        <button
+                          type="button"
+                          onClick={() => addFaculty(f)}
+                          className="block w-full border-b border-line px-3 py-1.5 text-left last:border-b-0 hover:bg-accent-tint"
+                        >
+                          <span className="text-sm font-medium text-ink">{f.canonical_name}</span>
+                          <span className="ml-2 text-xs text-muted">{f.email || '—'}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {facultyLinks.length > 0 ? (
+              <ul className="mt-2 space-y-1.5" aria-label="Faculty on this topic">
+                {facultyLinks.map((l, i) => (
+                  <li key={l.faculty_id} className="flex items-center gap-2 rounded-lg border border-line bg-white py-1.5 pl-2 pr-1.5">
+                    <div className="flex shrink-0 flex-col">
+                      <button type="button" onClick={() => moveFaculty(i, -1)} disabled={i === 0} title="Move up" aria-label="Move up"
+                        className="px-1 text-xs leading-none text-accent disabled:opacity-25">▲</button>
+                      <button type="button" onClick={() => moveFaculty(i, 1)} disabled={i === facultyLinks.length - 1} title="Move down" aria-label="Move down"
+                        className="px-1 text-xs leading-none text-accent disabled:opacity-25">▼</button>
+                    </div>
+                    <span className="w-5 shrink-0 text-center text-sm font-semibold text-ink-2">{i + 1}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate text-sm font-medium text-ink">{l.faculty.canonical_name}</span>
+                      </div>
+                      <div className="truncate text-xs text-muted">{l.faculty.email || '—'}</div>
+                    </div>
+                    <label className="sr-only" htmlFor={`erole-${l.faculty_id}`}>Role for {l.faculty.canonical_name}</label>
+                    <select
+                      id={`erole-${l.faculty_id}`}
+                      value={l.role}
+                      onChange={(e) => updateRole(l.faculty_id, e.target.value)}
+                      className="h-8 w-auto rounded-lg border border-field bg-white px-2 text-sm text-ink"
+                    >
+                      <option value="Faculty">Faculty</option>
+                      <option value="Chairperson">Chairperson</option>
+                      <option value="Panel">Panel</option>
+                      <option value="Debater">Debater</option>
+                      <option value="Moderator">Moderator</option>
+                      <option value="Coordinator">Coordinator</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => removeFaculty(l.faculty_id)}
+                      aria-label={`Remove ${l.faculty.canonical_name}`}
+                      className={smallLinkBtn}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm italic text-muted">No one on this topic yet.</p>
+            )}
+          </section>
+        </div>
+
         {!overlapBlocked && topicOverlaps.length > 0 && (
           <div role="status" aria-live="polite" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
             <p className="flex items-center gap-2 font-semibold">
@@ -536,114 +663,6 @@ setShowSuccessPrompt(true);
             <p className="mt-1">You can still save, and you’ll be asked to confirm.</p>
           </div>
         )}
-
-        <div className="border-t border-line pt-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-medium text-ink">Assign faculty</h3>
-            <button
-              type="button"
-              onClick={() => setShowAddNew(!showAddNew)}
-              aria-expanded={showAddNew}
-              aria-controls="add-new-faculty"
-              className="inline-flex h-11 items-center rounded-lg px-3 text-sm font-medium text-accent hover:bg-accent-tint"
-            >
-              {showAddNew ? 'Hide new faculty form' : 'Add new faculty'}
-            </button>
-          </div>
-
-          {showAddNew && (
-            <div id="add-new-faculty" className="mb-4 space-y-3 rounded-xl bg-accent-tint p-4">
-              <Field label="Full name" required>
-                {(p) => (
-                  <input {...p} placeholder="e.g. Dr. Jane Doe" value={newName} onChange={(e) => setNewName(e.target.value)} className={inputCls} />
-                )}
-              </Field>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Email (optional)">
-                  {(p) => <input {...p} type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className={inputCls} />}
-                </Field>
-                <Field label="Phone (optional)">
-                  {(p) => <input {...p} type="tel" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} className={inputCls} />}
-                </Field>
-              </div>
-              <div className="flex justify-end gap-2">
-                <button type="button" onClick={() => setShowAddNew(false)} className={secondaryBtn}>Cancel</button>
-                <button type="button" onClick={handleAddNewFaculty} disabled={addingFaculty} className={primaryBtn}>
-                  {addingFaculty ? 'Adding…' : 'Add and attach'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {facultyLinks.length > 0 && (
-            <ul className="mb-4 space-y-2" aria-label="Assigned faculty">
-              {facultyLinks.map((l) => (
-                <li key={l.faculty_id} className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-white p-2.5 pl-3.5">
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium text-ink">{l.faculty.canonical_name}</div>
-                    <div className="truncate text-xs text-muted">{l.faculty.email || '—'}</div>
-                  </div>
-                  <label className="sr-only" htmlFor={`role-${l.faculty_id}`}>Role for {l.faculty.canonical_name}</label>
-                  <select
-                    id={`role-${l.faculty_id}`}
-                    value={l.role}
-                    onChange={(e) => updateRole(l.faculty_id, e.target.value)}
-                    className={`${inputCls} w-auto`}
-                  >
-                    <option value="Faculty">Faculty</option>
-                    <option value="Panel">Panel</option>
-                    <option value="Moderator">Moderator</option>
-                    <option value="Coordinator">Coordinator</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => removeFaculty(l.faculty_id)}
-                    aria-label={`Remove ${l.faculty.canonical_name}`}
-                    className="inline-flex h-11 items-center rounded-lg px-3 text-sm font-medium text-red-700 hover:bg-red-50"
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <Field label="Search faculty by name or email" srOnlyLabel>
-            {(p) => (
-              <input
-                {...p}
-                type="search"
-                placeholder="Search by name or email to add faculty"
-                value={searchFaculty}
-                onChange={(e) => setSearchFaculty(e.target.value)}
-                className={inputCls}
-              />
-            )}
-          </Field>
-          {searchFaculty.length > 0 && (
-            <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-line bg-white shadow-card">
-              <p role="status" className="sr-only">{filteredFaculty.length} results</p>
-              {filteredFaculty.length === 0 ? (
-                <p className="p-3 text-sm text-ink-2">No faculty found.</p>
-              ) : (
-                <ul>
-                  {filteredFaculty.map((f) => (
-                    <li key={f.id}>
-                      <button
-                        type="button"
-                        onClick={() => addFaculty(f)}
-                        className="block min-h-11 w-full border-b border-line px-3.5 py-2 text-left last:border-b-0 hover:bg-accent-tint"
-                      >
-                        <div className="text-sm font-medium text-ink">{f.canonical_name}</div>
-                        <div className="text-xs text-muted">{f.email || '—'}</div>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
 
         {(conflicts.length > 0 || (overlapBlocked && topicOverlaps.length > 0)) && (
           <div role="alert" className="space-y-3 rounded-xl border border-red-300 bg-red-50 p-4">

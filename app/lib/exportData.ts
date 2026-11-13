@@ -1,5 +1,7 @@
 import * as XLSX from 'xlsx';
-import { supabase } from '../supabase';
+import { supabase } from '../supabaseServer';
+import { sortCoordinators } from './coordOrder';
+import { sortTopicPeople, panelGroups, roleName } from './topicPeople';
 
 // Reads every row (PostgREST caps a single request at 1000 rows)
 async function fetchAll(table: string, select: string, order?: string): Promise<any[]> {
@@ -42,13 +44,16 @@ function sheet(wb: XLSX.WorkBook, name: string, rows: any[], empty: string) {
 }
 
 export async function buildBackupWorkbook() {
-  const [faculty, sessions, topics, ft, coords] = await Promise.all([
+  const [faculty, sessions, topics, ft, coords, sessionChairs] = await Promise.all([
     fetchAll('faculty', '*', 'canonical_name'),
     fetchAll('conference_sessions', '*', 'session_date'),
     fetchAll('session_topics', '*', 'id'),
     fetchAll('faculty_topics', '*'),
     fetchAll('session_coordinators', '*'),
+    fetchAll('session_chairs', '*'),
   ]);
+  const chairsOf = (sid: string) =>
+    sessionChairs.filter((c) => c.session_id === sid).sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
   const fById = new Map(faculty.map((f) => [f.id, f]));
   const sById = new Map(sessions.map((s) => [s.id, s]));
   const tById = new Map(topics.map((t) => [t.id, t]));
@@ -86,18 +91,25 @@ export async function buildBackupWorkbook() {
     Code: s.session_code, Name: s.session_name, Type: s.session_type || '', Date: s.session_date || '',
     Start: t5(s.start_time), End: t5(s.end_time), Hall: s.hall || '',
     Topics: topics.filter((t) => t.session_id === s.id).length,
-    Coordinators: coords.filter((c) => c.session_id === s.id && !isTbd(fById.get(c.faculty_id)))
-      .map((c) => `${fById.get(c.faculty_id)?.canonical_name} (${c.role})`).join('; '),
+    'Session chairpersons': chairsOf(s.id).map((c, i) => `${i + 1}. ${fById.get(c.faculty_id)?.canonical_name}`).join('; '),
+    Coordinators: sortCoordinators(coords.filter((c) => c.session_id === s.id && !isTbd(fById.get(c.faculty_id))))
+      .map((c, i) => `${i + 1}. ${fById.get(c.faculty_id)?.canonical_name} (${c.role})`).join('; '),
   })), 'No sessions');
 
   const topicRows = topics.map((t) => {
     const s = sById.get(t.session_id);
-    const sp = speakers.filter((r) => r.topic_id === t.id).map((r) => `${fById.get(r.faculty_id)?.canonical_name} (${r.role || 'Speaker'})`);
+    // In the order arranged on the topic; moderator / panelists / debaters get their own columns
+    const people = sortTopicPeople(speakers.filter((r) => r.topic_id === t.id));
+    const num = (a: string[]) => (a.length > 1 ? a.map((n, i) => `${i + 1}. ${n}`) : a);
+    const sp = num(people.filter((r) => !['Moderator', 'Panel', 'Panelist', 'Debater'].includes(r.role))
+      .map((r) => `${fById.get(r.faculty_id)?.canonical_name}${r.role && r.role !== 'Faculty' ? ` (${roleName(r.role)})` : ''}`));
+    const pg = panelGroups(people.map((r) => ({ role: r.role, sort_order: r.sort_order, name: fById.get(r.faculty_id)?.canonical_name || '' })));
     const ch = chairs.filter((r) => r.topic_id === t.id).map((r) => fById.get(r.faculty_id)?.canonical_name);
     return {
-      Session: s?.session_code || '', Date: s?.session_date || '', Hall: s?.hall || '', '#': t.sequence_no ?? '',
+      Session: s?.session_code || '', 'Session name': s?.session_name || '', Date: s?.session_date || '', Hall: s?.hall || '', '#': t.sequence_no ?? '',
       Start: t5(t.start_time), End: t5(t.end_time), Topic: t.topic_title,
-      Speakers: sp.join('; '), Chairpersons: ch.join('; '),
+      Speakers: sp.join('; '), Moderator: pg.moderators.join('; '), Panelists: num(pg.panelists).join('; '),
+      Debaters: num(pg.debaters).join('; '), Chairpersons: ch.join('; '),
     };
   }).sort((a, b) => (a.Date + a.Session + String(a['#']).padStart(4, '0')).localeCompare(b.Date + b.Session + String(b['#']).padStart(4, '0')));
   sheet(wb, 'Topics', topicRows, 'No topics');
@@ -105,42 +117,50 @@ export async function buildBackupWorkbook() {
   sheet(wb, 'Faculty-Topics', ft.map((r) => {
     const t = tById.get(r.topic_id); const s = t ? sById.get(t.session_id) : null;
     return {
-      Faculty: fById.get(r.faculty_id)?.canonical_name || '', Role: r.role || 'Speaker',
-      Session: s?.session_code || '', Topic: t?.topic_title || '', Date: s?.session_date || '',
+      Faculty: fById.get(r.faculty_id)?.canonical_name || '', Role: roleName(r.role), 'Order on topic': r.sort_order ?? '',
+      Session: s?.session_code || '', 'Session name': s?.session_name || '', Topic: t?.topic_title || '', Date: s?.session_date || '',
       Start: t5(t?.start_time), End: t5(t?.end_time),
       Confirmed: r.confirmed ? 'Yes' : 'No', 'Confirmed at': fmtDT(r.confirmed_at),
     };
   }).sort((a, b) => a.Faculty.localeCompare(b.Faculty)), 'No assignments');
 
-  sheet(wb, 'Chairpersons', chairs.map((r) => {
+  // Chairpersons of a whole session come first, marked "Whole session"; then the topic chairs
+  const wholeSession = sessions.flatMap((s) => chairsOf(s.id).map((c, i) => ({
+    Chairperson: fById.get(c.faculty_id)?.canonical_name || '', Session: s.session_code || '', 'Session name': s.session_name || '',
+    Topic: `Whole session (${i + 1})`, Date: s.session_date || '', Start: t5(s.start_time), End: t5(s.end_time), Confirmed: '',
+  })));
+  sheet(wb, 'Chairpersons', [...wholeSession, ...chairs.map((r) => {
     const t = tById.get(r.topic_id); const s = t ? sById.get(t.session_id) : null;
     return {
-      Chairperson: fById.get(r.faculty_id)?.canonical_name || '', Session: s?.session_code || '',
+      Chairperson: fById.get(r.faculty_id)?.canonical_name || '', Session: s?.session_code || '', 'Session name': s?.session_name || '',
       Topic: t?.topic_title || '', Date: s?.session_date || '', Start: t5(t?.start_time), End: t5(t?.end_time),
       Confirmed: r.confirmed ? 'Yes' : 'No',
     };
-  }), 'No chairpersons assigned');
+  })], 'No chairpersons assigned');
 
-  sheet(wb, 'Coordinators', coords.filter((c) => !isTbd(fById.get(c.faculty_id))).map((c) => {
-    const f = fById.get(c.faculty_id); const s = sById.get(c.session_id);
-    return { Session: s?.session_code || '', 'Session name': s?.session_name || '', Role: c.role,
-      Coordinator: f?.canonical_name, Email: f?.email || '', Phone: f?.phone || '' };
-  }), 'No coordinators');
+  // Grouped by session, each session's coordinators in the order the lead coordinator arranged (No. 1, 2, 3 …)
+  const coordRows = sessions.flatMap((s) =>
+    sortCoordinators(coords.filter((c) => c.session_id === s.id && !isTbd(fById.get(c.faculty_id)))).map((c, i) => {
+      const f = fById.get(c.faculty_id);
+      return { Session: s.session_code || '', 'Session name': s.session_name || '', 'No.': i + 1, Role: c.role,
+        Coordinator: f?.canonical_name, Email: f?.email || '', Phone: f?.phone || '' };
+    }));
+  sheet(wb, 'Coordinators', coordRows, 'No coordinators');
 
   sheet(wb, 'Confirmations', confirmed.map((r) => {
     const t = tById.get(r.topic_id); const s = t ? sById.get(t.session_id) : null;
     return { Faculty: fById.get(r.faculty_id)?.canonical_name || '', Role: r.role || 'Speaker',
-      Session: s?.session_code || '', Topic: t?.topic_title || '', 'Confirmed at': fmtDT(r.confirmed_at) };
+      Session: s?.session_code || '', 'Session name': s?.session_name || '', Topic: t?.topic_title || '', 'Confirmed at': fmtDT(r.confirmed_at) };
   }), 'Nothing confirmed yet');
 
   const missing: any[] = [];
   topics.forEach((t) => {
-    if (!topicsWithSpeaker.has(t.id)) missing.push({ Session: sById.get(t.session_id)?.session_code || '', Issue: 'Topic has no speaker', Detail: t.topic_title });
+    if (!topicsWithSpeaker.has(t.id)) missing.push({ Session: sById.get(t.session_id)?.session_code || '', 'Session name': sById.get(t.session_id)?.session_name || '', Issue: 'Topic has no speaker', Detail: t.topic_title });
   });
   sessions.forEach((s) => {
-    if (!topics.some((t) => t.session_id === s.id)) missing.push({ Session: s.session_code, Issue: 'Session has no topics', Detail: s.session_name });
+    if (!topics.some((t) => t.session_id === s.id)) missing.push({ Session: s.session_code, 'Session name': s.session_name || '', Issue: 'Session has no topics', Detail: s.session_name });
     if (!coords.some((c) => c.session_id === s.id && !isTbd(fById.get(c.faculty_id))))
-      missing.push({ Session: s.session_code, Issue: 'No coordinators', Detail: s.session_name });
+      missing.push({ Session: s.session_code, 'Session name': s.session_name || '', Issue: 'No coordinators', Detail: s.session_name });
   });
   sheet(wb, 'Missing data', missing, 'Nothing missing');
 
@@ -148,7 +168,7 @@ export async function buildBackupWorkbook() {
 }
 
 const LABELS: Record<string, string> = {
-  confirmed: 'Confirmed', faculty_assigned: 'Faculty added to topic', faculty_removed: 'Faculty removed from topic',
+  confirmed: 'Confirmed', unconfirmed: 'Confirmation removed', faculty_assigned: 'Faculty added to topic', faculty_removed: 'Faculty removed from topic',
   role_changed: 'Role changed', chair_added: 'Chairperson added', chair_removed: 'Chairperson removed',
   topic_added: 'Topic added', topic_edited: 'Topic edited', topic_removed: 'Topic removed',
   session_added: 'Session added', session_edited: 'Session edited', sync: 'Synced from Google',

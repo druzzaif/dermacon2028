@@ -1,16 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { supabase } from '../supabase';
 import Modal from './Modal';
-import Field, { inputCls } from './Field';
-import TimeField, { DurationNote } from './TimeField';
+import Field, { inputCompactCls } from './Field';
+import { TimeRange } from './TimeField';
+import SessionOverlapWarning from './SessionOverlapWarning';
+import SessionChairsPicker, { logSessionChairChanges, type ChairPerson } from './SessionChairsPicker';
 import { SESSION_TYPES } from './EditSessionModal';
+import { findSessionOverlaps, type SessionOverlap } from '../lib/sessionOverlap';
 
 const secondaryBtn =
-  'inline-flex h-11 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
+  'inline-flex h-10 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
 const primaryBtn =
-  'inline-flex h-11 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
+  'inline-flex h-10 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
 
 // Creates a new row in conference_sessions. After saving, the Sessions page
 // reloads on the new session (via ?code=) so you can add topics and coordinators.
@@ -23,6 +26,8 @@ export default function AddSessionModal({
 }) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [overlaps, setOverlaps] = useState<SessionOverlap[]>([]);
+  const skipOverlapCheck = useRef(false);
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [type, setType] = useState('Workshop');
@@ -30,10 +35,12 @@ export default function AddSessionModal({
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [chairs, setChairs] = useState<ChairPerson[]>([]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setOverlaps([]);
     const c = code.trim().toUpperCase();
     if (!c) return setError('Session code is required (e.g. WS12).');
     if (!name.trim()) return setError('Enter the session name.');
@@ -51,7 +58,24 @@ export default function AddSessionModal({
     if (dupError) { setIsSaving(false); return setError(dupError.message); }
     if (existing && existing.length > 0) { setIsSaving(false); return setError(`A session with code ${c} already exists.`); }
 
-    const { error: insertError } = await supabase.from('conference_sessions').insert({
+    // Same hall + same date + overlapping time = warn. "Save anyway" skips the check once.
+    const skip = skipOverlapCheck.current;
+    skipOverlapCheck.current = false;
+    if (!skip) {
+      try {
+        const found = await findSessionOverlaps({ hall, date, start: startTime, end: endTime });
+        if (found.length > 0) {
+          setOverlaps(found);
+          setIsSaving(false);
+          return;
+        }
+      } catch (err: any) {
+        setIsSaving(false);
+        return setError(err?.message || 'Could not check for overlapping sessions.');
+      }
+    }
+
+    const { data: created, error: insertError } = await supabase.from('conference_sessions').insert({
       session_code: c,
       session_name: name.trim(),
       session_type: type,
@@ -59,17 +83,30 @@ export default function AddSessionModal({
       hall: hall.trim() || null,
       start_time: startTime,
       end_time: endTime,
-    });
+    }).select('id').single();
+    if (insertError) { setIsSaving(false); return setError(insertError.message); }
+
+    if (chairs.length > 0 && created) {
+      const { error: chairError } = await supabase.from('session_chairs')
+        .insert(chairs.map((p, i) => ({ session_id: created.id, faculty_id: p.id, sort_order: i + 1 })));
+      if (chairError) { setIsSaving(false); return setError('Session created, but the chairpersons were not saved: ' + chairError.message); }
+      await logSessionChairChanges(c, [], chairs);
+    }
     setIsSaving(false);
-    if (insertError) return setError(insertError.message);
     onSaved(c);
+  }
+
+  function saveAnyway() {
+    skipOverlapCheck.current = true;
+    setOverlaps([]);
+    (document.getElementById('add-session-form') as HTMLFormElement | null)?.requestSubmit();
   }
 
   return (
     <Modal
       title="Add session"
-      subtitle="Create a new session, then add its topics."
-      size="md"
+      size="lg"
+      dense
       onClose={onClose}
       busy={isSaving}
       footer={
@@ -81,45 +118,40 @@ export default function AddSessionModal({
         </>
       }
     >
-      <form id="add-session-form" onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
-          <Field label="Code" required>
-            {(p) => <input {...p} value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. WS12" className={`${inputCls} uppercase`} />}
+      <form id="add-session-form" onSubmit={handleSubmit} className="space-y-3">
+        <div className="grid gap-3 sm:grid-cols-[7rem_1fr]">
+          <Field label="Code" required compact>
+            {(p) => <input {...p} value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. WS12" className={`${inputCompactCls} uppercase`} />}
           </Field>
-          <Field label="Session name" required>
-            {(p) => <input {...p} value={name} onChange={(e) => setName(e.target.value)} className={`${inputCls} text-base font-medium`} />}
+          <Field label="Session name" required compact>
+            {(p) => <input {...p} value={name} onChange={(e) => setName(e.target.value)} className={`${inputCompactCls} font-medium`} />}
           </Field>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Type">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Field label="Type" compact>
             {(p) => (
-              <select {...p} value={type} onChange={(e) => setType(e.target.value)} className={inputCls}>
+              <select {...p} value={type} onChange={(e) => setType(e.target.value)} className={inputCompactCls}>
                 {SESSION_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             )}
           </Field>
-          <Field label="Hall">
-            {(p) => <input {...p} value={hall} onChange={(e) => setHall(e.target.value)} placeholder="e.g. B1" className={inputCls} />}
+          <Field label="Hall" compact>
+            {(p) => <input {...p} value={hall} onChange={(e) => setHall(e.target.value)} placeholder="e.g. B1" className={inputCompactCls} />}
           </Field>
-          <Field label="Date" required>
-            {(p) => <input {...p} type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />}
+          <Field label="Date" required compact>
+            {(p) => <input {...p} type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCompactCls} />}
           </Field>
         </div>
 
-        <section aria-label="Time" className="rounded-xl border border-line bg-canvas p-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TimeField label="Start time" required value={startTime} onChange={setStartTime} />
-            <TimeField label="End time" required value={endTime} onChange={setEndTime} />
-          </div>
-          {startTime && endTime && (
-            <div className="mt-3 border-t border-line pt-3">
-              <DurationNote start={startTime} end={endTime} />
-            </div>
-          )}
-        </section>
+        <TimeRange start={startTime} end={endTime} onStart={setStartTime} onEnd={setEndTime} defaultMinutes={60} />
 
-        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+        <SessionChairsPicker value={chairs} onChange={setChairs} />
+
+        {overlaps.length > 0 && (
+          <SessionOverlapWarning overlaps={overlaps} onBack={() => setOverlaps([])} onSaveAnyway={saveAnyway} />
+        )}
+        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-sm text-red-800">{error}</p>}
       </form>
     </Modal>
   );

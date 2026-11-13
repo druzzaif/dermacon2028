@@ -2,15 +2,19 @@
 import { resequenceSession, deleteTopic } from '../actions';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
-import EditSessionModal from '../components/EditSessionModal';
-import AddSessionModal from '../components/AddSessionModal';
-import AddTopicModal from '../components/AddTopicModal';
-import EditCoordinatorsModal from '../components/EditCoordinatorsModal';
-import EditChairpersonsModal from '../components/EditChairpersonsModal';
-import CoordinatorReportDialog from '../components/CoordinatorReportDialog';
+import dynamic from 'next/dynamic';
+// Modals are only needed when opened, so they load on demand (smaller first page load)
+const EditSessionModal = dynamic(() => import('../components/EditSessionModal'));
+const AddSessionModal = dynamic(() => import('../components/AddSessionModal'));
+const AddTopicModal = dynamic(() => import('../components/AddTopicModal'));
+const EditCoordinatorsModal = dynamic(() => import('../components/EditCoordinatorsModal'));
+const EditChairpersonsModal = dynamic(() => import('../components/EditChairpersonsModal'));
+const CoordinatorReportDialog = dynamic(() => import('../components/CoordinatorReportDialog'));
+const EditTopicModal = dynamic(() => import('../components/EditTopicModal'));
 import { DEFAULT_PRINT_OPTIONS, PrintOptionsDialog, SessionPrintSheet, type PrintOptions } from '../components/SessionPrint';
 import SyncButton from '../components/SyncButton';
-import EditTopicModal from '../components/EditTopicModal';
+import { sortCoordinators } from '../lib/coordOrder';
+import { sortTopicPeople, roleName } from '../lib/topicPeople';
 import { useSearchParams } from 'next/navigation';
 import ConfirmDeleteDialog from '../components/ConfirmDeleteDialog';
 import Badge, { roleTone } from '../components/Badge';
@@ -41,6 +45,7 @@ export default function SessionsPage() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [selectedSession, setSelectedSession] = useState<any | null>(null);
   const [coordinators, setCoordinators] = useState<any[]>([]);
+  const [sessionChairs, setSessionChairs] = useState<any[]>([]);
   const [topics, setTopics] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(false);
@@ -109,34 +114,35 @@ export default function SessionsPage() {
     if (!selectedSession) return;
     setLoadingDetails(true);
 
-    const { data: coordData } = await supabase
+    // Both queries run at the same time instead of one after the other
+    const coordPromise = supabase
       .from('session_coordinators')
-      .select(`role, faculty_id, faculty ( id, canonical_name, phone, email, faculty_id )`)
+      .select(`role, coord_id, faculty_id, faculty ( id, canonical_name, phone, email, faculty_id )`)
       .eq('session_id', selectedSession.id);
 
-    if (coordData) {
-      const rolePriority: Record<string, number> = {
-        National: 1,
-        'Lead Coordinator': 2,
-        Local: 3,
-      };
-      const sortedCoords = coordData.sort(
-        (a, b) => (rolePriority[a.role] || 99) - (rolePriority[b.role] || 99)
-      );
-      setCoordinators(sortedCoords);
-    }
-
-    const { data: topicData } = await supabase
+    const topicPromise = supabase
       .from('session_topics')
       .select(
         `
         id, topic_title, start_time, end_time, sequence_no,
-        faculty_topics ( role, confirmed, faculty ( id, canonical_name, phone, email, faculty_id ) )
+        faculty_topics ( role, confirmed, sort_order, faculty ( id, canonical_name, phone, email, faculty_id ) )
       `
       )
       .eq('session_id', selectedSession.id)
       .order('sequence_no', { ascending: true })
       .order('topic_title', { ascending: true });
+
+    const chairPromise = supabase
+      .from('session_chairs')
+      .select(`sort_order, faculty ( id, canonical_name, phone, email, faculty_id )`)
+      .eq('session_id', selectedSession.id);
+
+    const [{ data: coordData }, { data: topicData }, { data: chairData }] = await Promise.all([coordPromise, topicPromise, chairPromise]);
+    setSessionChairs(((chairData || []) as any[]).filter((c) => c.faculty).sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999)));
+
+    if (coordData) {
+      setCoordinators(sortCoordinators(coordData));
+    }
 
     if (topicData) setTopics(topicData);
     setLoadingDetails(false);
@@ -338,7 +344,7 @@ export default function SessionsPage() {
       >
         {sel ? (
           <>
-            <SessionPrintSheet session={sel} topics={topics} coordinators={coordinators} options={printOptions} />
+            <SessionPrintSheet session={sel} topics={topics} coordinators={coordinators} sessionChairs={sessionChairs} options={printOptions} />
             <div className="session-header z-10 shrink-0 border-b border-line bg-white px-4 py-5 sm:px-6 print:hidden">
               <button
                 type="button"
@@ -386,6 +392,20 @@ export default function SessionsPage() {
                 </div>
               </div>
 
+              {sessionChairs.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl bg-canvas px-4 py-2.5 ring-1 ring-inset ring-line print:bg-white">
+                  <h3 className="shrink-0 text-sm font-semibold text-ink">Session chair</h3>
+                  <ul className="flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-1">
+                    {sessionChairs.map((c, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-ink-2">{i + 1}.</span>
+                        <span className="text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="coordinator-strip mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-canvas px-4 py-2.5 ring-1 ring-inset ring-line print:bg-white">
                 <h3 className="shrink-0 text-sm font-semibold text-ink">Coordinators</h3>
                 <ul className="flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-1.5">
@@ -394,6 +414,7 @@ export default function SessionsPage() {
                   ) : (
                     coordinators.map((c, i) => (
                       <li key={i} className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-ink-2">{i + 1}.</span>
                         <span className="text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
                         <Badge tone={roleTone(c.role)}>{c.role}</Badge>
                       </li>
@@ -462,7 +483,7 @@ export default function SessionsPage() {
                     ) : (
                       topics.map((t) => {
                         const allLinks = t.faculty_topics || [];
-                        const facultyList = allLinks.filter((ft: any) => ft.role !== 'Chairperson');
+                        const facultyList = sortTopicPeople(allLinks.filter((ft: any) => ft.role !== 'Chairperson'));
                         const chairList = allLinks.filter((ft: any) => ft.role === 'Chairperson');
                         return (
                           <tr key={t.id} className="align-top transition-colors hover:bg-slate-50/70">
@@ -480,8 +501,9 @@ export default function SessionsPage() {
                                 <ul className="space-y-1.5">
                                   {facultyList.map((ft: any, i: number) => (
                                     <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                      {facultyList.length > 1 && <span className="text-sm font-semibold text-ink-2">{i + 1}.</span>}
                                       <span className="text-sm font-medium text-ink">{ft.faculty?.canonical_name}</span>
-                                      <Badge tone={roleTone(ft.role || 'Faculty')}>{ft.role || 'Faculty'}</Badge>
+                                      <Badge tone={roleTone(ft.role || 'Faculty')}>{roleName(ft.role)}</Badge>
                                       {ft.confirmed && (
                                         <Badge tone="success">
                                           <CheckIcon width={12} height={12} strokeWidth={3} />

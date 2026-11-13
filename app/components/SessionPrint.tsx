@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { sortTopicPeople } from '../lib/topicPeople';
 import Modal from './Modal';
 import { formatTime12 } from '../lib/time';
 
@@ -71,11 +72,13 @@ export function SessionPrintSheet({
   session,
   topics,
   coordinators,
+  sessionChairs = [],
   options,
 }: {
   session: any;
   topics: any[];
   coordinators: any[];
+  sessionChairs?: any[];
   options: PrintOptions;
 }) {
   const cell = 'border border-[#bbb] px-2 py-1.5 align-top';
@@ -141,11 +144,20 @@ export function SessionPrintSheet({
     <div className="session-print-sheet hidden text-black print:block">
       {titleBlock}
 
+      {sessionChairs.length > 0 && (
+        <p className="mb-1 text-[9.5pt]">
+          <strong>Session chair: </strong>
+          {sessionChairs.map((c, i) => (
+            <span key={i}>{i > 0 && ' · '}{i + 1}. {c.faculty?.canonical_name}</span>
+          ))}
+        </p>
+      )}
+
       {coordinators.length > 0 && (
         <p className="mb-3 text-[9.5pt]">
           <strong>Coordinators: </strong>
           {coordinators.filter((c) => !isTbd(c.faculty)).map((c, i) => (
-            <span key={i}>{i > 0 && ' · '}{c.faculty?.canonical_name} ({roleLabel(c.role)})</span>
+            <span key={i}>{i > 0 && ' · '}{i + 1}. {c.faculty?.canonical_name} ({roleLabel(c.role)})</span>
           ))}
         </p>
       )}
@@ -168,7 +180,7 @@ export function SessionPrintSheet({
         <tbody>
           {topics.map((t) => {
             const links = t.faculty_topics || [];
-            const speakers = links.filter((ft: any) => ft.role !== 'Chairperson');
+            const speakers = sortTopicPeople(links.filter((ft: any) => ft.role !== 'Chairperson'));
             const chairs = options.chairs ? links.filter((ft: any) => ft.role === 'Chairperson') : [];
             return (
               <tr key={t.id} style={{ breakInside: 'avoid' }}>
@@ -179,7 +191,7 @@ export function SessionPrintSheet({
                   {speakers.length === 0 && chairs.length === 0 && <em>Unassigned</em>}
                   {speakers.map((ft: any, i: number) => (
                     <div key={i}>
-                      {ft.faculty?.canonical_name}
+                      {speakers.length > 1 ? `${i + 1}. ` : ''}{ft.faculty?.canonical_name}
                       {ft.role && ft.role !== 'Faculty' ? ` (${roleLabel(ft.role)})` : ''}
                       {options.confirmed && ft.confirmed ? ' ✓' : ''}
                     </div>

@@ -6,31 +6,31 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const rawData = `
 FAC304	druzzaifv			druzzaifv@gmail.com
-FAC303	Dr Aarti Shah			dr.aarti29@gmail.com
-FAC302	Dr Nausheen Khan	9773613631	IN	doc_nausheen@yahoo.com
-FAC301	Dr Pooja Patel	8306330281	IN	poojappatel2395@gmail.com
-FAC300	Dr A.V. Kaleeswaran	9442569301		kaleesderm@gmail.om
-FAC299	Dr Dinesh Kumar	9786492927		drdinesh1512@gmail.com
-FAC298	Dr Prima Dalwadi	7984241845		primadalwadi@gmail.com
-FAC297	Dr Kanchan Srivastava	7905175683	IN	drkanchanderma@gmail.com
-FAC296	Dr Anil Dashore	9827274246	IN	dr.dashoreanil@gmail.com
-FAC295	Dr Suruchi Garg	9914253530	IN	gargsuruchi01@gmail.com
-FAC294	Dr Ekta Sahu	9920591779	IN	
-FAC293	Dr Ruru Pamela			ruripamela@gmail.com
-FAC292	Dr Diwaker Sharma		IN	
-FAC291	Dr Khushbu Chauhan	8866879682	IN	khushbuchauhan37@gmail.com
-FAC290	Dr Anastasia Georgievskaya	(807) 698-8400	Canada	nastya@haut.ai
-FAC289	Dr Manu Jain	1-646-888-6109	US	jainm@mskcc.org
-FAC288	Dr Monisha Madhumita	8884440655		drmonishamadhumita@gmail.com
-FAC287	Dr Siddharth Bhatt	8469938871	IN	sidbhatt.noida@gmail.com
-FAC286	Dr Bhavni Oberoi	7407424758	IN	bhavni.oberoi@gmail.com
-FAC285	Dr Rochelle Monteiro	9739315324	IN	rochelle.cheryl@gmail.com
-FAC284	Dr Surajit Goral	9614506569		dragorai@gmail.com
+FAC303	Demo Faculty 303			demo.faculty.303@example.invalid
+FAC302	Demo Faculty 302		IN	demo.faculty.302@example.invalid
+FAC301	Demo Faculty 301		IN	demo.faculty.301@example.invalid
+FAC300	Demo Faculty 300			demo.faculty.300@example.invalid
+FAC299	Demo Faculty 299			demo.faculty.299@example.invalid
+FAC298	Demo Faculty 298			demo.faculty.298@example.invalid
+FAC297	Demo Faculty 297		IN	demo.faculty.297@example.invalid
+FAC296	Demo Faculty 296		IN	demo.faculty.296@example.invalid
+FAC295	Demo Faculty 295		IN	demo.faculty.295@example.invalid
+FAC294	Demo Faculty 294		IN	demo.faculty.294@example.invalid
+FAC293	Demo Faculty 293			demo.faculty.293@example.invalid
+FAC292	Demo Faculty 292		IN	demo.faculty.292@example.invalid
+FAC291	Demo Faculty 291		IN	demo.faculty.291@example.invalid
+FAC290	Demo Faculty 290		Canada	demo.faculty.290@example.invalid
+FAC289	Demo Faculty 289		US	demo.faculty.289@example.invalid
+FAC288	Demo Faculty 288			demo.faculty.288@example.invalid
+FAC287	Demo Faculty 287		IN	demo.faculty.287@example.invalid
+FAC286	Demo Faculty 286		IN	demo.faculty.286@example.invalid
+FAC285	Demo Faculty 285		IN	demo.faculty.285@example.invalid
+FAC284	Demo Faculty 284			demo.faculty.284@example.invalid
 FAC001	Dr Uzzaif Mansuri	9825878228	IN	druzzaif@gmail.com
-FAC002	Dr Aniruddha Ghosh	8697354467	IN	dr.ani.ghosh@gmail.com
-FAC003	Dr Syed Mubashir	9697343464	IN	syedmubashir2006@gmail.com
-FAC004	Dr Harish Prasad	9738389028	IN	harish.harris@gmail.com
-FAC005	Dr Saurabh Singh	9968024250	IN	saurabhdoc@yahoo.co.in
+FAC002	Demo Faculty 002		IN	demo.faculty.002@example.invalid
+FAC003	Demo Faculty 003		IN	demo.faculty.003@example.invalid
+FAC004	Demo Faculty 004		IN	demo.faculty.004@example.invalid
+FAC005	Demo Faculty 005		IN	demo.faculty.005@example.invalid
 `;
 
 async function importData() {

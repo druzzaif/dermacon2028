@@ -2,20 +2,45 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
-import EditFacultyModal from '../components/EditFacultyModal';
-import FacultyProfileModal from '../components/FacultyProfileModal';
+import dynamic from 'next/dynamic';
+// Modals load only when opened
+const EditFacultyModal = dynamic(() => import('../components/EditFacultyModal'));
+const FacultyProfileModal = dynamic(() => import('../components/FacultyProfileModal'));
 import Badge from '../components/Badge';
 import SyncButton from '../components/SyncButton';
 import { CheckIcon, SearchIcon } from '../components/Icons';
 import { inputCls } from '../components/Field';
+import { roleName } from '../lib/topicPeople';
 
 type CountFilter = 'all' | '0' | '1' | '2' | '3+' | '4+' | '5+';
 
-const FACULTY_SELECT = `*, faculty_topic_counts ( topic_count ), faculty_topics ( confirmed )`;
+const FACULTY_SELECT = `*, faculty_topics ( role, confirmed ), session_chairs ( confirmed )`;
+
+// How many topics this person has in each role, and how many of those are confirmed
+const ROLE_ORDER = ['Faculty', 'Moderator', 'Panelist', 'Debater', 'Chairperson', 'Session chair'];
+function roleBreakdown(doc: any): { role: string; total: number; confirmed: number }[] {
+  const m = new Map<string, { role: string; total: number; confirmed: number }>();
+  for (const ft of doc.faculty_topics || []) {
+    const role = roleName(ft.role);
+    const e = m.get(role) || { role, total: 0, confirmed: 0 };
+    e.total += 1;
+    if (ft.confirmed) e.confirmed += 1;
+    m.set(role, e);
+  }
+  // Chairing a whole session
+  for (const c of doc.session_chairs || []) {
+    const e = m.get('Session chair') || { role: 'Session chair', total: 0, confirmed: 0 };
+    e.total += 1;
+    if (c.confirmed) e.confirmed += 1;
+    m.set('Session chair', e);
+  }
+  return [...m.values()].sort((a, b) =>
+    (ROLE_ORDER.indexOf(a.role) === -1 ? 99 : ROLE_ORDER.indexOf(a.role)) - (ROLE_ORDER.indexOf(b.role) === -1 ? 99 : ROLE_ORDER.indexOf(b.role)));
+}
 
 // Every assignment counts: speaker, moderator, panelist and chairperson
 function topicCountOf(doc: any): number {
-  return doc.faculty_topics?.length ?? doc.faculty_topic_counts?.[0]?.topic_count ?? 0;
+  return (doc.faculty_topics?.length ?? 0) + (doc.session_chairs?.length ?? 0);
 }
 
 function matchesCount(topicCount: number, filter: CountFilter): boolean {
@@ -154,6 +179,7 @@ export default function FacultyDirectoryPage() {
                 <th scope="col" className="px-5 py-3 font-semibold">Email</th>
                 <th scope="col" className="hidden px-5 py-3 font-semibold lg:table-cell">Phone</th>
                 <th scope="col" className="px-5 py-3 text-center font-semibold">Topics</th>
+                <th scope="col" className="px-5 py-3 font-semibold">Roles (confirmed)</th>
                 <th scope="col" className="px-5 py-3 text-right font-semibold">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -163,14 +189,14 @@ export default function FacultyDirectoryPage() {
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <tr key={i} aria-hidden="true">
-                    <td className="px-5 py-4" colSpan={5}>
+                    <td className="px-5 py-4" colSpan={6}>
                       <div className="h-6 animate-pulse rounded-md bg-slate-100" />
                     </td>
                   </tr>
                 ))
               ) : filteredFaculty.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-14 text-center text-ink-2">
+                  <td colSpan={6} className="px-5 py-14 text-center text-ink-2">
                     No faculty match these filters.
                   </td>
                 </tr>
@@ -186,7 +212,7 @@ export default function FacultyDirectoryPage() {
                     .toUpperCase();
                   const topicCount = topicCountOf(doc);
                   const phoneDigits = (doc.phone || '').replace(/[^0-9+]/g, '');
-                  const confirmedCount = (doc.faculty_topics || []).filter((ft: any) => ft.confirmed).length;
+                  const confirmedCount = [...(doc.faculty_topics || []), ...(doc.session_chairs || [])].filter((ft: any) => ft.confirmed).length;
                   const allConfirmed = topicCount > 0 && confirmedCount === topicCount;
                   const partlyConfirmed = confirmedCount > 0 && !allConfirmed;
 
@@ -278,6 +304,22 @@ export default function FacultyDirectoryPage() {
                         </span>
                       </td>
 
+                      <td className="px-5 py-2.5">
+                        {roleBreakdown(doc).length === 0 ? (
+                          <span className="text-sm text-muted">–</span>
+                        ) : (
+                          <ul className="flex flex-wrap gap-1.5">
+                            {roleBreakdown(doc).map((x) => (
+                              <li key={x.role}>
+                                <Badge tone={x.confirmed === x.total ? 'success' : x.confirmed > 0 ? 'warning' : 'neutral'}>
+                                  {x.role} {x.total} · {x.confirmed}/{x.total} confirmed
+                                </Badge>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+
                       <td className="px-5 py-2.5 text-right">
                         <div className="flex justify-end gap-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:transition-opacity [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100">
                           <button
@@ -319,6 +361,7 @@ export default function FacultyDirectoryPage() {
         <FacultyProfileModal
           faculty={viewingProfile}
           onClose={() => setViewingProfile(null)}
+          onChanged={refreshFaculty}
         />
       )}
     </div>

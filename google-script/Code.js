@@ -189,6 +189,55 @@ function logSent(data, link) {
   }
 }
 
+// Replace the saved topic list of this faculty (log sheet, column J) without touching
+// the rest of the row. Keeps the PDF file id so the thank-you email can still attach it.
+function refreshSnapshot(email, sessionsData) {
+  if (!sessionsData || !sessionsData.length) return;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh = getLogSheet();
+    var values = sh.getDataRange().getValues();
+    var e = String(email || '').trim().toLowerCase();
+    for (var i = 1; i < values.length; i++) {
+      if (String(values[i][2]).trim().toLowerCase() !== e) continue;
+      var old = [];
+      try { old = JSON.parse(values[i][9] || "[]"); } catch (x) {}
+      var pdfId = '';
+      old.forEach(function (r) { if (r.pdf_id && !pdfId) pdfId = r.pdf_id; });
+      if (pdfId) sessionsData.forEach(function (r) { r.pdf_id = pdfId; });
+      sh.getRange(i + 1, 10).setValue(JSON.stringify(sessionsData));
+      break;
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// A faculty who answers "No" after an earlier "Yes": remove their confirmation rows,
+// so the app's Sync turns their topics back to unconfirmed. Matches by email and by the
+// faculty/topic ids saved with their last email.
+function removeTopicConfirmations(email, sessionsData) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh = getConfirmSheet();
+    var values = sh.getDataRange().getValues();
+    var e = String(email || '').trim().toLowerCase();
+    var keys = {};
+    (sessionsData || []).forEach(function (r) {
+      if (r.topic_id && r.faculty_id) keys[String(r.faculty_id) + '|' + String(r.topic_id)] = true;
+    });
+    for (var i = values.length - 1; i >= 1; i--) {
+      var rowEmail = String(values[i][2] || '').trim().toLowerCase();
+      var key = String(values[i][0]) + '|' + String(values[i][1]);
+      if ((e && rowEmail === e) || keys[key]) sh.deleteRow(i + 1);
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 // Called when the faculty submits the Google Form
 function markResponded(email, name, status) {
   var lock = LockService.getScriptLock();
@@ -280,11 +329,20 @@ function pdfsFromSnapshot(sessionsData) {
 // ==========================================================================
 function extraRows(r) {
   var speakers = r.speakers || [];
-  if (r.role === 'Chairperson' && speakers.length) {
-    return '<tr><td style="border:1px solid #222; padding:3px 6px; font-weight:bold;">Speakers</td>' +
-           '<td colspan="3" style="border:1px solid #222; padding:3px 6px;">' + esc(speakers.join(', ')) + '</td></tr>';
+  var out = '';
+  function row(label, names) {
+    return '<tr><td style="border:1px solid #222; padding:3px 6px; font-weight:bold;">' + label + '</td>' +
+           '<td colspan="3" style="border:1px solid #222; padding:3px 6px;">' + esc(names.join(', ')) + '</td></tr>';
   }
-  return '';
+  if (r.role === 'Chairperson' && speakers.length) out += row('Speakers', speakers);
+  // Panel / debate: the moderator and the other panelists / debaters (the reader is left out)
+  var p = r.panel;
+  if (p) {
+    if (p.moderators && p.moderators.length) out += row(p.moderators.length > 1 ? 'Moderators' : 'Moderator', p.moderators);
+    if (p.panelists && p.panelists.length) out += row('Panelists', p.panelists);
+    if (p.debaters && p.debaters.length) out += row('Debaters', p.debaters);
+  }
+  return out;
 }
 
 function changesBox(changes) {
@@ -296,6 +354,13 @@ function changesBox(changes) {
          '<tr><td style="padding:12px 18px; font-size:13px; line-height:1.5;">' +
          '<div style="font-size:15px; font-weight:bold; color:#7a4b00; margin-bottom:6px;">What has changed</div>' +
          '<ul style="margin:0; padding-left:18px;">' + items + '</ul></td></tr></table>';
+}
+
+// Small tag after a topic title: "new" (not confirmed yet) or "already confirmed"
+function statusTag(status) {
+  if (status === 'new') return ' <span style="color:#b45309; font-weight:bold;">(new &ndash; please confirm)</span>';
+  if (status === 'confirmed') return ' <span style="color:#1a7f37;">(already confirmed)</span>';
+  return '';
 }
 
 // o: { name, role, title, greeting, intro, formLink, changes }
@@ -311,7 +376,7 @@ function buildLetterHtml(rows, o) {
     blocks += fill(block, {
       SessionNumber: String(i + 1),
       RoleLabel:     esc(roleLabel(r.role)),
-      Topic:         esc(r.topic || ''),
+      Topic:         esc(r.topic || '') + statusTag(r.status),
       Timing:        esc(r.time || ''),
       SessionName:   esc(((r.session_code || '') + ' ' + (r.session_name || '')).trim()),
       Hall:          esc(r.session_hall || 'TBD'),
@@ -399,7 +464,7 @@ function doPost(e) {
           message: "Only " + quotaLeft() + " emails left today. " + SETTINGS.quotaReserve + " are kept for faculty confirmations. Try again after the daily limit resets." });
       }
 
-      var prefilledLink = buildPrefilledLink(data.name, data.phone, data.sessions);
+      var prefilledLink = buildPrefilledLink(data.name, data.phone, data.formSessions || data.sessions);
       var roleText = esc(data.role || 'Faculty');
       var htmlBody = buildLetterHtml(data.sessionsData, {
         name: data.name,
@@ -434,11 +499,19 @@ function doPost(e) {
       if (quotaLeft() <= SETTINGS.quotaReserve) {
         return json({ status: "Error", quotaLeft: quotaLeft(), message: "Not enough emails left today." });
       }
-      var link = buildPrefilledLink(data.name, data.phone, data.sessions);
+      var link = buildPrefilledLink(data.name, data.phone, data.formSessions || data.sessions);
+      // Keep the saved topic list current, so "Yes" confirms the topics shown in this reminder
+      try { refreshSnapshot(data.email, data.sessionsData); }
+      catch (errSnap) { Logger.log("refreshSnapshot failed: " + errSnap); }
+      var pending = data.pendingTopics || [];
+      var pendingHtml = pending.length
+        ? '<p style="font-size:14px; margin:0 0 6px;"><strong>Topics awaiting your confirmation:</strong></p><ul style="font-size:14px; margin:0 0 12px; padding-left:20px;">' +
+          pending.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'
+        : '';
       var body =
         '<p style="font-size:14px; font-weight:bold; margin:0 0 12px;">Dear ' + esc(data.name) + ',</p>' +
-        '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">This is a gentle reminder. We have emailed you your scientific commitment details for <strong>DERMACON International 2027</strong> and have not yet received your confirmation.</p>' +
-        (data.sessions ? '<p style="font-size:14px; margin:0 0 12px;"><strong>Your session(s):</strong> ' + esc(String(data.sessions).replace(/,/g, ', ')) + '</p>' : '') +
+        '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">This is a gentle reminder. We have emailed you your scientific commitment details for <strong>DERMACON International 2027</strong> and have not yet received your confirmation' + (pending.length ? ' for the topic(s) below' : '') + '.</p>' +
+        (pendingHtml || (data.sessions ? '<p style="font-size:14px; margin:0 0 12px;"><strong>Your session(s):</strong> ' + esc(String(data.sessions).replace(/,/g, ', ')) + '</p>' : '')) +
         '<p style="font-size:14px; margin:0 0 16px;">Please confirm your participation. It takes less than a minute.</p>' +
         '<p style="margin:0 0 20px;">' + confirmButton('Confirm participation', link) + '</p>' +
         '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
@@ -500,6 +573,42 @@ function doPost(e) {
         if (idx < coords.length - 1) Utilities.sleep(1500);
       });
       return json({ status: "Success", sent: sent, quotaLeft: quotaLeft() });
+    }
+
+    // ---- confirmations removed in the app, sent in one batch by Sync --------
+    // items: [{ facultyId, topicId, removedAt }]. Deletes those rows from
+    // TopicConfirmations in ONE write. A row confirmed on the form AFTER the
+    // removal (ConfirmedAt later than removedAt) is kept: that is a new "Yes".
+    if (data.action === "removeConfirmations") {
+      var items = data.items || [];
+      var removeAt = {};
+      items.forEach(function (it) {
+        if (!it.facultyId || !it.topicId) return;
+        var t = it.removedAt ? new Date(it.removedAt).getTime() : Date.now();
+        var k = String(it.facultyId) + '|' + String(it.topicId);
+        if (!removeAt[k] || t > removeAt[k]) removeAt[k] = t;
+      });
+      var removed = 0;
+      var lock = LockService.getScriptLock();
+      lock.waitLock(20000);
+      try {
+        var sh = getConfirmSheet();
+        var values = sh.getDataRange().getValues();
+        var keep = [values[0]];
+        for (var i = 1; i < values.length; i++) {
+          var k2 = String(values[i][0]) + '|' + String(values[i][1]);
+          var confirmedAt = values[i][3] ? new Date(values[i][3]).getTime() : 0;
+          if (removeAt[k2] && confirmedAt <= removeAt[k2]) { removed++; continue; }
+          keep.push(values[i]);
+        }
+        if (removed > 0) {
+          sh.getRange(1, 1, keep.length, values[0].length).setValues(keep);
+          sh.deleteRows(keep.length + 1, values.length - keep.length);
+        }
+      } finally {
+        lock.releaseLock();
+      }
+      return json({ status: "Success", removed: removed });
     }
 
     return json({ status: "Error", message: "Unknown action" });
@@ -578,6 +687,19 @@ function onFormSubmit(e) {
 
   var sessionsData = [];
   var savedLink = "";
+  if (declined) {
+    try {
+      var declData = getLogSheet().getDataRange().getValues();
+      var declSessions = [];
+      for (var d = 1; d < declData.length; d++) {
+        if (String(declData[d][2]).trim().toLowerCase() === email.toLowerCase()) {
+          try { declSessions = JSON.parse(declData[d][9] || "[]"); } catch (errP) {}
+          break;
+        }
+      }
+      removeTopicConfirmations(email, declSessions);
+    } catch (errDecl) { Logger.log("removeTopicConfirmations failed: " + errDecl); }
+  }
   if (accepted) {
     var logData = getLogSheet().getDataRange().getValues();
     for (var i = 1; i < logData.length; i++) {

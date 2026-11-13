@@ -32,7 +32,7 @@ id,session_id,topic_title,start_time,end_time,sequence_no,created_at
 11c1d541-2bf6-40ee-a3f5-7d02fc312233,7eacfb3d-e2d2-429b-a2a2-5b23a739fcf3,"Difficult Areas in Vitiligo Surgery (Lips, Fingers, Joints, Eyelids)",17:51:00,18:03:00,9,2026-11-08 21:15:03.253723+00
 11cd7ac4-d22a-425f-8640-777bded5a18f,f949b5ff-2e2c-4d3c-8b49-6a80f550a3a7,Baby Glow – Video Demo,15:30:00,15:40:00,10,2026-11-08 21:14:00.461932+00
 122c5712-e84c-46d5-aec1-a067cb705197,bab50726-332e-439e-8a6a-8452cf0605e0,Growth Factors/Peptides -My experience with it (Video Demonstration),10:45:00,11:00:00,5,2026-11-08 21:14:41.331462+00
-1296fdfe-a296-421a-96ad-a94665df03f2,496d7566-86b8-4ce5-b449-6dabdb17b817,EXPERT PANEL – “WHAT WOULD YOU DO?” Case-Based Decision Making in Periorbital Rejuvenation Dr Priti,15:30:00,16:00:00,10,2026-11-08 21:15:33.394269+00
+1296fdfe-a296-421a-96ad-a94665df03f2,496d7566-86b8-4ce5-b449-6dabdb17b817,EXPERT PANEL – “WHAT WOULD YOU DO?” Case-Based Decision Making in Periorbital Rejuvenation Demo Faculty 124,15:30:00,16:00:00,10,2026-11-08 21:15:33.394269+00
 13a85d56-5108-48d7-b645-52b4f432ab4e,a344d969-36e7-468b-a730-1362a2902bed,"Different neurotoxins, dilutions (reconstitution), Diffusion, dose equivalence, storage, Markings, Critical danger zones, complication-prone areas",09:45:00,10:00:00,2,2026-11-08 21:14:08.578078+00
 144c15b7-9223-4515-8023-803eb2b9ed15,de4ee13d-bdc2-4f47-86f5-a284ebfc0952,Acne Scars to Surgical Scars: Advanced Revision Techniques,17:15:00,17:25:00,7,2026-11-08 21:15:05.848782+00
 14dbdbca-c1c3-4aea-a1ff-506bf7ded234,0b57af14-1071-48b4-b95f-16fb5fb41624,Energy based remodelling protocols and procedure details (video demonstration),14:30:00,14:45:00,3,2026-11-08 21:15:25.409712+00
@@ -233,7 +233,7 @@ id,session_id,topic_title,start_time,end_time,sequence_no,created_at
 829a058f-072c-4ce4-a0d5-26f0a32c587d,a344d969-36e7-468b-a730-1362a2902bed,Contraindications/precautions,,,7,2026-11-08 21:14:10.168003+00
 830899a4-8c1b-4d19-9d88-04b730b11dba,c2de6c3e-8932-437b-9bb5-9be30e2c8738,"Safety, Complications — Burns, fat loss, nerve issues + facial plan",14:50:00,15:00:00,6,2026-11-08 21:16:00.064833+00
 8332d08b-4b7a-44b2-be63-9e160eb7591f,496d7566-86b8-4ce5-b449-6dabdb17b817,Periorbital Anatomy: The Foundation for Safe Rejuvenation,14:00:00,14:10:00,1,2026-11-08 21:15:30.519069+00
-84d4e5dc-7a70-43e5-97af-197215b85f9d,e3ae70e4-00dc-4d68-9b3d-b27686022701,Debate: Dermoscopy or Histopathology - Non-Invasive Precision vs. Definitive Diagnosis (Dr Sasi Atili & Dr Soumil Khare),18:00:00,18:15:00,9,2026-11-08 21:16:14.894563+00
+84d4e5dc-7a70-43e5-97af-197215b85f9d,e3ae70e4-00dc-4d68-9b3d-b27686022701,Debate: Dermoscopy or Histopathology - Non-Invasive Precision vs. Definitive Diagnosis (Demo Faculty 107 & Demo Faculty 176),18:00:00,18:15:00,9,2026-11-08 21:16:14.894563+00
 8510bf2d-ae67-4962-acd7-808c493e11a5,4340f692-216f-42c9-b38c-855c0b80aa8b,Second Chance for the Earlobe: Modern Repair Techniques,14:12:00,14:24:00,2,2026-11-08 21:16:01.689663+00
 8582bf5f-79bd-4bfa-8e5d-990a4694d5c1,f0e2998a-eaec-41f9-806b-b2ba4636b448,From Face to Follicle- The Evolving story of Botulinum Toxin,11:30:00,11:40:00,10,2026-11-08 21:14:16.651041+00
 864d348a-3bca-4829-9e3f-f9b37c0a8e87,0b57af14-1071-48b4-b95f-16fb5fb41624,Q&A and panel discussion,15:45:00,16:00:00,8,2026-11-08 21:15:27.014839+00
@@ -281,7 +281,7 @@ a8579ffb-e439-4432-9c2d-c3cd138010cf,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Topica
 a937c0f1-ffe6-4377-ac74-4387d8fa6566,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Nail Lasers, Video-based: Various lasers useful in nail, indications and contraindications, what to expect",15:20:00,15:30:00,9,2026-11-08 21:14:59.612502+00
 a9b3c8c2-f366-45d7-bcbb-cd80ac2aa4eb,c2de6c3e-8932-437b-9bb5-9be30e2c8738,HIFU — from basics to advanced,14:30:00,14:40:00,4,2026-11-08 21:15:59.419023+00
 aa4f8586-adda-4878-96df-0e34490dd7dd,e3ae70e4-00dc-4d68-9b3d-b27686022701,Algorithmic vs. Chaos & Clues Approach for Pigmented Lesions,17:25:00,17:40:00,7,2026-11-08 21:15:42.09491+00
-abcaef20-bb74-422d-bb78-1c113d34199a,5c8a73de-0371-4a47-a58b-8f4c8b40ccae,Panel discussion - Dr Pankaj Chaturvedi,17:30:00,18:00:00,6,2026-11-08 21:14:20.822932+00
+abcaef20-bb74-422d-bb78-1c113d34199a,5c8a73de-0371-4a47-a58b-8f4c8b40ccae,Panel discussion - Demo Faculty 231,17:30:00,18:00:00,6,2026-11-08 21:14:20.822932+00
 ac8485d6-80bb-46c7-b64b-fb7c7ea7cf4c,f0e2998a-eaec-41f9-806b-b2ba4636b448,The New Hero of Hair Growth - Exosomes  : Hype or the Real Deal?,10:30:00,10:45:00,6,2026-11-08 21:14:15.334607+00
 acf67cfe-f7fb-491a-b11c-fb1b1e3606a1,099bd763-c618-4721-97cc-26c72436c47b,"The new kid on the block – exosomes, PN, novel molecules",14:36:00,14:48:00,4,2026-11-08 21:15:43.697739+00
 ad907c84-ea38-4a7c-882c-9baf82e3547b,561d65fe-e6c5-4ad9-b172-69b58d203470,Video Demo – PEELS FOR NECK REJUVENATION,14:35:00,14:50:00,4,2026-11-08 21:15:09.327131+00
@@ -332,7 +332,7 @@ c59a2511-1781-4c19-9088-c41cd7c3c6a2,31ae9c07-80de-4788-aa13-3714734c0a21,Panel 
 c638b353-28ad-400d-ba8a-f31ad5e59e6e,588dc806-baa4-4f81-a88d-696aa135150b,"Approaching a Patient with Hirsutism + Treatment Techniques for Different Areas (Face, Beard, Hormonal Areas, Sensitive Zones)",09:45:00,10:00:00,4,2026-11-08 21:14:43.60851+00
 c76ed060-32d2-4d46-8ca8-eea4f554143b,31ae9c07-80de-4788-aa13-3714734c0a21,Dermatopathology in Pediatric Dermatology: Insights Through Case-Based Learning,16:30:00,16:50:00,2,2026-11-08 21:16:07.842649+00
 c85e96c3-5a71-42ab-8e12-7135c6df8574,174c20c6-6c74-4ce1-bd24-df6cfb94e71f,Panel Discussion,17:55:00,18:15:00,9,2026-11-08 21:15:39.848978+00
-c8917b2c-a8b6-4839-ba06-e24d739cb4a1,437f89e3-571e-4347-9649-527f1952673c,Cadaveric Dissection Videos: Moderator: Dr Marina Landau. Anatomy Discussion. Fat Compartments. Vascular Anatomy. Ligaments. Danger Zones,09:30:00,10:15:00,1,2026-11-08 21:13:48.041297+00
+c8917b2c-a8b6-4839-ba06-e24d739cb4a1,437f89e3-571e-4347-9649-527f1952673c,Cadaveric Dissection Videos: Moderator: Demo Faculty 233. Anatomy Discussion. Fat Compartments. Vascular Anatomy. Ligaments. Danger Zones,09:30:00,10:15:00,1,2026-11-08 21:13:48.041297+00
 c89d80e6-8bdf-4c8c-b258-925acc7c0364,f5f01ecc-e01b-4e1d-86cb-4e6b7463af70,Emerging Frontiers: Advances & Challenging Cases,15:00:00,15:15:00,5,2026-11-08 21:15:13.106372+00
 c95d4d73-d599-4203-b772-0d5e5fc259f3,437f89e3-571e-4347-9649-527f1952673c,"Tear Trough, Lip",10:46:00,11:02:00,4,2026-11-08 21:13:50.053634+00
 c98b2a21-9f56-44de-88d7-b4194fd38fd8,8ca12b32-767e-4339-bcb6-327f7c64f38f,"Complications - how to deal: PIH, infection, scarring + acne scar protocol",17:05:00,17:15:00,6,2026-11-08 21:16:06.87579+00
@@ -404,7 +404,7 @@ e825291b-4aba-440a-aeaf-27e211788fec,78baaf69-1db1-4b62-ba53-70939ca7572e,Clear 
 e8686912-7c74-481f-9fdd-40e911c3ce78,c2b505d2-809b-43ae-a050-fefacdb1c9d3,"Nail Biopsies, Video Demonstrations: Nail bed biopsy, Nail Matrix biopsy, Tangential matrix biopsy",14:30:00,14:40:00,4,2026-11-08 21:14:57.979609+00
 e878ceab-3e5e-48ea-b616-f51fc6b979a9,a045a4f0-8f5b-4e39-8010-6aaab0c5ceb9,Cracking the PIH Code : Science To Treatment,15:36:00,15:48:00,10,2026-11-08 21:15:35.969789+00
 e8bf74c1-47a3-4167-8cdd-1735619bb591,e3ae70e4-00dc-4d68-9b3d-b27686022701,"Panel Discussion: 1. Dermoscopy in Skin of Color: Global Phototype Variations. 2. Artificial Intelligence in Dermoscopy: Threat or Support? 3. Dermoscopy Pitfalls & Mimickers
-(Panelists: Dr Manas Chatterjee, Dr Yashmin Bhat, Dr Tejasvi Trilok Raj)",17:40:00,18:00:00,8,2026-11-08 21:15:42.418595+00
+(Panelists: Demo Faculty 174, Demo Faculty 173, Demo Faculty 175)",17:40:00,18:00:00,8,2026-11-08 21:15:42.418595+00
 e9b8c6e3-968f-4504-aa49-b185240b9ceb,f0e2998a-eaec-41f9-806b-b2ba4636b448,Threading the Future - Novel use of Monofilament threads for Hair Growth,11:15:00,11:30:00,9,2026-11-08 21:14:16.326222+00
 ea3dbf45-fbcc-49f2-91fd-778bb9f64885,561d65fe-e6c5-4ad9-b172-69b58d203470,Video Demo – LASERS AND EBDS FOR NECK REJUVENATION,14:20:00,14:35:00,3,2026-11-08 21:15:08.715471+00
 eb5a3ac9-1617-41fc-9fe8-a7be4072068b,bc6e5a3f-b866-4033-b9aa-d88fef7ba87f,AI in dermatology imaging: image analysis and clinical limitations,12:59:00,13:14:00,5,2026-11-08 21:14:50.452793+00
