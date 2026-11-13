@@ -508,7 +508,7 @@ async function buildFacultyPayload(faculty: any, opts: { coordinators?: boolean 
   const formSessions = items.map((i: any) => {
     const st = statusOf(i);
     const tag = st === 'confirmed' ? ' (already confirmed)' : st === 'new' ? ' (new - please confirm)' : '';
-    return `${i.session.session_code} - ${i.topic.topic_title || 'Topic'}${tag}`;
+    return `${i.session.session_code} - ${i.topic.topic_title || 'Topic'} (${roleDisplay(i.role)})${tag}`;
   }).join('\n');
   const pendingTopics = items.filter((i: any) => !i.r.confirmed).map((i: any) =>
     `${i.session.session_code} - ${i.topic.topic_title || 'Topic'}`);
