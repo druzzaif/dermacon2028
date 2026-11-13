@@ -118,13 +118,13 @@ export function SkeletonLines({ rows = 4, className = '' }: { rows?: number; cla
 /* ------------------------------- Layout ------------------------------ */
 
 /** Standard page frame: same width and padding on every screen */
-export function PageShell({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
+export function PageShell({ children, wide = false, narrow = false }: { children: ReactNode; wide?: boolean; narrow?: boolean }) {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-canvas text-ink">
       <main
         id="main-content"
         tabIndex={-1}
-        className={`mx-auto w-full ${wide ? 'max-w-7xl' : 'max-w-6xl'} px-4 py-6 outline-none sm:px-8 sm:py-8`}
+        className={`mx-auto w-full ${wide ? 'max-w-7xl' : narrow ? 'max-w-3xl' : 'max-w-6xl'} px-4 py-6 outline-none sm:px-8 sm:py-8`}
       >
         {children}
       </main>

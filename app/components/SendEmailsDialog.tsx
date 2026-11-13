@@ -166,13 +166,13 @@ export default function SendEmailsDialog({
           </div>
 
           {quotaProblem && (
-            <p role="alert" className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            <p role="alert" className="flex items-start gap-2 rounded-lg border border-warning-line bg-warning-tint p-3 text-sm text-warning">
               <AlertIcon className="mt-0.5 shrink-0" width={16} height={16} />
               {quotaProblem} You can still send, but the limit could not be checked first.
             </p>
           )}
           {notEnough && (
-            <p role="alert" className="flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            <p role="alert" className="flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">
               <AlertIcon className="mt-0.5 shrink-0" width={16} height={16} />
               Only {usable} email{usable === 1 ? '' : 's'} can be sent today but you selected {sendable.length}. Select fewer faculty, or wait for the daily limit to reset.
             </p>
@@ -180,7 +180,7 @@ export default function SendEmailsDialog({
 
           <ul className="space-y-3">
             {rows.map((r) => (
-              <li key={r.facultyId} className={`rounded-xl border p-3.5 ${r.problem ? 'border-red-200 bg-red-50' : 'border-line bg-white'}`}>
+              <li key={r.facultyId} className={`rounded-xl border p-3.5 ${r.problem ? 'border-danger-line bg-danger-tint' : 'border-line bg-white'}`}>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div className="min-w-0">
                     <span className="font-semibold text-ink">{r.name}</span>
@@ -191,12 +191,12 @@ export default function SendEmailsDialog({
                   </Badge>
                 </div>
                 {r.problem ? (
-                  <p className="mt-2 text-sm font-medium text-red-800">Will be skipped: {r.problem}</p>
+                  <p className="mt-2 text-sm font-medium text-danger-strong">Will be skipped: {r.problem}</p>
                 ) : (
                   <>
                     <p className="mt-1 text-xs text-muted">{KIND_LABEL[r.kind as Kind]}</p>
                     {r.changes?.length > 0 && (
-                      <div className="mt-2 rounded-lg bg-amber-50 p-2.5 text-sm text-amber-900">
+                      <div className="mt-2 rounded-lg bg-warning-tint p-2.5 text-sm text-warning">
                         <p className="font-semibold">What changed (shown at the top of the email)</p>
                         <ul className="mt-1 list-disc space-y-0.5 pl-5">
                           {r.changes.map((c: string, i: number) => <li key={i}>{c}</li>)}
@@ -227,7 +227,7 @@ export default function SendEmailsDialog({
         <div className="space-y-3">
           {phase === 'done' && (
             <p role="status" className="rounded-lg bg-canvas p-3 text-sm text-ink ring-1 ring-inset ring-line">
-              <strong>{okCount}</strong> sent{failCount > 0 && <>, <strong className="text-red-700">{failCount}</strong> failed</>}
+              <strong>{okCount}</strong> sent{failCount > 0 && <>, <strong className="text-danger">{failCount}</strong> failed</>}
               {stopped && notSent > 0 && <>, <strong>{notSent}</strong> not sent (stopped)</>}.
             </p>
           )}
@@ -238,7 +238,7 @@ export default function SendEmailsDialog({
                 <li key={r.facultyId} className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 text-sm">
                   <span className="font-medium text-ink">{r.name}</span>
                   <span className={
-                    st.state === 'ok' ? 'text-green-800' : st.state === 'failed' ? 'text-red-700' : 'text-ink-2'
+                    st.state === 'ok' ? 'text-success' : st.state === 'failed' ? 'text-danger' : 'text-ink-2'
                   }>
                     {st.state === 'waiting' && 'Waiting'}
                     {st.state === 'sending' && 'Sending…'}

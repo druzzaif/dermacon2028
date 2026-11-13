@@ -411,7 +411,7 @@ function SessionPrint() {
                                     {s.session_name || 'Untitled session'}
                                   </span>
                                   <span className="tnum mt-0.5 block text-xs text-ink-2">
-                                    {formatTime12(s.start_time)} – {formatTime12(s.end_time)} · {s.hall ? `Hall ${s.hall}` : <span className="font-semibold text-red-700">No hall</span>}
+                                    {formatTime12(s.start_time)} – {formatTime12(s.end_time)} · {s.hall ? `Hall ${s.hall}` : <span className="font-semibold text-danger">No hall</span>}
                                   </span>
                                 </span>
                               </label>

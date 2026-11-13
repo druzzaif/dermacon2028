@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import Badge, { roleTone } from './Badge';
 import { AlertIcon, CheckIcon } from './Icons';
-import { Button, LoadingBlock, Notice } from './ui';
+import { Button, LoadingBlock, Notice, buttonCls } from './ui';
 import { generatePDFForSession, previewCoordinatorReport, sendCoordinatorReport } from '../actions';
 
 const roleLabel = (r: string) => (r === 'Lead Coordinator' ? 'Lead' : r);
@@ -63,7 +63,7 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
   const toggle = (id: string) => setPicked((p) => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const selectRole = (role: string | null) =>
     setPicked(new Set(withEmail.filter((c) => role === null || c.roles.includes(role)).map((c) => c.id)));
-  const chip = 'inline-flex h-9 items-center rounded-lg border border-field bg-white px-3 text-xs font-medium text-ink hover:bg-slate-50';
+  const chip = buttonCls('secondary', 'sm');
 
   return (
     <Modal
@@ -101,7 +101,7 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
     >
       {!data && <LoadingBlock>Preparing the report…</LoadingBlock>}
       {data && !data.success && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{data.message}</p>
+        <p role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">{data.message}</p>
       )}
       {data?.success && (
         <div className="space-y-4">
@@ -126,7 +126,7 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
               )}
             </div>
             {people.length === 0 ? (
-              <p className="mt-2 text-red-800">This session has no coordinators yet. Add them with Edit coordinators first.</p>
+              <p className="mt-2 text-danger-strong">This session has no coordinators yet. Add them with Edit coordinators first.</p>
             ) : (
               <ul className="mt-2 divide-y divide-line overflow-hidden rounded-lg border border-line bg-white">
                 {people.map((c: any) => (
@@ -142,7 +142,7 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
                       <span className="min-w-0 flex-1">
                         <span className="block font-medium text-ink">{c.name}</span>
                         <span className="block truncate text-xs text-ink-2">
-                          {c.hasEmail ? c.email : <span className="text-red-700">No valid email: cannot receive it</span>}
+                          {c.hasEmail ? c.email : <span className="text-danger">No valid email: cannot receive it</span>}
                         </span>
                       </span>
                       <span className="flex shrink-0 flex-wrap justify-end gap-1">
@@ -161,7 +161,7 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
           </fieldset>
 
           {!enough && count > 0 && (
-            <p role="alert" className="flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            <p role="alert" className="flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">
               <AlertIcon className="mt-0.5 shrink-0" width={16} height={16} /> Not enough emails left today to send this report.
             </p>
           )}
@@ -205,16 +205,16 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
         </div>
       )}
       {pdfUrl && (
-        <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+        <p role="status" className="mt-4 rounded-lg bg-success-tint p-3 text-sm text-success">
           PDF ready.{' '}
           <a href={pdfUrl} target="_blank" rel="noreferrer" className="font-semibold underline">
             Open or download<span className="sr-only"> (opens in a new tab)</span>
           </a>
         </p>
       )}
-      {pdfError && <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{pdfError}</p>}
+      {pdfError && <p role="alert" className="mt-4 rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">{pdfError}</p>}
       {result && (
-        <p role={result.ok ? 'status' : 'alert'} className={`mt-4 rounded-lg p-3 text-sm ${result.ok ? 'bg-green-50 text-green-800' : 'border border-red-200 bg-red-50 text-red-800'}`}>
+        <p role={result.ok ? 'status' : 'alert'} className={`mt-4 rounded-lg p-3 text-sm ${result.ok ? 'bg-success-tint text-success' : 'border border-danger-line bg-danger-tint text-danger-strong'}`}>
           {result.message}
         </p>
       )}

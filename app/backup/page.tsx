@@ -1,28 +1,47 @@
+import { DownloadIcon } from '../components/Icons';
+import { PageHeader, PageShell, buttonCls, cardCls } from '../components/ui';
+
+const downloads = [
+  {
+    title: 'Full Excel backup',
+    description: 'Every table in one workbook, so the whole programme can be restored or checked offline.',
+    detail: 'Sheets: Summary, Faculty, Sessions, Topics, Faculty-Topics, Chairpersons, Coordinators, Confirmations, Missing data.',
+    href: '/api/backup',
+    button: 'Download backup (.xlsx)',
+  },
+  {
+    title: 'Change log',
+    description: 'A record of what changed and when, with one sheet per day.',
+    detail: 'Who confirmed, topics added or edited, chairpersons added, faculty added or removed.',
+    href: '/api/changelog-export',
+    button: 'Download change log (.xlsx)',
+  },
+];
+
 export default function BackupPage() {
-  const card = 'rounded-2xl border border-line bg-white p-6 shadow-card';
-  const btn = 'mt-4 inline-flex h-11 items-center rounded-lg bg-accent px-5 text-sm font-semibold text-white hover:bg-accent-strong';
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-canvas text-ink">
-      <main className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
-        <div>
-          <h1 className="text-3xl font-semibold">Backup &amp; change log</h1>
-          <p className="mt-1.5 text-ink-2">Downloads are named with the date and time, so older copies are never overwritten.</p>
-        </div>
-        <section className={card}>
-          <h2 className="text-lg font-semibold">Full Excel backup</h2>
-          <p className="mt-1 text-sm text-ink-2">
-            Sheets: Summary, Faculty, Sessions, Topics, Faculty-Topics, Chairpersons, Coordinators, Confirmations, Missing data.
-          </p>
-          <a href="/api/backup" className={btn}>Download backup (.xlsx)</a>
-        </section>
-        <section className={card}>
-          <h2 className="text-lg font-semibold">Change log</h2>
-          <p className="mt-1 text-sm text-ink-2">
-            One sheet per day: who confirmed, topics added or edited, chairpersons added, faculty added or removed.
-          </p>
-          <a href="/api/changelog-export" className={btn}>Download change log (.xlsx)</a>
-        </section>
-      </main>
-    </div>
+    <PageShell narrow>
+      <PageHeader
+        title="Backup"
+        description="Download copies of your data. Files are named with the date and time, so older copies are never overwritten."
+      />
+      <div className="space-y-4">
+        {downloads.map((d) => (
+          <section key={d.title} className={`${cardCls} flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6`}>
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold text-ink">{d.title}</h2>
+              <p className="mt-1 text-sm text-ink-2">{d.description}</p>
+              <p className="mt-2 text-xs text-muted">{d.detail}</p>
+            </div>
+            <a href={d.href} className={buttonCls('primary', 'md', 'shrink-0')}>
+              <DownloadIcon /> {d.button}
+            </a>
+          </section>
+        ))}
+      </div>
+      <p className="mt-5 text-sm text-ink-2">
+        Your browser saves the file to its usual Downloads folder. Keep a recent copy somewhere other than this computer.
+      </p>
+    </PageShell>
   );
 }

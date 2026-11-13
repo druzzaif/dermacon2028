@@ -9,11 +9,10 @@ import SessionOverlapWarning from './SessionOverlapWarning';
 import SessionChairsPicker, { logSessionChairChanges, type ChairPerson } from './SessionChairsPicker';
 import { SESSION_TYPES } from './EditSessionModal';
 import { findSessionOverlaps, type SessionOverlap } from '../lib/sessionOverlap';
+import { buttonCls } from './ui';
 
-const secondaryBtn =
-  'inline-flex h-10 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
-const primaryBtn =
-  'inline-flex h-10 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
+const secondaryBtn = buttonCls('secondary');
+const primaryBtn = buttonCls('primary');
 
 // Creates a new row in conference_sessions. After saving, the Sessions page
 // reloads on the new session (via ?code=) so you can add topics and coordinators.
@@ -151,7 +150,7 @@ export default function AddSessionModal({
         {overlaps.length > 0 && (
           <SessionOverlapWarning overlaps={overlaps} onBack={() => setOverlaps([])} onSaveAnyway={saveAnyway} />
         )}
-        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-sm text-red-800">{error}</p>}
+        {error && <p role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-2.5 text-sm text-danger-strong">{error}</p>}
       </form>
     </Modal>
   );

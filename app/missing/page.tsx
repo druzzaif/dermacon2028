@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import AssignFacultyModal from '../components/AssignFacultyModal';
-import Badge from '../components/Badge';
-import { AlertIcon, ArrowUpRightIcon, CalendarIcon, ChevronDownIcon, ClockIcon, PinIcon, PlusIcon } from '../components/Icons';
+import { ArrowUpRightIcon, CalendarIcon, ChevronDownIcon, ClockIcon, PinIcon, PlusIcon } from '../components/Icons';
 import { Button, EmptyState, LoadingBlock, PageHeader, PageShell, buttonCls, cardCls } from '../components/ui';
 import { formatTime12 } from '../lib/time';
 
@@ -87,6 +86,9 @@ export default function MissingDataPage() {
   const totalItems = groupedData.reduce((n, s) => n + countFor(s), 0);
   const allOpen = groupedData.length > 0 && groupedData.every((s) => openIds.has(String(s.id)));
 
+  // One quiet row per thing to fix: plain white, a thin marker on the left, and a small button
+  const row = 'flex flex-col justify-between gap-3 border-l-2 border-l-warning-line py-3 pl-4 pr-1 sm:flex-row sm:items-center';
+
   return (
     <>
       <PageShell>
@@ -115,34 +117,30 @@ export default function MissingDataPage() {
             </EmptyState>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className={`divide-y divide-line overflow-hidden ${cardCls}`}>
             {groupedData.map((session) => {
               const open = openIds.has(String(session.id));
               const date = dateLabel(session.session_date);
               return (
-                <section
-                  key={session.id}
-                  aria-labelledby={`session-${session.id}`}
-                  className={`overflow-hidden ${cardCls}`}
-                >
+                <section key={session.id} aria-labelledby={`session-${session.id}`}>
                   <button
                     type="button"
                     onClick={() => toggle(String(session.id))}
                     aria-expanded={open}
-                    className="flex w-full flex-wrap items-center gap-3 p-4 text-left transition-colors hover:bg-slate-50 sm:px-5"
+                    className={`flex w-full flex-wrap items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:px-5 ${open ? 'bg-slate-50' : ''}`}
                   >
-                    <span className="tnum inline-flex h-8 items-center rounded-lg bg-accent px-2.5 text-sm font-semibold text-white">
+                    <span className="tnum inline-flex h-7 min-w-12 items-center justify-center rounded-md bg-slate-100 px-2 text-sm font-semibold text-ink ring-1 ring-inset ring-line">
                       {session.session_code}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span id={`session-${session.id}`} className="block text-base font-semibold text-ink">
+                      <span id={`session-${session.id}`} className="block text-[15px] font-semibold text-ink">
                         {session.session_name || 'Untitled session'}
                       </span>
                       <span className="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-sm text-ink-2">
-                        <span className="inline-flex items-center gap-1.5 tnum">
+                        <span className="tnum inline-flex items-center gap-1.5">
                           <CalendarIcon /> {date || <span className="font-medium text-danger">No date</span>}
                         </span>
-                        <span className="inline-flex items-center gap-1.5 tnum">
+                        <span className="tnum inline-flex items-center gap-1.5">
                           <ClockIcon /> {session.start_time ? formatTime12(session.start_time) : <span className="font-medium text-danger">No time</span>}
                         </span>
                         <span className="inline-flex items-center gap-1.5">
@@ -150,7 +148,7 @@ export default function MissingDataPage() {
                         </span>
                       </span>
                     </span>
-                    <Badge tone="danger">{countFor(session)} to fix</Badge>
+                    <span className="tnum text-sm font-medium text-ink-2">{countFor(session)} to fix</span>
                     <ChevronDownIcon
                       className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
                       width={20}
@@ -159,53 +157,47 @@ export default function MissingDataPage() {
                   </button>
 
                   {open && (
-                    <div className="border-t border-line">
-                      <ul className="space-y-2.5 p-4 sm:p-5">
+                    <div className="border-t border-line bg-white px-4 py-2 sm:px-5">
+                      <ul className="divide-y divide-line">
                         {session.isEmpty && (
-                          <li className="flex flex-col justify-between gap-3 rounded-lg border border-danger-line bg-danger-tint p-3.5 sm:flex-row sm:items-center">
-                            <div className="flex items-start gap-3">
-                              <AlertIcon className="mt-0.5 shrink-0 text-danger" width={20} height={20} />
-                              <div>
-                                <p className="font-semibold text-ink">This session has no topics yet</p>
-                                <p className="mt-0.5 text-sm text-danger-strong">Add topics to build the programme.</p>
-                              </div>
+                          <li className={row}>
+                            <div>
+                              <p className="font-medium text-ink">This session has no topics yet</p>
+                              <p className="text-sm text-ink-2">Add topics to build the programme.</p>
                             </div>
-                            <a href={`/sessions?code=${session.session_code}`} className={buttonCls('secondary')}>
+                            <a href={`/sessions?code=${session.session_code}`} className={buttonCls('secondary', 'sm')}>
                               Go to session <ArrowUpRightIcon width={14} height={14} />
                             </a>
                           </li>
                         )}
 
                         {!session.hasCoordinators && (
-                          <li className="flex flex-col justify-between gap-3 rounded-lg border border-warning-line bg-warning-tint p-3.5 sm:flex-row sm:items-center">
-                            <div className="flex items-start gap-3">
-                              <AlertIcon className="mt-0.5 shrink-0 text-warning" width={20} height={20} />
-                              <div>
-                                <p className="font-semibold text-ink">No coordinators assigned</p>
-                                <p className="mt-0.5 text-sm text-warning">Assign a lead, national or local coordinator.</p>
-                              </div>
+                          <li className={row}>
+                            <div>
+                              <p className="font-medium text-ink">No coordinators assigned</p>
+                              <p className="text-sm text-ink-2">Assign a lead, national or local coordinator.</p>
                             </div>
-                            <a href={`/sessions?code=${session.session_code}`} className={buttonCls('secondary')}>
+                            <a href={`/sessions?code=${session.session_code}`} className={buttonCls('secondary', 'sm')}>
                               Edit coordinators <ArrowUpRightIcon width={14} height={14} />
                             </a>
                           </li>
                         )}
 
                         {session.missingTopics.map((topic: any) => (
-                          <li key={topic.id} className="flex flex-col justify-between gap-3 rounded-lg border border-danger-line bg-danger-tint p-3.5 sm:flex-row sm:items-center">
-                            <div className="flex items-start gap-3">
-                              <span className="tnum inline-flex h-8 min-w-8 shrink-0 items-center justify-center rounded-lg bg-white px-2 text-sm font-semibold text-danger-strong ring-1 ring-inset ring-danger-line">
+                          <li key={topic.id} className={row}>
+                            <div className="flex min-w-0 items-start gap-3">
+                              <span className="tnum mt-0.5 inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded bg-slate-100 px-1.5 text-xs font-semibold text-ink-2">
                                 <span className="sr-only">Number </span>{topic.sequence_no || '?'}
                               </span>
-                              <div>
-                                <p className="font-semibold text-ink">
-                                  {topic.topic_title || <span className="italic text-danger-strong">(Blank topic title)</span>}
+                              <div className="min-w-0">
+                                <p className="font-medium text-ink">
+                                  {topic.topic_title || <span className="italic text-ink-2">(Blank topic title)</span>}
                                 </p>
-                                <p className="mt-0.5 text-sm text-danger-strong">Needs a speaker</p>
+                                <p className="text-sm text-ink-2">Needs a speaker</p>
                               </div>
                             </div>
                             <Button
-                              variant="primary"
+                              size="sm"
                               onClick={() => setAssigningTopic(topic)}
                               aria-label={`Assign a speaker to ${topic.topic_title || 'untitled topic'} in ${session.session_code}`}
                             >
@@ -214,7 +206,7 @@ export default function MissingDataPage() {
                           </li>
                         ))}
                       </ul>
-                      <div className="border-t border-line bg-canvas px-4 py-2.5 sm:px-5">
+                      <div className="border-t border-line py-2.5">
                         <a href={`/sessions?code=${session.session_code}`} className="text-sm font-medium text-accent hover:underline">
                           Open session {session.session_code}
                         </a>

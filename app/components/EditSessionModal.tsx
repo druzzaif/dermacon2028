@@ -8,13 +8,12 @@ import { TimeRange } from './TimeField';
 import SessionOverlapWarning from './SessionOverlapWarning';
 import SessionChairsPicker, { logSessionChairChanges, type ChairPerson } from './SessionChairsPicker';
 import { findSessionOverlaps, type SessionOverlap } from '../lib/sessionOverlap';
+import { buttonCls } from './ui';
 
 export const SESSION_TYPES = ['MasterClass', 'Workshop', 'Plenary', 'Panel'];
 
-const secondaryBtn =
-  'inline-flex h-10 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
-const primaryBtn =
-  'inline-flex h-10 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
+const secondaryBtn = buttonCls('secondary');
+const primaryBtn = buttonCls('primary');
 
 export default function EditSessionModal({
   session,
@@ -165,7 +164,7 @@ export default function EditSessionModal({
         {overlaps.length > 0 && (
           <SessionOverlapWarning overlaps={overlaps} onBack={() => setOverlaps([])} onSaveAnyway={saveAnyway} />
         )}
-        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-sm text-red-800">{error}</p>}
+        {error && <p role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-2.5 text-sm text-danger-strong">{error}</p>}
       </form>
     </Modal>
   );

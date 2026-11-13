@@ -15,13 +15,13 @@ export default function SessionOverlapWarning({
   onSaveAnyway: () => void;
 }) {
   return (
-    <div role="alert" className="space-y-2 rounded-xl border border-red-300 bg-red-50 p-3">
-      <p className="flex items-center gap-2 text-sm font-semibold text-red-900">
+    <div role="alert" className="space-y-2 rounded-xl border border-danger-line bg-danger-tint p-3">
+      <p className="flex items-center gap-2 text-sm font-semibold text-danger-strong">
         <AlertIcon width={16} height={16} /> This hall is already booked at that time.
       </p>
       <ul className="space-y-1">
         {overlaps.map((o, i) => (
-          <li key={i} className="rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-sm text-red-900">
+          <li key={i} className="rounded-lg border border-danger-line bg-white px-2.5 py-1.5 text-sm text-danger-strong">
             <strong>{o.code}</strong> {o.name} <span className="tnum">({o.hall}, {formatTime12(o.start)} – {formatTime12(o.end)})</span>
           </li>
         ))}
@@ -37,7 +37,7 @@ export default function SessionOverlapWarning({
         <button
           type="button"
           onClick={onSaveAnyway}
-          className="inline-flex h-9 items-center rounded-lg bg-red-700 px-4 text-sm font-medium text-white hover:bg-red-800"
+          className="inline-flex h-9 items-center rounded-lg bg-danger px-4 text-sm font-medium text-white hover:bg-danger-strong"
         >
           Save anyway
         </button>

@@ -75,7 +75,7 @@ export default function SessionChairsPicker({
               </div>
               <button type="button" onClick={() => onChange(value.filter((v) => v.id !== p.id))}
                 aria-label={`Remove ${p.canonical_name}`}
-                className="inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-red-700 hover:bg-red-50">
+                className="inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-danger hover:bg-danger-tint">
                 Remove
               </button>
             </li>

@@ -5,6 +5,7 @@ import { supabase } from '../supabase';
 import Modal from './Modal';
 import Badge from './Badge';
 import { inputCls } from './Field';
+import { buttonCls } from './ui';
 
 type FacultyLite = { id: string; canonical_name: string; email: string | null };
 type Topic = {
@@ -131,8 +132,8 @@ export default function EditChairpersonsModal({
     }
   }
 
-  const secondary = 'inline-flex h-11 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
-  const primary = 'inline-flex h-11 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50';
+  const secondary = buttonCls('secondary');
+  const primary = buttonCls('primary');
 
   return (
     <Modal
@@ -156,7 +157,7 @@ export default function EditChairpersonsModal({
         <div className="space-y-4">
           <p className="text-sm text-ink-2">
             Search a faculty member under a topic to make them a chairperson of it. A topic can have as many chairs as you like.
-            Saving does not email anyone: go to <strong>Emails → Changes</strong> when you are ready to tell them.
+            Saving does not email anyone: go to <strong>Emails → Schedule changes</strong> when you are ready to tell them.
           </p>
           <ul className="space-y-3">
             {topics.map((t) => {
@@ -218,7 +219,7 @@ export default function EditChairpersonsModal({
                         ))}
                       </div>
                     )}
-                    {notice[t.id] && <p role="alert" className="mt-1.5 text-sm text-amber-900">{notice[t.id]}</p>}
+                    {notice[t.id] && <p role="alert" className="mt-1.5 text-sm text-warning">{notice[t.id]}</p>}
                   </div>
                 </li>
               );
@@ -226,7 +227,7 @@ export default function EditChairpersonsModal({
           </ul>
         </div>
       )}
-      {error && <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+      {error && <p role="alert" className="mt-4 rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">{error}</p>}
     </Modal>
   );
 }

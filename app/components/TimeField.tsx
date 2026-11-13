@@ -125,7 +125,7 @@ export default function TimeField({
             else if (e.key === 'ArrowDown') { e.preventDefault(); step(-5); }
           }}
           className={`tnum block ${h} ${compact ? 'w-[5.75rem] text-sm' : 'w-28 text-base'} rounded-lg border bg-white px-2.5 text-ink placeholder:text-muted ${
-            invalid ? 'border-red-600 ring-1 ring-red-600' : 'border-field'
+            invalid ? 'border-danger ring-1 ring-danger' : 'border-field'
           }`}
         />
         <datalist id={listId}>
@@ -150,7 +150,7 @@ export default function TimeField({
         </div>
       </div>
       {note && (
-        <p id={noteId} role={invalid ? 'alert' : undefined} className={`mt-1.5 text-xs ${invalid ? 'text-red-700' : 'text-muted'}`}>
+        <p id={noteId} role={invalid ? 'alert' : undefined} className={`mt-1.5 text-xs ${invalid ? 'text-danger' : 'text-muted'}`}>
           {note}
         </p>
       )}
@@ -234,7 +234,7 @@ export function DurationField({
           else if (e.key === 'ArrowDown') { e.preventDefault(); step(-5); }
         }}
         className={`tnum block ${h} w-16 rounded-lg border bg-white px-2 text-center text-sm text-ink placeholder:text-muted ${
-          invalid ? 'border-red-600 ring-1 ring-red-600' : 'border-field'
+          invalid ? 'border-danger ring-1 ring-danger' : 'border-field'
         }`}
       />
     </div>
@@ -291,7 +291,7 @@ export function TimeRange({
           {endEl}
         </div>
       )}
-      {bad && <p role="alert" className="mt-1.5 text-xs font-medium text-red-700">The end time must be after the start time.</p>}
+      {bad && <p role="alert" className="mt-1.5 text-xs font-medium text-danger">The end time must be after the start time.</p>}
     </div>
   );
 }
@@ -303,7 +303,7 @@ export function DurationNote({ start, end }: { start: string; end: string }) {
   if (a == null || b == null) return null;
   const d = b - a;
   if (d <= 0) {
-    return <p role="alert" className="text-sm font-medium text-red-700">The end time must be after the start time.</p>;
+    return <p role="alert" className="text-sm font-medium text-danger">The end time must be after the start time.</p>;
   }
   const text = d >= 60 ? `${Math.floor(d / 60)} h${d % 60 ? ` ${d % 60} min` : ''}` : `${d} min`;
   return (

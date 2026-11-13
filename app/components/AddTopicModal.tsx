@@ -10,8 +10,6 @@ import { TimeRange } from './TimeField';
 import { addMinutes, formatTime12 as formatTimeAmPm } from '../lib/time';
 
 // The topic is the main thing in this form: bigger, easy-to-read text
-const smallLinkBtn =
-  'inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-red-700 hover:bg-red-50';
 const titleCls =
   'block w-full resize-none rounded-lg border border-field bg-white px-3 py-1.5 text-sm font-medium leading-snug text-ink placeholder:font-normal placeholder:text-muted';
 export const topicTitleCls =
@@ -427,13 +425,13 @@ setShowSuccessPrompt(true);
       >
         <div className="space-y-4">
           <p className="flex items-start gap-2 text-ink-2">
-            <CheckIcon className="mt-1 shrink-0 text-green-700" width={18} height={18} />
+            <CheckIcon className="mt-1 shrink-0 text-success" width={18} height={18} />
             Faculty assignments are updated. You can generate a PDF for the new faculty, for the whole session, or just close.
           </p>
           <div role="status" aria-live="polite">
             {pdfBusy && <p className="text-sm text-ink-2">Rendering PDF…</p>}
             {pdfUrl && (
-              <p className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
+              <p className="rounded-lg bg-success-tint p-3 text-sm text-success">
                 PDF ready.{' '}
                 <a href={pdfUrl} target="_blank" rel="noreferrer" className="font-semibold underline">
                   Open or download<span className="sr-only"> (opens in a new tab)</span>
@@ -442,7 +440,7 @@ setShowSuccessPrompt(true);
             )}
           </div>
           {pdfError && (
-            <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{pdfError}</p>
+            <p role="alert" className="rounded-lg bg-danger-tint p-3 text-sm text-danger-strong">{pdfError}</p>
           )}
           <div className="grid gap-2 sm:grid-cols-2">
             <button
@@ -656,7 +654,7 @@ setShowSuccessPrompt(true);
         </div>
 
         {!overlapBlocked && topicOverlaps.length > 0 && (
-          <div role="status" aria-live="polite" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          <div role="status" aria-live="polite" className="rounded-lg border border-warning-line bg-warning-tint p-3 text-sm text-warning">
             <p className="flex items-center gap-2 font-semibold">
               <AlertIcon width={16} height={16} />
               This time overlaps {topicOverlaps.length === 1 ? 'another topic' : `${topicOverlaps.length} other topics`} in this session.
@@ -666,17 +664,17 @@ setShowSuccessPrompt(true);
         )}
 
         {(conflicts.length > 0 || (overlapBlocked && topicOverlaps.length > 0)) && (
-          <div role="alert" className="space-y-3 rounded-xl border border-red-300 bg-red-50 p-4">
+          <div role="alert" className="space-y-3 rounded-xl border border-danger-line bg-danger-tint p-4">
             {overlapBlocked && topicOverlaps.length > 0 && (
               <div className="space-y-2">
-                <p className="flex items-center gap-2 text-sm font-semibold text-red-900">
+                <p className="flex items-center gap-2 text-sm font-semibold text-danger-strong">
                   <AlertIcon width={18} height={18} /> This topic overlaps another topic in {session.session_code}.
                 </p>
                 <ul className="space-y-2">
                   {topicOverlaps.map((t) => {
                     const same = t.start_time === newStart && t.end_time === newEnd;
                     return (
-                      <li key={t.id} className="rounded-lg border border-red-200 bg-white p-2.5 text-sm text-red-900">
+                      <li key={t.id} className="rounded-lg border border-danger-line bg-white p-2.5 text-sm text-danger-strong">
                         <span className="tnum font-semibold">
                           {formatTimeAmPm(t.start_time)} – {formatTimeAmPm(t.end_time)}
                         </span>
@@ -690,13 +688,13 @@ setShowSuccessPrompt(true);
               </div>
             )}
             {conflicts.length > 0 && (
-              <p className="flex items-center gap-2 text-sm font-semibold text-red-900">
+              <p className="flex items-center gap-2 text-sm font-semibold text-danger-strong">
                 <AlertIcon width={18} height={18} /> Overlap: this faculty is already booked at that time.
               </p>
             )}
             <ul className="space-y-2">
               {conflicts.map((c, i) => (
-                <li key={i} className="rounded-lg border border-red-200 bg-white p-2.5 text-sm text-red-900">
+                <li key={i} className="rounded-lg border border-danger-line bg-white p-2.5 text-sm text-danger-strong">
                   <strong>{c.facultyName}</strong> is also in <em>{c.otherSession}</em> ({c.otherTopic}) on{' '}
                   <span className="tnum">{formatDateDdMmYyyy(c.otherDate)}, {formatTimeAmPm(c.otherStart)} – {formatTimeAmPm(c.otherEnd)}</span>
                 </li>
@@ -705,7 +703,7 @@ setShowSuccessPrompt(true);
             <div className="flex flex-wrap justify-end gap-2">
               <button type="button" onClick={() => { setConflicts([]); setOverlapBlocked(false); }} className={secondaryBtn}>Go back and fix</button>
               <button type="button" onClick={forceSaveAnyway}
-                className="inline-flex h-11 items-center rounded-lg bg-red-700 px-5 text-sm font-medium text-white hover:bg-red-800">
+                className="inline-flex h-11 items-center rounded-lg bg-danger px-5 text-sm font-medium text-white hover:bg-danger-strong">
                 Save anyway
               </button>
             </div>
@@ -713,7 +711,7 @@ setShowSuccessPrompt(true);
         )}
 
         {error && (
-          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>
+          <p role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">{error}</p>
         )}
       </form>
     </Modal>

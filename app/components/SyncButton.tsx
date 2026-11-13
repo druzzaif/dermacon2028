@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import { syncFromGoogle, getLastSync, getQueuedRemovalCount } from '../actions';
+import { buttonCls } from './ui';
 
 function whenLabel(iso: string | null) {
   if (!iso) return 'never';
@@ -39,8 +40,8 @@ export default function SyncButton({ onSynced, className = '' }: { onSynced?: ()
     setResult(null);
   }
 
-  const secondary = 'inline-flex h-11 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
-  const primary = 'inline-flex h-11 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50';
+  const secondary = buttonCls('secondary');
+  const primary = buttonCls('primary');
 
   return (
     <>
@@ -89,7 +90,7 @@ export default function SyncButton({ onSynced, className = '' }: { onSynced?: ()
             </div>
           )}
           {result && !result.success && (
-            <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{result.message}</p>
+            <p role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">{result.message}</p>
           )}
           {result?.success && (
             <div role="status" className="space-y-3 text-sm">
@@ -115,12 +116,12 @@ export default function SyncButton({ onSynced, className = '' }: { onSynced?: ()
               )}
               {result.revokedCount > 0 && (
                 <>
-                  <p className="font-semibold text-red-800">
+                  <p className="font-semibold text-danger-strong">
                     {result.revokedCount} topic{result.revokedCount === 1 ? '' : 's'} un-confirmed (faculty declined)
                   </p>
                   <ul className="space-y-2">
                     {result.revoked.map((g: any, i: number) => (
-                      <li key={i} className="rounded-lg border border-red-200 bg-red-50 p-3">
+                      <li key={i} className="rounded-lg border border-danger-line bg-danger-tint p-3">
                         <p className="font-medium text-ink">{g.name}</p>
                         <ul className="mt-1 list-disc pl-5 text-ink-2">
                           {g.topics.map((t: string, j: number) => <li key={j}>{t}</li>)}

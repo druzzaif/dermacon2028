@@ -6,6 +6,9 @@ import { CloseIcon } from './Icons';
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
+// Open dialogs, oldest first. Only the last one (on top) reacts to Escape and Tab.
+const openModals: object[] = [];
+
 const sizes = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-2xl', xl: 'max-w-4xl' } as const;
 
 /**
@@ -45,6 +48,8 @@ export default function Modal({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
+    const token = {};
+    openModals.push(token);
     const opener = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -54,6 +59,7 @@ export default function Modal({
     (first ?? dialog).focus();
 
     function onKey(e: KeyboardEvent) {
+      if (openModals[openModals.length - 1] !== token) return;
       if (e.key === 'Escape') {
         if (!busyRef.current) {
           e.stopPropagation();
@@ -83,6 +89,8 @@ export default function Modal({
     }
     document.addEventListener('keydown', onKey);
     return () => {
+      const at = openModals.indexOf(token);
+      if (at >= 0) openModals.splice(at, 1);
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prevOverflow;
       opener?.focus?.();

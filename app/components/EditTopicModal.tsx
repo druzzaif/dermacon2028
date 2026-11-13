@@ -12,6 +12,7 @@ import Field, { inputCompactCls } from './Field';
 import { AlertIcon, CheckIcon, CloseIcon } from './Icons';
 import { TimeRange } from './TimeField';
 import { formatTime12 as formatTimeAmPm } from '../lib/time';
+import { buttonCls } from './ui';
 
 type FacultyLite = { id: string; canonical_name: string; email: string | null };
 
@@ -62,12 +63,9 @@ function formatDateDdMmYyyy(dateStr: string | null | undefined): string {
   return `${dd}-${mm}-${d.getFullYear()}`;
 }
 
-const secondaryBtn =
-  'inline-flex h-10 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
-const primaryBtn =
-  'inline-flex h-10 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
-const smallLinkBtn =
-  'inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium text-red-700 hover:bg-red-50';
+const secondaryBtn = buttonCls('secondary');
+const primaryBtn = buttonCls('primary');
+const smallLinkBtn = buttonCls('danger-quiet', 'sm');
 const titleCls =
   'block w-full resize-none rounded-lg border border-field bg-white px-3 py-1.5 text-sm font-medium leading-snug text-ink placeholder:font-normal placeholder:text-muted';
 
@@ -379,13 +377,13 @@ export default function EditTopicModal({
       >
         <div className="space-y-4">
           <p className="flex items-start gap-2 text-ink-2">
-            <CheckIcon className="mt-1 shrink-0 text-green-700" width={18} height={18} />
+            <CheckIcon className="mt-1 shrink-0 text-success" width={18} height={18} />
             Changes saved. You can make a PDF for the faculty on this topic, for the whole session, or just close.
           </p>
           <div role="status" aria-live="polite">
             {pdfBusy && <p className="text-sm text-ink-2">Rendering PDF…</p>}
             {pdfUrl && (
-              <p className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
+              <p className="rounded-lg bg-success-tint p-3 text-sm text-success">
                 PDF ready.{' '}
                 <a href={pdfUrl} target="_blank" rel="noreferrer" className="font-semibold underline">
                   Open or download<span className="sr-only"> (opens in a new tab)</span>
@@ -393,7 +391,7 @@ export default function EditTopicModal({
               </p>
             )}
           </div>
-          {pdfError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{pdfError}</p>}
+          {pdfError && <p role="alert" className="rounded-lg bg-danger-tint p-3 text-sm text-danger-strong">{pdfError}</p>}
           <div className="grid gap-2 sm:grid-cols-2">
             <button
               type="button"
@@ -447,7 +445,7 @@ export default function EditTopicModal({
             type="button"
             onClick={() => setConfirmDelete(true)}
             disabled={isSaving}
-            className="mr-auto inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium text-red-700 hover:bg-red-50"
+            className="mr-auto inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium text-danger hover:bg-danger-tint"
           >
             Delete topic
           </button>
@@ -611,13 +609,13 @@ export default function EditTopicModal({
         </div>
 
         {conflicts.length > 0 && (
-          <div role="alert" className="space-y-2 rounded-xl border border-red-300 bg-red-50 p-3">
-            <p className="flex items-center gap-2 text-sm font-semibold text-red-900">
+          <div role="alert" className="space-y-2 rounded-xl border border-danger-line bg-danger-tint p-3">
+            <p className="flex items-center gap-2 text-sm font-semibold text-danger-strong">
               <AlertIcon width={16} height={16} /> Overlap: this faculty is already booked at that time.
             </p>
             <ul className="space-y-1">
               {conflicts.map((c, i) => (
-                <li key={i} className="rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-sm text-red-900">
+                <li key={i} className="rounded-lg border border-danger-line bg-white px-2.5 py-1.5 text-sm text-danger-strong">
                   <strong>{c.facultyName}</strong> is also in <em>{c.otherSession}</em> ({c.otherTopic}) on{' '}
                   <span className="tnum">{formatDateDdMmYyyy(c.otherDate)}, {formatTimeAmPm(c.otherStart)} – {formatTimeAmPm(c.otherEnd)}</span>
                 </li>
@@ -626,14 +624,14 @@ export default function EditTopicModal({
             <div className="flex flex-wrap justify-end gap-2">
               <button type="button" onClick={() => setConflicts([])} className={secondaryBtn}>Go back and fix</button>
               <button type="button" onClick={forceSaveAnyway}
-                className="inline-flex h-10 items-center rounded-lg bg-red-700 px-5 text-sm font-medium text-white hover:bg-red-800">
+                className="inline-flex h-10 items-center rounded-lg bg-danger px-5 text-sm font-medium text-white hover:bg-danger-strong">
                 Save anyway
               </button>
             </div>
           </div>
         )}
 
-        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-sm text-red-800">{error}</p>}
+        {error && <p role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-2.5 text-sm text-danger-strong">{error}</p>}
       </form>
 
     </Modal>
@@ -646,7 +644,7 @@ export default function EditTopicModal({
                 <strong>{unconfirming.faculty.canonical_name}</strong> will be shown as <strong>not confirmed</strong> for{' '}
                 <strong>{topic.topic_title}</strong>.
               </p>
-              <p className="mt-2 text-gray-500">
+              <p className="mt-2 text-muted">
                 This happens now, without clicking Save, and changes your PC only. The next{' '}
                 <strong>Sync confirmations</strong> also removes it from the Google sheet.
               </p>
