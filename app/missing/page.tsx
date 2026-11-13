@@ -87,7 +87,7 @@ export default function MissingDataPage() {
   const allOpen = groupedData.length > 0 && groupedData.every((s) => openIds.has(String(s.id)));
 
   // One quiet row per thing to fix: plain white, a thin marker on the left, and a small button
-  const row = 'flex flex-col justify-between gap-3 border-l-2 border-l-warning-line py-3 pl-4 pr-1 sm:flex-row sm:items-center';
+  const row = 'flex flex-col justify-between gap-3 border-l-2 border-l-blue-300 py-3 pl-4 pr-1 sm:flex-row sm:items-center';
 
   return (
     <>
@@ -127,9 +127,9 @@ export default function MissingDataPage() {
                     type="button"
                     onClick={() => toggle(String(session.id))}
                     aria-expanded={open}
-                    className={`flex w-full flex-wrap items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:px-5 ${open ? 'bg-slate-50' : ''}`}
+                    className={`flex w-full flex-wrap items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-blue-50/70 sm:px-5 ${open ? 'bg-blue-50/70' : ''}`}
                   >
-                    <span className="tnum inline-flex h-7 min-w-12 items-center justify-center rounded-md bg-slate-100 px-2 text-sm font-semibold text-ink ring-1 ring-inset ring-line">
+                    <span className="tnum inline-flex h-7 min-w-12 items-center justify-center rounded-md bg-blue-50 px-2 text-sm font-semibold text-blue-900 ring-1 ring-inset ring-blue-200">
                       {session.session_code}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -148,7 +148,7 @@ export default function MissingDataPage() {
                         </span>
                       </span>
                     </span>
-                    <span className="tnum text-sm font-medium text-ink-2">{countFor(session)} to fix</span>
+                    <span className="tnum text-sm font-medium text-blue-900">{countFor(session)} to fix</span>
                     <ChevronDownIcon
                       className={`shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
                       width={20}
@@ -157,15 +157,15 @@ export default function MissingDataPage() {
                   </button>
 
                   {open && (
-                    <div className="border-t border-line bg-white px-4 py-2 sm:px-5">
-                      <ul className="divide-y divide-line">
+                    <div className="border-t border-blue-100 bg-white px-4 py-2 sm:px-5">
+                      <ul className="divide-y divide-blue-100">
                         {session.isEmpty && (
                           <li className={row}>
                             <div>
                               <p className="font-medium text-ink">This session has no topics yet</p>
                               <p className="text-sm text-ink-2">Add topics to build the programme.</p>
                             </div>
-                            <a href={`/sessions?code=${session.session_code}`} className={buttonCls('secondary', 'sm')}>
+                            <a href={`/sessions?code=${session.session_code}`} className={buttonCls('quiet', 'sm', 'border border-blue-200')}>
                               Go to session <ArrowUpRightIcon width={14} height={14} />
                             </a>
                           </li>
@@ -177,7 +177,7 @@ export default function MissingDataPage() {
                               <p className="font-medium text-ink">No coordinators assigned</p>
                               <p className="text-sm text-ink-2">Assign a lead, national or local coordinator.</p>
                             </div>
-                            <a href={`/sessions?code=${session.session_code}`} className={buttonCls('secondary', 'sm')}>
+                            <a href={`/sessions?code=${session.session_code}`} className={buttonCls('quiet', 'sm', 'border border-blue-200')}>
                               Edit coordinators <ArrowUpRightIcon width={14} height={14} />
                             </a>
                           </li>
@@ -186,7 +186,7 @@ export default function MissingDataPage() {
                         {session.missingTopics.map((topic: any) => (
                           <li key={topic.id} className={row}>
                             <div className="flex min-w-0 items-start gap-3">
-                              <span className="tnum mt-0.5 inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded bg-slate-100 px-1.5 text-xs font-semibold text-ink-2">
+                              <span className="tnum mt-0.5 inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded bg-blue-50 px-1.5 text-xs font-semibold text-blue-900">
                                 <span className="sr-only">Number </span>{topic.sequence_no || '?'}
                               </span>
                               <div className="min-w-0">
@@ -197,7 +197,9 @@ export default function MissingDataPage() {
                               </div>
                             </div>
                             <Button
+                              variant="quiet"
                               size="sm"
+                              className="border border-blue-200"
                               onClick={() => setAssigningTopic(topic)}
                               aria-label={`Assign a speaker to ${topic.topic_title || 'untitled topic'} in ${session.session_code}`}
                             >
