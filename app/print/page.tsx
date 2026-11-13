@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../supabase';
 import { formatTime12 } from '../lib/time';
 import { inputCls } from '../components/Field';
+import { Notice, PageHeader, PageShell, Spinner, Tabs, buttonCls, EmptyState, LoadingBlock } from '../components/ui';
 
 type Sess = {
   id: string;
@@ -21,13 +22,13 @@ function dayLabel(d: string | null) {
   return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-const primaryBtn = 'inline-flex h-11 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong disabled:opacity-50';
-const secondaryBtn = 'inline-flex h-11 items-center justify-center rounded-lg border border-field bg-white px-4 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
+const primaryBtn = buttonCls('primary');
+const secondaryBtn = buttonCls('secondary');
 
 function Check({ checked, onChange, title, desc, disabled }: { checked: boolean; onChange: (v: boolean) => void; title: string; desc?: string; disabled?: boolean }) {
   return (
-    <label className={`flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-white p-3 hover:bg-slate-50 ${disabled ? 'opacity-50' : ''}`}>
-      <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+    <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${checked && !disabled ? 'border-accent bg-accent-tint' : 'border-line bg-white hover:bg-slate-50'} ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}>
+      <input type="checkbox" className="mt-0.5" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span>
         <span className="block text-sm font-medium text-ink">{title}</span>
         {desc && <span className="block text-xs text-ink-2">{desc}</span>}
@@ -61,38 +62,41 @@ async function fetchPdf(body: any, fileName: string) {
 function PdfResult({ url, error, note }: { url: string | null; error: string | null; note?: string }) {
   return (
     <>
-      <div role="status" aria-live="polite">
+      <div role="status" aria-live="polite" className="space-y-2">
         {url && (
-          <p className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
-            PDF downloaded.{' '}
+          <Notice tone="success" title="PDF made and downloaded">
             <a href={url} target="_blank" rel="noreferrer" className="font-semibold underline">Open to print<span className="sr-only"> (opens in a new tab)</span></a>
-          </p>
+          </Notice>
         )}
-        {url && note && <p className="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{note}</p>}
+        {url && note && <Notice tone="warning">{note}</Notice>}
       </div>
-      {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+      {error && <Notice tone="danger" title="The PDF could not be made">{error}</Notice>}
     </>
   );
 }
 
 export default function PrintPage() {
   const [mode, setMode] = useState<'sessions' | 'faculty'>('sessions');
-  const tab = (on: boolean) =>
-    `inline-flex h-11 items-center border-b-2 px-4 text-sm font-medium ${on ? 'border-accent text-accent' : 'border-transparent text-ink-2 hover:text-ink'}`;
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-canvas text-ink">
-      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl p-4 outline-none sm:p-8">
-        <h1 className="text-3xl font-semibold">Print</h1>
-        <p className="mb-5 mt-1.5 max-w-prose text-ink-2">
-          Everything comes out as one PDF, with the date, time and hall highlighted.
-        </p>
-        <div role="tablist" aria-label="Print by" className="mb-6 flex gap-2 border-b border-line">
-          <button type="button" role="tab" aria-selected={mode === 'sessions'} className={tab(mode === 'sessions')} onClick={() => setMode('sessions')}>By session</button>
-          <button type="button" role="tab" aria-selected={mode === 'faculty'} className={tab(mode === 'faculty')} onClick={() => setMode('faculty')}>By faculty</button>
-        </div>
+    <PageShell>
+      <PageHeader
+        title="Print"
+        description="Choose what to print, then make one PDF. The date, time and hall are highlighted."
+      />
+      <Tabs
+        label="Print by"
+        idPrefix="printtab"
+        items={[
+          { key: 'sessions' as const, label: 'By session' },
+          { key: 'faculty' as const, label: 'By faculty' },
+        ]}
+        value={mode}
+        onChange={setMode}
+      />
+      <div id={`printtab-panel-${mode}`} role="tabpanel" aria-labelledby={`printtab-${mode}`}>
         {mode === 'sessions' ? <SessionPrint /> : <FacultyPrint />}
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 }
 
@@ -176,7 +180,7 @@ function FacultyPrint() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-      <section aria-label="Faculty" className="rounded-2xl border border-line bg-white p-4 shadow-card sm:p-5">
+      <section aria-label="Faculty" className="rounded-xl border border-line bg-white p-4 shadow-card sm:p-5">
         <div className="mb-3 flex flex-wrap items-end gap-2">
           <div className="min-w-[12rem] flex-1">
             <label htmlFor="fsearch" className="mb-1 block text-xs font-medium text-ink-2">Search faculty</label>
@@ -186,7 +190,7 @@ function FacultyPrint() {
           <button type="button" className={secondaryBtn} onClick={() => setPicked(new Set())} disabled={picked.size === 0}>Clear</button>
         </div>
         <label className="mb-3 flex items-center gap-2 text-sm text-ink-2">
-          <input type="checkbox" className="h-4 w-4" checked={onlyAssigned} onChange={(e) => setOnlyAssigned(e.target.checked)} />
+          <input type="checkbox" checked={onlyAssigned} onChange={(e) => setOnlyAssigned(e.target.checked)} />
           Only faculty with topics or coordinator roles
         </label>
         <p className="mb-3 text-sm text-ink-2"><strong className="text-ink">{picked.size}</strong> selected · {visible.length} shown</p>
@@ -195,7 +199,7 @@ function FacultyPrint() {
           <div className="mb-3 flex flex-wrap gap-1.5">
             {pickedList.map((f) => (
               <button key={f.id} type="button" onClick={() => toggle([f.id], false)} aria-label={`Remove ${f.canonical_name}`}
-                className="inline-flex items-center gap-1 rounded-full bg-accent-tint px-2.5 py-1 text-xs font-medium text-accent hover:bg-indigo-100">
+                className="inline-flex items-center gap-1.5 rounded-full bg-accent-tint px-2.5 py-1 text-xs font-medium text-accent transition-colors hover:bg-danger hover:text-white">
                 {f.canonical_name} <span aria-hidden="true">×</span>
               </button>
             ))}
@@ -203,15 +207,15 @@ function FacultyPrint() {
         )}
 
         {loading ? (
-          <p role="status" className="py-10 text-center text-ink-2">Loading faculty…</p>
+          <LoadingBlock>Loading faculty…</LoadingBlock>
         ) : visible.length === 0 ? (
-          <p className="py-10 text-center text-ink-2">No faculty match.</p>
+          <EmptyState title="No faculty match">Try a different search, or untick “Only faculty with topics or coordinator roles”.</EmptyState>
         ) : (
           <ul className="grid max-h-[65vh] gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
             {visible.map((f) => (
               <li key={f.id}>
                 <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-2.5 ${picked.has(f.id) ? 'border-accent bg-accent-tint' : 'border-line bg-white hover:bg-slate-50'}`}>
-                  <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0" checked={picked.has(f.id)} onChange={(e) => toggle([f.id], e.target.checked)} />
+                  <input type="checkbox" className="mt-0.5" checked={picked.has(f.id)} onChange={(e) => toggle([f.id], e.target.checked)} />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium text-ink">{f.canonical_name}</span>
                     <span className="block text-xs text-ink-2">
@@ -226,7 +230,7 @@ function FacultyPrint() {
       </section>
 
       <aside aria-label="Print options" className="space-y-5 lg:sticky lg:top-20 lg:self-start">
-        <fieldset className="space-y-2 rounded-2xl border border-line bg-white p-4 shadow-card">
+        <fieldset className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
           <legend className="sr-only">Format</legend>
           <h2 className="mb-1 text-sm font-semibold text-ink">Format</h2>
           {([
@@ -234,7 +238,7 @@ function FacultyPrint() {
             ['letterhead', 'On letterhead', 'The official commitment letter (same as the emailed PDF), one per session.'],
           ] as const).map(([v, title, desc]) => (
             <label key={v} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${format === v ? 'border-accent bg-accent-tint' : 'border-line bg-white hover:bg-slate-50'}`}>
-              <input type="radio" name="fformat" className="mt-0.5 h-4 w-4 shrink-0" checked={format === v} onChange={() => setFormat(v)} />
+              <input type="radio" name="fformat" className="mt-0.5" checked={format === v} onChange={() => setFormat(v)} />
               <span>
                 <span className="block text-sm font-medium text-ink">{title}</span>
                 <span className="block text-xs text-ink-2">{desc}</span>
@@ -244,7 +248,7 @@ function FacultyPrint() {
         </fieldset>
 
         {format === 'simple' && (
-          <div className="space-y-2 rounded-2xl border border-line bg-white p-4 shadow-card">
+          <div className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
             <h2 className="mb-1 text-sm font-semibold text-ink">Simple PDF options</h2>
             <Check checked={contacts} onChange={setContacts} title="Include contact details" desc="Faculty phone and email, and each session's lead coordinator." />
             <Check checked={confirmed} onChange={setConfirmed} title="Show confirmation status" desc="Confirmed / not confirmed per topic (as of the last sync)." />
@@ -252,14 +256,14 @@ function FacultyPrint() {
           </div>
         )}
         {format === 'letterhead' && (
-          <p className="rounded-2xl border border-line bg-white p-4 text-xs text-ink-2 shadow-card">
+          <p className="rounded-xl border border-line bg-white p-4 text-xs text-ink-2 shadow-card">
             Letters include the coordinator contact and the confirmation link, exactly like the emailed PDF. Faculty with no topics are left out. Many faculty at once can take a minute.
           </p>
         )}
 
-        <div className="space-y-3 rounded-2xl border border-line bg-white p-4 shadow-card">
+        <div className="space-y-3 rounded-xl border border-line bg-white p-4 shadow-card">
           <button type="button" onClick={makePdf} disabled={busy || picked.size === 0} className={`${primaryBtn} w-full`}>
-            {busy ? 'Making PDF…' : `Make PDF${picked.size ? ` (${picked.size})` : ''}`}
+            {busy && <Spinner />}{busy ? 'Making PDF…' : `Make PDF${picked.size ? ` (${picked.size})` : ''}`}
           </button>
           {picked.size === 0 && <p className="text-xs text-ink-2">Select at least one faculty member.</p>}
           <PdfResult url={pdfUrl} error={error} note={note} />
@@ -354,7 +358,7 @@ function SessionPrint() {
   return (
         <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
           {/* ---- sessions ---- */}
-          <section aria-label="Sessions" className="rounded-2xl border border-line bg-white p-4 shadow-card sm:p-5">
+          <section aria-label="Sessions" className="rounded-xl border border-line bg-white p-4 shadow-card sm:p-5">
             <div className="mb-3 flex flex-wrap items-end gap-2">
               <div className="min-w-[12rem] flex-1">
                 <label htmlFor="psearch" className="mb-1 block text-xs font-medium text-ink-2">Search</label>
@@ -373,9 +377,9 @@ function SessionPrint() {
             <p className="mb-3 text-sm text-ink-2"><strong className="text-ink">{picked.size}</strong> of {sessions.length} sessions selected</p>
 
             {loading ? (
-              <p role="status" className="py-10 text-center text-ink-2">Loading sessions…</p>
+              <LoadingBlock>Loading sessions…</LoadingBlock>
             ) : byDay.length === 0 ? (
-              <p className="py-10 text-center text-ink-2">No sessions match.</p>
+              <EmptyState title="No sessions match">Try a different search or hall.</EmptyState>
             ) : (
               <div className="space-y-5">
                 {byDay.map(([day, list]) => {
@@ -384,16 +388,15 @@ function SessionPrint() {
                   const someOn = !allOn && ids.some((id) => picked.has(id));
                   return (
                     <div key={day || 'none'}>
-                      <label className="mb-2 flex cursor-pointer items-center gap-3 rounded-lg bg-amber-50 px-3 py-2 ring-1 ring-inset ring-amber-200">
+                      <label className="mb-2 flex cursor-pointer items-center gap-3 rounded-lg bg-slate-100 px-3 py-2 ring-1 ring-inset ring-line">
                         <input
                           type="checkbox"
-                          className="h-4 w-4"
                           checked={allOn}
                           ref={(el) => { if (el) el.indeterminate = someOn; }}
                           onChange={(e) => toggle(ids, e.target.checked)}
                         />
-                        <span className="text-sm font-semibold text-amber-950">{dayLabel(day || null)}</span>
-                        <span className="text-xs text-amber-900">{list.length} session{list.length === 1 ? '' : 's'}</span>
+                        <span className="text-sm font-semibold text-ink">{dayLabel(day || null)}</span>
+                        <span className="text-xs text-ink-2">{list.length} session{list.length === 1 ? '' : 's'}</span>
                       </label>
                       <ul className="grid gap-1.5 sm:grid-cols-2">
                         {list.map((s) => {
@@ -401,7 +404,7 @@ function SessionPrint() {
                           return (
                             <li key={id}>
                               <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-2.5 ${picked.has(id) ? 'border-accent bg-accent-tint' : 'border-line bg-white hover:bg-slate-50'}`}>
-                                <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0" checked={picked.has(id)} onChange={(e) => toggle([id], e.target.checked)} />
+                                <input type="checkbox" className="mt-0.5" checked={picked.has(id)} onChange={(e) => toggle([id], e.target.checked)} />
                                 <span className="min-w-0">
                                   <span className="block text-sm font-medium text-ink">
                                     <span className="tnum mr-1.5 rounded bg-accent px-1.5 py-0.5 text-xs font-semibold text-white">{s.session_code}</span>
@@ -425,7 +428,7 @@ function SessionPrint() {
 
           {/* ---- options ---- */}
           <aside aria-label="Print options" className="space-y-5 lg:sticky lg:top-20 lg:self-start">
-            <div className="space-y-2 rounded-2xl border border-line bg-white p-4 shadow-card">
+            <div className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
               <h2 className="mb-1 text-sm font-semibold text-ink">What to print</h2>
               <Check checked={schedule} onChange={setSchedule} title="Session schedules" desc="Each selected session: topics, times, faculty." />
               <Check checked={missing} onChange={setMissing} title="Missing data" desc="No hall or date, no coordinators, topics without a speaker, wrong times." />
@@ -441,7 +444,7 @@ function SessionPrint() {
               )}
             </div>
 
-            <div className="space-y-2 rounded-2xl border border-line bg-white p-4 shadow-card">
+            <div className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
               <h2 className="mb-1 text-sm font-semibold text-ink">Schedule options</h2>
               <Check checked={chairs} onChange={setChairs} disabled={!schedule} title="Include chairpersons" desc="A Chairperson column next to the faculty." />
               <Check checked={contacts} onChange={setContacts} disabled={!schedule} title="Include contact details" desc="Phone and email under every coordinator, faculty and chair." />
@@ -450,9 +453,9 @@ function SessionPrint() {
               <Check checked={pagePerSession} onChange={setPagePerSession} disabled={!schedule} title="Each session on a new page" />
             </div>
 
-            <div className="space-y-3 rounded-2xl border border-line bg-white p-4 shadow-card">
+            <div className="space-y-3 rounded-xl border border-line bg-white p-4 shadow-card">
               <button type="button" onClick={makePdf} disabled={busy || nothingChosen || needsSessions} className={`${primaryBtn} w-full`}>
-                {busy ? 'Making PDF…' : 'Make PDF'}
+                {busy && <Spinner />}{busy ? 'Making PDF…' : 'Make PDF'}
               </button>
               {nothingChosen && <p className="text-xs text-ink-2">Choose at least one thing to print.</p>}
               {needsSessions && <p className="text-xs text-ink-2">Select at least one session.</p>}
