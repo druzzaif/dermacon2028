@@ -3,20 +3,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+// Menu names match the title shown on each page
 const links = [
-  { href: '/faculty', label: 'Faculty' },
   { href: '/sessions', label: 'Sessions' },
-  { href: '/overlaps', label: 'Overlaps' },
-  { href: '/missing', label: 'Missing data' },
-  { href: '/print', label: 'Print' },
+  { href: '/faculty', label: 'Faculty' },
   { href: '/emails', label: 'Emails' },
+  { href: '/missing', label: 'To-do' },
+  { href: '/overlaps', label: 'Conflicts' },
+  { href: '/print', label: 'Print' },
   { href: '/backup', label: 'Backup' },
 ];
 
 export default function NavLinks() {
   const pathname = usePathname() || '';
   return (
-    <nav aria-label="Primary" className="ml-2 flex min-w-0 items-center gap-0.5 overflow-x-auto sm:ml-6">
+    <nav aria-label="Primary" className="ml-3 flex min-w-0 items-center gap-1 overflow-x-auto px-1 sm:ml-8">
       {links.map((l) => {
         const active = pathname.startsWith(l.href);
         return (
@@ -24,14 +25,11 @@ export default function NavLinks() {
             key={l.href}
             href={l.href}
             aria-current={active ? 'page' : undefined}
-            className={`relative inline-flex h-11 shrink-0 items-center rounded-md px-3 text-sm font-medium transition-colors ${
-              active ? 'text-white' : 'text-slate-300 hover:text-white'
+            className={`inline-flex h-9 shrink-0 items-center rounded-md px-3 text-sm font-medium transition-colors ${
+              active ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
             }`}
           >
             {l.label}
-            {active && (
-              <span aria-hidden="true" className="absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-indigo-400" />
-            )}
           </Link>
         );
       })}

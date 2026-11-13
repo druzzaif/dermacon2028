@@ -16,6 +16,18 @@
   --color-accent-tint: #eef2ff; /* accent on tint: 7.1:1 */
   --color-header: #0b1220;      /* 15:1 with #e2e8f0 text */
 
+  /* Status colours: text on its own tint is >= 7:1 */
+  --color-success: #166534;
+  --color-success-tint: #f0fdf4;
+  --color-success-line: #bbf7d0;
+  --color-warning: #78350f;
+  --color-warning-tint: #fffbeb;
+  --color-warning-line: #fde68a;
+  --color-danger: #b91c1c;        /* 6.5:1 on white */
+  --color-danger-strong: #991b1b;
+  --color-danger-tint: #fef2f2;
+  --color-danger-line: #fecaca;
+
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 6px 20px rgb(15 23 42 / 0.05);
   --shadow-pop: 0 24px 64px rgb(15 23 42 / 0.22);
 }
@@ -37,6 +49,17 @@ h1, h2, h3 { letter-spacing: -0.015em; }
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* Tick boxes and radio buttons: same size and brand colour everywhere */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-accent);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled) { cursor: pointer; }
 
 /* Times, counts and IDs line up in columns */
 .tnum { font-variant-numeric: tabular-nums; }

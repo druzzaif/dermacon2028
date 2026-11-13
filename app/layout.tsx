@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "DERMACON 2028 Dashboard",
-    template: "%s · DERMACON 2028",
+    default: "DERMACON 2027",
+    template: "%s · DERMACON 2027",
   },
   description: "Automated system for scientific commitments",
 };
@@ -46,9 +46,10 @@ export default async function RootLayout({
         <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center border-b border-white/10 bg-header px-4 text-white sm:px-6">
           <Link
             href="/sessions"
-            className="shrink-0 text-[15px] font-semibold tracking-[0.12em] text-white"
+            aria-label="DERMACON 2027, go to Sessions"
+            className="flex shrink-0 items-baseline gap-1.5 rounded-md text-[15px] font-semibold tracking-[0.1em] text-white"
           >
-            CON <span className="text-indigo-300">2028</span>
+            DERMACON <span className="font-medium tracking-[0.06em] text-indigo-300">2027</span>
           </Link>
           <NavLinks />
           <DemoToggle mode={mode} />
