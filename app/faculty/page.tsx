@@ -8,7 +8,8 @@ const EditFacultyModal = dynamic(() => import('../components/EditFacultyModal'))
 const FacultyProfileModal = dynamic(() => import('../components/FacultyProfileModal'));
 import Badge from '../components/Badge';
 import SyncButton from '../components/SyncButton';
-import { CheckIcon, SearchIcon } from '../components/Icons';
+import { CheckIcon, DownloadIcon, SearchIcon } from '../components/Icons';
+import { Button, EmptyState, PageHeader, PageShell, SkeletonLines, buttonCls, cardCls, thCls, theadRowCls } from '../components/ui';
 import { inputCls } from '../components/Field';
 import { roleName } from '../lib/topicPeople';
 
@@ -105,99 +106,103 @@ export default function FacultyDirectoryPage() {
     });
   }, [faculty, searchTerm, countFilter]);
 
-  // Row actions stay visible on touch and when anything in the row has keyboard focus
-  const actionBtn =
-    'inline-flex h-11 items-center rounded-lg px-3 text-sm font-medium text-ink-2 transition-colors hover:bg-accent-tint hover:text-accent';
+  const filtersActive = Boolean(searchTerm.trim()) || countFilter !== 'all';
+  function clearFilters() {
+    setSearchTerm('');
+    setCountFilter('all');
+  }
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-canvas text-ink">
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl p-4 outline-none sm:p-8">
-        <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-          <div>
-            <h1 className="text-3xl font-semibold text-ink">Faculty directory</h1>
-            <p className="mt-1.5 max-w-prose text-ink-2">
-              Browse, filter and manage everyone speaking or coordinating at the conference.
-            </p>
-          </div>
+    <>
+      <PageShell wide>
+        <PageHeader
+          title="Faculty"
+          description="Everyone speaking, chairing or coordinating at the conference. Select a name to see their roles and email them."
+          actions={
+            <>
+              <SyncButton onSynced={refreshFaculty} />
+              <a href="/api/export" className={buttonCls('secondary')}>
+                <DownloadIcon /> Export to Excel
+              </a>
+            </>
+          }
+        />
 
-          <div className="flex flex-wrap items-center gap-3">
-            <SyncButton onSynced={refreshFaculty} />
-            <div className="relative">
-              <label htmlFor="faculty-search" className="sr-only">
-                Search faculty by name, email or ID
-              </label>
-              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input
-                id="faculty-search"
-                type="search"
-                placeholder="Search name, email or ID"
-                className={`${inputCls} w-full pl-9 sm:w-72`}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="faculty-count" className="sr-only">
-                Filter by number of topics
-              </label>
-              <select
-                id="faculty-count"
-                value={countFilter}
-                onChange={(e) => setCountFilter(e.target.value as CountFilter)}
-                className={`${inputCls} w-auto pr-8`}
-              >
-                <option value="all">All topic counts</option>
-                <option value="0">0 topics</option>
-                <option value="1">1 topic</option>
-                <option value="2">2 topics</option>
-                <option value="3+">3+ topics</option>
-                <option value="4+">4+ topics</option>
-                <option value="5+">5+ topics</option>
-              </select>
-            </div>
-            <a
-              href="/api/export"
-              className="inline-flex h-11 items-center whitespace-nowrap rounded-lg bg-accent px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-accent-strong"
-            >
-              Export to Excel
-            </a>
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="relative min-w-[16rem] flex-1 sm:max-w-md">
+            <label htmlFor="faculty-search" className="sr-only">
+              Search faculty by name, email or ID
+            </label>
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+            <input
+              id="faculty-search"
+              type="search"
+              placeholder="Search name, email or ID"
+              className={`${inputCls} pl-9`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
+          <div>
+            <label htmlFor="faculty-count" className="sr-only">
+              Filter by number of topics
+            </label>
+            <select
+              id="faculty-count"
+              value={countFilter}
+              onChange={(e) => setCountFilter(e.target.value as CountFilter)}
+              className={`${inputCls} w-auto pr-8`}
+            >
+              <option value="all">All topic counts</option>
+              <option value="0">0 topics</option>
+              <option value="1">1 topic</option>
+              <option value="2">2 topics</option>
+              <option value="3+">3+ topics</option>
+              <option value="4+">4+ topics</option>
+              <option value="5+">5+ topics</option>
+            </select>
+          </div>
+          {filtersActive && (
+            <Button variant="quiet" onClick={clearFilters}>Clear filters</Button>
+          )}
+          <p role="status" aria-live="polite" className="tnum ml-auto text-sm text-muted">
+            {loading ? 'Loading faculty…' : `Showing ${filteredFaculty.length} of ${faculty.length}`}
+          </p>
         </div>
 
-        <p role="status" aria-live="polite" className="tnum mb-3 text-sm text-muted">
-          {loading ? 'Loading faculty…' : `Showing ${filteredFaculty.length} of ${faculty.length} faculty`}
-        </p>
-
-        <div className="overflow-x-auto rounded-2xl border border-line bg-white shadow-card">
-          <table className="w-full min-w-[640px] border-collapse text-left">
+        <div className={`overflow-x-auto ${cardCls}`}>
+          <table className="w-full min-w-[600px] border-collapse text-left">
             <caption className="sr-only">
               Faculty directory. Select a name to view the profile.
             </caption>
             <thead>
-              <tr className="border-b border-line bg-slate-50/70 text-xs text-muted">
-                <th scope="col" className="px-5 py-3 font-semibold">Doctor</th>
-                <th scope="col" className="px-5 py-3 font-semibold">Email</th>
-                <th scope="col" className="hidden px-5 py-3 font-semibold lg:table-cell">Phone</th>
-                <th scope="col" className="px-5 py-3 text-center font-semibold">Topics</th>
-                <th scope="col" className="px-5 py-3 font-semibold">Roles (confirmed)</th>
-                <th scope="col" className="px-5 py-3 text-right font-semibold">
+              <tr className={theadRowCls}>
+                <th scope="col" className={`${thCls} px-3 lg:px-5`}>Name</th>
+                <th scope="col" className={`${thCls} px-3 lg:px-5`}>Email</th>
+                <th scope="col" className={`${thCls} hidden px-5 lg:table-cell`}>Phone</th>
+                <th scope="col" className={`${thCls} px-3 lg:px-5 text-center`}>Topics</th>
+                <th scope="col" className={`${thCls} px-3 lg:px-5`}>Roles · confirmed</th>
+                <th scope="col" className={`${thCls} px-3 lg:px-5 text-right`}>
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line" aria-busy={loading}>
               {loading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} aria-hidden="true">
-                    <td className="px-5 py-4" colSpan={6}>
-                      <div className="h-6 animate-pulse rounded-md bg-slate-100" />
-                    </td>
-                  </tr>
-                ))
+                <tr>
+                  <td className="px-5 py-4" colSpan={6}>
+                    <SkeletonLines rows={6} />
+                  </td>
+                </tr>
               ) : filteredFaculty.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-14 text-center text-ink-2">
-                    No faculty match these filters.
+                  <td colSpan={6}>
+                    <EmptyState
+                      title={faculty.length === 0 ? 'No faculty yet' : 'No faculty match'}
+                      action={filtersActive ? <Button onClick={clearFilters}>Clear filters</Button> : undefined}
+                    >
+                      {faculty.length === 0 ? 'Faculty added to the database will be listed here.' : 'Try a different search or topic count.'}
+                    </EmptyState>
                   </td>
                 </tr>
               ) : (
@@ -220,10 +225,10 @@ export default function FacultyDirectoryPage() {
                     <tr
                       key={doc.id}
                       onClick={() => setViewingProfile(doc)}
-                      className="group cursor-pointer transition-colors hover:bg-slate-50/80"
+                      className="cursor-pointer transition-colors hover:bg-slate-50"
                     >
-                      <td className="px-5 py-2.5">
-                        <div className="flex items-center gap-3">
+                      <td className="px-3 py-2.5 lg:px-5">
+                        <div className="flex items-center gap-3 whitespace-nowrap">
                           <div
                             aria-hidden="true"
                             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-tint text-xs font-semibold text-accent"
@@ -258,25 +263,22 @@ export default function FacultyDirectoryPage() {
                         </div>
                       </td>
 
-                      <td className="px-5 py-2.5">
+                      <td className="px-3 py-2.5 lg:px-5">
                         {doc.email ? (
                           <a
                             href={`mailto:${doc.email}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="block max-w-[240px] truncate text-sm text-ink-2 hover:text-accent hover:underline"
+                            className="block max-w-[180px] truncate xl:max-w-[240px] text-sm text-ink-2 hover:text-accent hover:underline"
                             title={doc.email}
                           >
                             {doc.email}
                           </a>
                         ) : (
-                          <span className="text-sm text-muted">
-                            <span aria-hidden="true">–</span>
-                            <span className="sr-only">No email</span>
-                          </span>
+                          <span className="text-sm text-muted">No email</span>
                         )}
                       </td>
 
-                      <td className="hidden px-5 py-2.5 lg:table-cell">
+                      <td className="hidden px-3 py-2.5 lg:px-5 lg:table-cell">
                         {doc.phone ? (
                           <a
                             href={`tel:${phoneDigits}`}
@@ -286,14 +288,11 @@ export default function FacultyDirectoryPage() {
                             {doc.phone}
                           </a>
                         ) : (
-                          <span className="text-sm text-muted">
-                            <span aria-hidden="true">–</span>
-                            <span className="sr-only">No phone</span>
-                          </span>
+                          <span className="text-sm text-muted">Not set</span>
                         )}
                       </td>
 
-                      <td className="px-5 py-2.5 text-center">
+                      <td className="px-3 py-2.5 lg:px-5 text-center">
                         <span
                           className={`tnum inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm font-semibold ${
                             topicCount > 0 ? 'bg-slate-100 text-ink' : 'text-muted'
@@ -304,15 +303,19 @@ export default function FacultyDirectoryPage() {
                         </span>
                       </td>
 
-                      <td className="px-5 py-2.5">
+                      <td className="px-3 py-2.5 lg:px-5">
                         {roleBreakdown(doc).length === 0 ? (
-                          <span className="text-sm text-muted">–</span>
+                          <span className="text-sm text-muted">No roles yet</span>
                         ) : (
                           <ul className="flex flex-wrap gap-1.5">
                             {roleBreakdown(doc).map((x) => (
                               <li key={x.role}>
-                                <Badge tone={x.confirmed === x.total ? 'success' : x.confirmed > 0 ? 'warning' : 'neutral'}>
-                                  {x.role} {x.total} · {x.confirmed}/{x.total} confirmed
+                                <Badge
+                                  tone={x.confirmed === x.total ? 'success' : x.confirmed > 0 ? 'warning' : 'neutral'}
+                                >
+                                  <span title={`${x.confirmed} of ${x.total} confirmed as ${x.role}`}>
+                                    {x.role} {x.confirmed}/{x.total}
+                                  </span>
                                 </Badge>
                               </li>
                             ))}
@@ -320,24 +323,24 @@ export default function FacultyDirectoryPage() {
                         )}
                       </td>
 
-                      <td className="px-5 py-2.5 text-right">
-                        <div className="flex justify-end gap-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:transition-opacity [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100">
-                          <button
-                            type="button"
+                      <td className="px-3 py-2.5 lg:px-5 text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="quiet"
+                            size="sm"
                             onClick={(e) => { e.stopPropagation(); setEditingFaculty(doc); }}
                             aria-label={`Edit ${doc.canonical_name}`}
-                            className={actionBtn}
                           >
                             Edit
-                          </button>
-                          <button
-                            type="button"
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            size="sm"
                             onClick={(e) => handleViewPDF(doc.id, e)}
                             aria-label={`Open PDF for ${doc.canonical_name}`}
-                            className={actionBtn}
                           >
                             PDF
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -347,7 +350,7 @@ export default function FacultyDirectoryPage() {
             </tbody>
           </table>
         </div>
-      </main>
+      </PageShell>
 
       {editingFaculty && (
         <EditFacultyModal
@@ -364,6 +367,6 @@ export default function FacultyDirectoryPage() {
           onChanged={refreshFaculty}
         />
       )}
-    </div>
+    </>
   );
 }
