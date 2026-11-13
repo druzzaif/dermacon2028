@@ -2,7 +2,8 @@
 // Sections: session schedules (selected sessions), missing data, overlaps.
 // Rules for "missing" and "overlap" match the Missing data and Overlaps pages.
 import { supabase } from '../supabaseServer';
-import { formatTime12 } from './time';
+import { formatTime12, toMinutes } from './time';
+import { findEmptySlots, type EmptySlot } from './slots';
 import { sortCoordinators } from './coordOrder';
 import { sortTopicPeople } from './topicPeople';
 
@@ -16,6 +17,7 @@ export type PrintRequest = {
   contacts: boolean;      // phone + email under every name
   confirmed: boolean;     // ✓ after people who confirmed
   pagePerSession: boolean;
+  emptySlots?: boolean;   // add a marked row wherever no topic is scheduled
 };
 
 const esc = (s: any) =>
@@ -112,7 +114,19 @@ function sessionSchedule(s: any, o: PrintRequest, first: boolean) {
     ? `<div class="coords"><div class="coords-title">Session chair</div>${s.session_chairs.map((c: any, i: number) => personLine(c.faculty, '', o, undefined, `${i + 1}. `)).join('')}</div>`
     : '';
 
+  // Empty slots (worked out from the times), printed only when asked for
+  const slots: EmptySlot[] = o.emptySlots ? findEmptySlots(s.session_topics, s) : [];
+  const slotsPrinted = new Set<string>();
+  const slotRow = (g: EmptySlot) => `<tr class="slot-empty">
+      <td class="c-no">–</td>
+      <td class="c-time">${esc(t12(g.start))}<br>${esc(t12(g.end))}</td>
+      <td colspan="${o.chairs ? 3 : 2}">Empty slot (${g.minutes} min): no topic scheduled</td>
+    </tr>`;
+  const trailing = slots.find((g) => g.beforeTopicId === null);
+
   const rows = s.session_topics.map((t: any) => {
+    const before = slots.find((g) => g.beforeTopicId !== null && !slotsPrinted.has(g.start) && toMinutes(g.end) === toMinutes(t.start_time));
+    if (before) slotsPrinted.add(before.start);
     const links = t.faculty_topics || [];
     const speakers = sortTopicPeople(links.filter((ft: any) => ft.role !== 'Chairperson'));
     const chairs = links.filter((ft: any) => ft.role === 'Chairperson');
@@ -120,14 +134,14 @@ function sessionSchedule(s: any, o: PrintRequest, first: boolean) {
       ? speakers.map((ft: any, i: number) => personLine(ft.faculty, ft.role && ft.role !== 'Faculty' ? roleLabel(ft.role) : '', o, ft.confirmed, speakers.length > 1 ? `${i + 1}. ` : '')).join('')
       : '<span class="bad">No speaker</span>';
     const chHtml = chairs.length ? chairs.map((ft: any) => personLine(ft.faculty, '', o, ft.confirmed)).join('') : '<span class="muted">—</span>';
-    return `<tr>
+    return `${before ? slotRow(before) : ''}<tr>
       <td class="c-no">${esc(t.sequence_no ?? '')}</td>
       <td class="c-time">${esc(t12(t.start_time))}<br>${esc(t12(t.end_time))}</td>
       <td class="c-topic">${esc(t.topic_title || '(no title)')}</td>
       <td>${spHtml}</td>
       ${o.chairs ? `<td>${chHtml}</td>` : ''}
     </tr>`;
-  }).join('');
+  }).join('') + (trailing ? slotRow(trailing) : '');
 
   const cols = o.chairs
     ? '<col style="width:5%"><col style="width:12%"><col style="width:35%"><col style="width:28%"><col style="width:20%">'
@@ -293,6 +307,7 @@ const CSS = `
   .c-no { text-align: center; font-weight: 700; }
   .c-time { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
   .c-topic { font-weight: 600; }
+  table.grid tbody tr.slot-empty td { background: #fdecea; color: #b42318; font-weight: 700; font-style: italic; }
   .person { margin-bottom: 3px; }
   .person:last-child { margin-bottom: 0; }
   .pname { font-weight: 600; }

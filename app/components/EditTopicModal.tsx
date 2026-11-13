@@ -3,12 +3,13 @@
 import { sortTopicPeople } from '../lib/topicPeople';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabase';
-import { generatePDFData, generatePDFForSession, deleteTopic, removeConfirmation, resequenceSession } from '../actions';
+import { generatePDFData, generatePDFForSession, removeConfirmation, resequenceSession } from '../actions';
+import DeleteTopicDialog from './DeleteTopicDialog';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import Badge from './Badge';
 import Modal from './Modal';
 import Field, { inputCompactCls } from './Field';
-import { AlertIcon, CheckIcon } from './Icons';
+import { AlertIcon, CheckIcon, CloseIcon } from './Icons';
 import { TimeRange } from './TimeField';
 import { formatTime12 as formatTimeAmPm } from '../lib/time';
 
@@ -75,7 +76,10 @@ export default function EditTopicModal({
   session,
   onClose,
   onSaved,
+  sessionTopics,
 }: {
+  /** Every topic of this session, so deleting can warn about the empty slot it leaves */
+  sessionTopics?: any[];
   topic: any;
   session: any;
   onClose: () => void;
@@ -87,8 +91,6 @@ export default function EditTopicModal({
   const [topicTitle, setTopicTitle] = useState(topic.topic_title || '');
   const [isSaving, setIsSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleteBusy, setDeleteBusy] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
@@ -443,7 +445,7 @@ export default function EditTopicModal({
         <>
           <button
             type="button"
-            onClick={() => { setDeleteError(null); setConfirmDelete(true); }}
+            onClick={() => setConfirmDelete(true)}
             disabled={isSaving}
             className="mr-auto inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium text-red-700 hover:bg-red-50"
           >
@@ -594,9 +596,10 @@ export default function EditTopicModal({
                       type="button"
                       onClick={() => removeFaculty(l.faculty_id)}
                       aria-label={`Remove ${l.faculty.canonical_name}`}
-                      className={smallLinkBtn}
+                      title="Remove from this topic"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-danger hover:text-white"
                     >
-                      Remove
+                      <CloseIcon width={20} height={20} strokeWidth={2.25} />
                     </button>
                   </li>
                 ))}
@@ -656,30 +659,13 @@ export default function EditTopicModal({
         />
       )}
       {confirmDelete && (
-        <ConfirmDeleteDialog
-          title="Delete this topic?"
-          description={
-            <div className="space-y-3">
-              <div className="rounded-lg border border-line bg-canvas p-3 text-sm">
-                <div className="font-semibold text-ink">{topic.topic_title}</div>
-                <div className="mt-1 text-ink-2">
-                  Number {topic.sequence_no ?? '?'}
-                  {facultyLinks.length > 0 && <> &middot; {facultyLinks.length} faculty link(s) will be removed</>}
-                </div>
-              </div>
-              <div>This cannot be undone. Remaining topics in this session will renumber automatically.</div>
-              {deleteError && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{deleteError}</div>}
-            </div>
-          }
-          confirmLabel="Delete topic"
-          busyLabel="Deleting…"
+        <DeleteTopicDialog
+          topic={topic}
+          session={session}
+          topics={sessionTopics && sessionTopics.length ? sessionTopics : [topic]}
+          facultyCount={facultyLinks.length}
           onCancel={() => setConfirmDelete(false)}
-          onConfirm={async () => {
-            setDeleteBusy(true);
-            setDeleteError(null);
-            const res = await deleteTopic(topic.id, session.id);
-            setDeleteBusy(false);
-            if (!res.success) { setDeleteError(res.message); return; }
+          onDeleted={() => {
             setConfirmDelete(false);
             onSaved();
             onClose();

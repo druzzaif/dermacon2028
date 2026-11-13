@@ -3,10 +3,13 @@
 import { useState } from 'react';
 import { sortTopicPeople } from '../lib/topicPeople';
 import Modal from './Modal';
-import { formatTime12 } from '../lib/time';
+import { formatTime12, toMinutes } from '../lib/time';
+import { findEmptySlots, type EmptySlot } from '../lib/slots';
+import { Fragment } from 'react';
+import { Button } from './ui';
 
-export type PrintOptions = { chairs: boolean; confirmed: boolean; contacts: boolean };
-export const DEFAULT_PRINT_OPTIONS: PrintOptions = { chairs: true, confirmed: true, contacts: false };
+export type PrintOptions = { chairs: boolean; confirmed: boolean; contacts: boolean; emptySlots: boolean };
+export const DEFAULT_PRINT_OPTIONS: PrintOptions = { chairs: true, confirmed: true, contacts: false, emptySlots: false };
 
 const isTbd = (f: any) => !f || f.faculty_id === 'FAC000' || /^TBD/i.test(String(f.canonical_name || '').trim());
 const roleLabel = (r: string | null | undefined) => {
@@ -34,6 +37,7 @@ export function PrintOptionsDialog({
   const choices: { k: keyof PrintOptions; title: string; desc: string }[] = [
     { k: 'chairs', title: 'Include chairpersons', desc: 'Shown under each topic they chair.' },
     { k: 'confirmed', title: 'Show who has confirmed', desc: 'Adds ✓ after faculty who confirmed (as of the last sync).' },
+    { k: 'emptySlots', title: 'Show empty slots', desc: 'Adds a marked row wherever no topic is scheduled. Leave unticked to print the topics only.' },
     { k: 'contacts', title: 'Add a contact page', desc: 'A separate page with name, role, phone and email of every coordinator, chairperson and faculty in this session.' },
   ];
   return (
@@ -43,15 +47,15 @@ export function PrintOptionsDialog({
       onClose={onCancel}
       footer={
         <>
-          <button type="button" onClick={onCancel} className="inline-flex h-11 items-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50">Cancel</button>
-          <button type="button" onClick={() => onPrint(o)} className="inline-flex h-11 items-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:bg-accent-strong">Print</button>
+          <Button onClick={onCancel}>Cancel</Button>
+          <Button variant="primary" onClick={() => onPrint(o)}>Print</Button>
         </>
       }
     >
       <div className="space-y-2">
         {choices.map(({ k, title, desc }) => (
           <label key={k} className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-white p-3 hover:bg-slate-50">
-            <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0" checked={o[k]} onChange={(e) => setO({ ...o, [k]: e.target.checked })} />
+            <input type="checkbox" className="mt-0.5" checked={o[k]} onChange={(e) => setO({ ...o, [k]: e.target.checked })} />
             <span>
               <span className="block text-sm font-medium text-ink">{title}</span>
               <span className="block text-xs text-ink-2">{desc}</span>
@@ -130,6 +134,18 @@ export function SessionPrintSheet({
       </div>
     );
 
+  // Empty slots (worked out from the times), printed only when ticked
+  const slots: EmptySlot[] = options.emptySlots ? findEmptySlots(topics, session) : [];
+  const slotsPrinted = new Set<string>();
+  const trailing = slots.find((g) => g.beforeTopicId === null) || null;
+  const slotRow = (g: EmptySlot) => (
+    <tr key={`slot-${g.start}`} style={{ breakInside: 'avoid' }}>
+      <td className={`${cell} text-center font-semibold`}>–</td>
+      <td className={`${cell} tnum whitespace-nowrap`}>{formatTime12(g.start)}<br />{formatTime12(g.end)}</td>
+      <td className={`${cell} font-semibold italic`} colSpan={2}>Empty slot ({g.minutes} min): no topic scheduled</td>
+    </tr>
+  );
+
   const titleBlock = (
     <div className="mb-3 border-b-2 border-black pb-2">
       <h2 className="text-[15pt] font-bold leading-tight">{session.session_code} – {session.session_name}</h2>
@@ -182,8 +198,12 @@ export function SessionPrintSheet({
             const links = t.faculty_topics || [];
             const speakers = sortTopicPeople(links.filter((ft: any) => ft.role !== 'Chairperson'));
             const chairs = options.chairs ? links.filter((ft: any) => ft.role === 'Chairperson') : [];
+            const before = slots.find((g) => g.beforeTopicId !== null && !slotsPrinted.has(g.start) && toMinutes(g.end) === toMinutes(t.start_time));
+            if (before) slotsPrinted.add(before.start);
             return (
-              <tr key={t.id} style={{ breakInside: 'avoid' }}>
+              <Fragment key={t.id}>
+              {before && slotRow(before)}
+              <tr style={{ breakInside: 'avoid' }}>
                 <td className={`${cell} text-center font-semibold`}>{t.sequence_no}</td>
                 <td className={`${cell} tnum whitespace-nowrap`}>{formatTime12(t.start_time)}<br />{formatTime12(t.end_time)}</td>
                 <td className={`${cell} font-semibold leading-snug`}>{t.topic_title}</td>
@@ -206,8 +226,10 @@ export function SessionPrintSheet({
                   )}
                 </td>
               </tr>
+              </Fragment>
             );
           })}
+          {trailing && slotRow(trailing)}
         </tbody>
       </table>
       {options.confirmed && <p className="mt-2 text-[8.5pt]">✓ = confirmed (as of the last sync)</p>}

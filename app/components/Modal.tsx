@@ -116,9 +116,9 @@ export default function Modal({
             onClick={onClose}
             disabled={busy}
             aria-label="Close dialog"
-            className={`-mr-2 -mt-1 inline-flex ${dense ? 'h-10 w-10' : 'h-11 w-11'} shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-slate-100 hover:text-ink disabled:opacity-50`}
+            className={`-mr-2 -mt-1 inline-flex ${dense ? 'h-10 w-10' : 'h-11 w-11'} shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-danger hover:text-white disabled:opacity-50`}
           >
-            <CloseIcon width={20} height={20} />
+            <CloseIcon width={24} height={24} strokeWidth={2.25} />
           </button>
         </div>
 

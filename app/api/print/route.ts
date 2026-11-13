@@ -3,7 +3,7 @@ import { buildPrintHtml, buildFacultySimpleHtml, type PrintRequest } from '@/app
 import { facultyLetterheadHtml } from '@/app/actions';
 
 // POST /api/print -> one A4 PDF.
-//   By session: { kind: 'sessions', sessionIds, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession }
+//   By session: { kind: 'sessions', sessionIds, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession, emptySlots }
 //   By faculty: { kind: 'faculty', facultyIds, format: 'letterhead' | 'simple', contacts, confirmed, pagePerFaculty }
 export async function POST(req: Request) {
   let b: any;
@@ -43,6 +43,7 @@ export async function POST(req: Request) {
         contacts: !!b.contacts,
         confirmed: !!b.confirmed,
         pagePerSession: !!b.pagePerSession,
+        emptySlots: !!b.emptySlots,
       };
       if (!body.schedule && !body.missing && !body.overlaps) {
         return Response.json({ error: 'Choose at least one thing to print.' }, { status: 400 });

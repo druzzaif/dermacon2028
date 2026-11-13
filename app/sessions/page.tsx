@@ -1,6 +1,6 @@
 'use client';
-import { resequenceSession, deleteTopic } from '../actions';
-import { useEffect, useMemo, useState } from 'react';
+import { resequenceSession } from '../actions';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../supabase';
 import dynamic from 'next/dynamic';
 // Modals are only needed when opened, so they load on demand (smaller first page load)
@@ -16,11 +16,14 @@ import SyncButton from '../components/SyncButton';
 import { sortCoordinators } from '../lib/coordOrder';
 import { sortTopicPeople, roleName } from '../lib/topicPeople';
 import { useSearchParams } from 'next/navigation';
-import ConfirmDeleteDialog from '../components/ConfirmDeleteDialog';
+import DeleteTopicDialog from '../components/DeleteTopicDialog';
+import CloseGapDialog from '../components/CloseGapDialog';
+import { findEmptySlots, type EmptySlot } from '../lib/slots';
+import { formatTime12, toMinutes } from '../lib/time';
 import Badge, { roleTone } from '../components/Badge';
 import { inputCls } from '../components/Field';
-import { CalendarIcon, CheckIcon, ClockIcon, MailIcon, MenuIcon, PinIcon, PlusIcon, SearchIcon } from '../components/Icons';
-import { Button, EmptyState, LoadingBlock, Notice, SkeletonLines, thCls, theadRowCls } from '../components/ui';
+import { AlertIcon, CalendarIcon, CheckIcon, ClockIcon, MailIcon, MenuIcon, PinIcon, PlusIcon, SearchIcon } from '../components/Icons';
+import { Button, EmptyState, LoadingBlock, SkeletonLines, thCls, theadRowCls } from '../components/ui';
 
 function formatDateLabel(dateStr: string | null): string {
   if (!dateStr) return 'No date';
@@ -61,8 +64,15 @@ export default function SessionsPage() {
   const [isSendingReport, setIsSendingReport] = useState(false);
   const [editingTopic, setEditingTopic] = useState<any | null>(null);
   const [deletingTopic, setDeletingTopic] = useState<any | null>(null);
-  const [deleteBusy, setDeleteBusy] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [closingSlot, setClosingSlot] = useState<EmptySlot | null>(null);
+  // Which session the topic list on screen belongs to (placeholders show only while a different one loads)
+  const [detailsFor, setDetailsFor] = useState<string | null>(null);
+  // The topic that was just added or saved: scrolled into view and highlighted for a moment
+  const [focusTopic, setFocusTopic] = useState<string | null>(null);
+  // The session on screen, remembered outside React state so a reload of the list never changes it
+  const selectedId = useRef<string | null>(null);
+  const lastTarget = useRef<string | null | undefined>(undefined);
+  const loadedOnce = useRef(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [printOpen, setPrintOpen] = useState(false);
   const [printOptions, setPrintOptions] = useState<PrintOptions>(DEFAULT_PRINT_OPTIONS);
@@ -71,6 +81,9 @@ export default function SessionsPage() {
   const targetCode = searchParams.get('code');
 
   useEffect(() => {
+    // The address bar was updated by picking a session here: the list is already loaded
+    // and the session on screen must stay as it is.
+    if (loadedOnce.current && lastTarget.current === targetCode) return;
     async function fetchSessions() {
       const { data } = await supabase.from('conference_sessions').select('*');
 
@@ -96,21 +109,35 @@ export default function SessionsPage() {
 
         setSessions(sortedData);
 
-        if (targetCode) {
-          const found = sortedData.find((s) => s.session_code === targetCode);
-          if (found) setSelectedSession(found);
-          else if (sortedData.length > 0) setSelectedSession(sortedData[0]);
-        } else if (sortedData.length > 0) {
-          setSelectedSession(sortedData[0]);
+        // Order of preference: the session named in the address, else the one already on screen, else the first
+        const wanted = targetCode ? sortedData.find((s) => s.session_code === targetCode) : null;
+        const current = selectedId.current ? sortedData.find((s) => s.id === selectedId.current) : null;
+        const next = wanted || current || sortedData[0] || null;
+        if (next && next.id !== selectedId.current) {
+          selectedId.current = next.id;
+          setSelectedSession(next);
         }
       }
+      lastTarget.current = targetCode;
+      loadedOnce.current = true;
       setLoading(false);
     }
     fetchSessions();
   }, [targetCode]);
 
-  async function refreshDetails() {
-    if (!selectedSession) return;
+  // Pick a session from the list. The address bar remembers it, so refreshing the
+  // browser comes back to the same session.
+  function chooseSession(s: any) {
+    selectedId.current = s.id;
+    lastTarget.current = s.session_code;
+    setSelectedSession(s);
+    setSidebarOpen(false);
+    window.history.replaceState(null, '', `/sessions?code=${encodeURIComponent(s.session_code)}`);
+  }
+
+  async function refreshDetails(): Promise<any[]> {
+    if (!selectedSession) return [];
+    const forId = selectedSession.id;
     setLoadingDetails(true);
 
     // Both queries run at the same time instead of one after the other
@@ -144,8 +171,18 @@ export default function SessionsPage() {
     }
 
     if (topicData) setTopics(topicData);
+    setDetailsFor(forId);
     setLoadingDetails(false);
+    return topicData || [];
   }
+
+  // After a save: bring the saved topic into view and highlight it briefly
+  useEffect(() => {
+    if (!focusTopic) return;
+    document.getElementById(`topic-${focusTopic}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const timer = setTimeout(() => setFocusTopic(null), 4000);
+    return () => clearTimeout(timer);
+  }, [focusTopic]);
 
   useEffect(() => {
     refreshDetails();
@@ -212,6 +249,38 @@ export default function SessionsPage() {
     );
 
   const sel = selectedSession;
+  // Placeholders only while another session's topics are loading. A reload of the
+  // same session keeps the rows in place, so the page does not jump.
+  const showPlaceholders = loadingDetails && detailsFor !== sel?.id;
+  const emptySlots = sel && detailsFor === sel.id ? findEmptySlots(topics, sel) : [];
+  const slotsShown = new Set<string>();
+  const trailingSlot = emptySlots.find((g) => g.beforeTopicId === null) || null;
+
+  const slotRow = (g: EmptySlot) => {
+    const later = topics.filter((t) => (toMinutes(t.start_time) ?? -1) >= (toMinutes(g.end) ?? 0)).length;
+    return (
+      <tr key={`slot-${g.start}`} className="bg-danger-tint align-top">
+        <td className="px-4 py-3.5 text-center text-danger"><AlertIcon className="inline" width={18} height={18} /></td>
+        <td className="tnum whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-danger-strong">
+          {formatTime12(g.start)} – {formatTime12(g.end)}
+        </td>
+        <td colSpan={2} className="px-4 py-3.5">
+          <p className="text-[15px] font-semibold text-danger-strong">Empty slot · {g.minutes} minute{g.minutes === 1 ? '' : 's'}</p>
+          <p className="mt-0.5 text-sm text-danger-strong">
+            {later > 0
+              ? 'No topic is scheduled in this time. Add a topic here, or close the gap to move the later topics up.'
+              : 'No topic is scheduled up to the end of the session. Add a topic here, or change the session end time in Edit session.'}
+          </p>
+        </td>
+        <td className="whitespace-nowrap px-3 py-2.5 text-right print:hidden">
+          <Button size="sm" onClick={() => setIsAddingTopic(true)}><PlusIcon /> Add topic</Button>
+          {later > 0 && (
+            <Button variant="danger-quiet" size="sm" className="ml-1" onClick={() => setClosingSlot(g)}>Close gap</Button>
+          )}
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-canvas text-ink print:h-auto print:overflow-visible">
@@ -307,7 +376,7 @@ export default function SessionsPage() {
                     <button
                       type="button"
                       aria-current={active ? 'true' : undefined}
-                      onClick={() => { setSelectedSession(s); setSidebarOpen(false); }}
+                      onClick={() => chooseSession(s)}
                       className={`flex min-h-14 w-full flex-col justify-center border-b border-l-4 border-b-line py-2 pl-3 pr-4 text-left transition-colors ${
                         active ? 'border-l-accent bg-accent-tint' : 'border-l-transparent hover:bg-slate-50'
                       }`}
@@ -425,7 +494,7 @@ export default function SessionsPage() {
 
             <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-6 print:hidden">
               <div role="status" aria-live="polite" className="sr-only">
-                {loadingDetails ? 'Loading schedule' : `${topics.length} topics loaded`}
+                {loadingDetails ? 'Loading schedule' : `${topics.length} topics loaded${emptySlots.length ? `, ${emptySlots.length} empty slot${emptySlots.length === 1 ? '' : 's'}` : ''}`}
               </div>
               <div className="overflow-x-auto rounded-xl border border-line bg-white shadow-card print:border-0 print:shadow-none">
                 <table className="w-full min-w-[720px] border-collapse text-left print:min-w-0">
@@ -444,7 +513,7 @@ export default function SessionsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line" aria-busy={loadingDetails}>
-                    {loadingDetails ? (
+                    {showPlaceholders ? (
                       <tr>
                         <td colSpan={5} className="px-4 py-4"><SkeletonLines rows={4} /></td>
                       </tr>
@@ -464,8 +533,19 @@ export default function SessionsPage() {
                         const allLinks = t.faculty_topics || [];
                         const facultyList = sortTopicPeople(allLinks.filter((ft: any) => ft.role !== 'Chairperson'));
                         const chairList = allLinks.filter((ft: any) => ft.role === 'Chairperson');
+                        // An empty slot sits just before the first topic that starts when the slot ends
+                        const slotBefore = emptySlots.find((g) =>
+                          g.beforeTopicId !== null && !slotsShown.has(g.start) && toMinutes(g.end) === toMinutes(t.start_time));
+                        if (slotBefore) slotsShown.add(slotBefore.start);
+                        const justSaved = focusTopic === t.id;
                         return (
-                          <tr key={t.id} className="align-top transition-colors hover:bg-slate-50/70">
+                          <Fragment key={t.id}>
+                          {slotBefore && slotRow(slotBefore)}
+                          <tr
+                            id={`topic-${t.id}`}
+                            data-just-saved={justSaved || undefined}
+                            className={`align-top transition-colors duration-700 ${justSaved ? 'bg-accent-tint' : 'hover:bg-slate-50/70'}`}
+                          >
                             <td className="tnum px-4 py-3.5 text-center text-sm font-semibold text-muted">{t.sequence_no}</td>
                             <td className="tnum whitespace-nowrap px-4 py-3.5 text-sm font-medium text-ink-2">
                               {formatTimeAmPm(t.start_time)} – {formatTimeAmPm(t.end_time)}
@@ -528,16 +608,18 @@ export default function SessionsPage() {
                               <Button
                                 variant="danger-quiet"
                                 size="sm"
-                                onClick={() => { setDeleteError(null); setDeletingTopic(t); }}
+                                onClick={() => setDeletingTopic(t)}
                                 aria-label={`Delete topic ${t.sequence_no}: ${t.topic_title}`}
                               >
                                 Delete
                               </Button>
                             </td>
                           </tr>
+                          </Fragment>
                         );
                       })
                     )}
+                    {!showPlaceholders && topics.length > 0 && trailingSlot && slotRow(trailingSlot)}
                   </tbody>
                 </table>
               </div>
@@ -588,9 +670,12 @@ export default function SessionsPage() {
             onClose={() => setIsAddingTopic(false)}
             onSaved={async () => {
               // Server-side auto-resequence by start_time, then reload topics
+              const before = new Set(topics.map((t) => t.id));
               await resequenceSession(sel.id);
-              await refreshDetails();
+              const fresh = await refreshDetails();
               setIsAddingTopic(false);
+              const added = fresh.find((t) => !before.has(t.id));
+              if (added) setFocusTopic(added.id);
             }}
           />
         )}
@@ -634,48 +719,41 @@ export default function SessionsPage() {
           <EditTopicModal
             topic={editingTopic}
             session={sel}
+            sessionTopics={topics}
             onClose={() => setEditingTopic(null)}
             onSaved={async () => {
               // Time may have moved -> resequence the whole session
+              const savedId = editingTopic.id;
               await resequenceSession(sel.id);
-              await refreshDetails();
+              const fresh = await refreshDetails();
               setEditingTopic(null);
+              if (fresh.some((t) => t.id === savedId)) setFocusTopic(savedId);
             }}
           />
         )}
 
         {deletingTopic && sel && (
-          <ConfirmDeleteDialog
-            title="Delete this topic?"
-            description={
-              <div className="space-y-3">
-                <div className="rounded-lg border border-line bg-canvas p-3 text-sm">
-                  <div className="font-semibold text-ink">{deletingTopic.topic_title}</div>
-                  <div className="mt-1 text-ink-2">
-                    Number {deletingTopic.sequence_no ?? '?'}
-                    {(deletingTopic.faculty_topics?.length || 0) > 0 && (
-                      <> &middot; {deletingTopic.faculty_topics.length} faculty link(s) will be removed</>
-                    )}
-                  </div>
-                </div>
-                <div>This cannot be undone. Remaining topics in this session will renumber automatically.</div>
-                {deleteError && <Notice tone="danger">{deleteError}</Notice>}
-              </div>
-            }
-            confirmLabel="Delete topic"
-            busyLabel="Deleting…"
+          <DeleteTopicDialog
+            topic={deletingTopic}
+            session={sel}
+            topics={topics}
+            facultyCount={deletingTopic.faculty_topics?.length || 0}
             onCancel={() => setDeletingTopic(null)}
-            onConfirm={async () => {
-              if (!sel) return;
-              setDeleteBusy(true);
-              setDeleteError(null);
-              const res = await deleteTopic(deletingTopic.id, sel.id);
-              setDeleteBusy(false);
-              if (!res.success) {
-                setDeleteError(res.message);
-                return;
-              }
+            onDeleted={async () => {
               setDeletingTopic(null);
+              await refreshDetails();
+            }}
+          />
+        )}
+
+        {closingSlot && sel && (
+          <CloseGapDialog
+            slot={closingSlot}
+            session={sel}
+            topics={topics}
+            onCancel={() => setClosingSlot(null)}
+            onDone={async () => {
+              setClosingSlot(null);
               await refreshDetails();
             }}
           />

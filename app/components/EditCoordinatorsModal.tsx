@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { useModalDismiss } from './useModalDismiss';
+import Modal from './Modal';
+import Badge, { roleTone } from './Badge';
+import { inputCls } from './Field';
+import { CloseIcon, GripIcon } from './Icons';
+import { Button, Notice } from './ui';
 
 export default function EditCoordinatorsModal({
   session,
@@ -15,17 +19,14 @@ export default function EditCoordinatorsModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const dialogRef = useRef<HTMLDivElement>(null);
   const [facultyList, setFacultyList] = useState<any[]>([]);
   const [searchFaculty, setSearchFaculty] = useState('');
   const [selectedRole, setSelectedRole] = useState('National');
   const [coordinators, setCoordinators] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-
-  const { handleBackdropClick } = useModalDismiss(dialogRef, {
-    onClose,
-    disabled: isSaving,
-  });
+  const [error, setError] = useState<string | null>(null);
+  // Row being dragged (its position in the list), for drag-and-drop reordering
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadFaculty() {
@@ -43,7 +44,7 @@ export default function EditCoordinatorsModal({
 
   async function handleAddCoordinator(faculty: any) {
     if (coordinators.find(c => c.faculty_id === faculty.id)) {
-      alert("This faculty is already a coordinator for this session.");
+      setError(`${faculty.canonical_name} is already a coordinator for this session.`);
       return;
     }
     const newCoord = {
@@ -52,6 +53,7 @@ export default function EditCoordinatorsModal({
       role: selectedRole,
       faculty: faculty
     };
+    setError(null);
     setCoordinators([...coordinators, newCoord]);
     setSearchFaculty('');
   }
@@ -68,8 +70,19 @@ export default function EditCoordinatorsModal({
     setCoordinators(next);
   }
 
+  // Drag and drop: while a row is dragged over another, it takes that place
+  function dragOver(index: number) {
+    if (dragIndex === null || dragIndex === index) return;
+    const next = [...coordinators];
+    const [moved] = next.splice(dragIndex, 1);
+    next.splice(index, 0, moved);
+    setCoordinators(next);
+    setDragIndex(index);
+  }
+
   async function handleSave() {
     setIsSaving(true);
+    setError(null);
 
     await supabase.from('session_coordinators').delete().eq('session_id', session.id);
 
@@ -85,7 +98,7 @@ export default function EditCoordinatorsModal({
       const { error } = await supabase.from('session_coordinators').insert(payload);
       
       if (error) {
-        alert("Error saving coordinators: " + error.message);
+        setError('The coordinators could not be saved: ' + error.message);
         setIsSaving(false);
         return;
       }
@@ -97,112 +110,122 @@ export default function EditCoordinatorsModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      data-modal-backdrop="true"
-      onClick={handleBackdropClick}
+    <Modal
+      title="Edit coordinators"
+      subtitle={`${session.session_code} – ${session.session_name}`}
+      size="md"
+      busy={isSaving}
+      onClose={onClose}
+      footer={
+        <>
+          <Button onClick={onClose} disabled={isSaving}>Cancel</Button>
+          <Button variant="primary" onClick={handleSave} busy={isSaving}>
+            {isSaving ? 'Saving…' : 'Save coordinators'}
+          </Button>
+        </>
+      }
     >
-      <div
-        ref={dialogRef}
-        className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden"
-      >
-        <div className="flex justify-between items-center p-5 border-b bg-gray-50">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Edit Coordinators</h2>
-            <p className="text-sm text-gray-500">{session.session_code} - {session.session_name}</p>
+      <div className="space-y-5">
+        <section aria-labelledby="coord-current">
+          <div className="mb-2 flex items-baseline justify-between gap-3">
+            <h3 id="coord-current" className="text-sm font-semibold text-ink">Current coordinators</h3>
+            {coordinators.length > 1 && <p className="text-xs text-muted">Drag a row to change the order</p>}
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-2xl">×</button>
-        </div>
-
-        <div className="p-6 space-y-6">
-          <div>
-            <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Current Coordinators</h3>
-            {coordinators.length === 0 ? (
-              <p className="text-sm text-gray-500 italic bg-gray-50 p-4 rounded-lg border border-gray-200">No coordinators assigned yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {coordinators.map((c, i) => (
-                  <div key={i} className="flex items-center justify-between bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 text-center text-sm font-bold text-blue-700">{i + 1}</span>
-                      <div>
-                        <div className="font-semibold text-blue-900">{c.faculty?.canonical_name}</div>
-                        <div className="text-xs font-bold text-blue-700 bg-blue-200 px-2 py-0.5 rounded inline-block mt-1 uppercase">{c.role}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button type="button" onClick={() => moveCoordinator(i, -1)} disabled={i === 0} title="Move up"
-                        className="px-2 py-1 rounded border border-blue-200 bg-white text-blue-700 hover:bg-blue-100 disabled:opacity-30">▲</button>
-                      <button type="button" onClick={() => moveCoordinator(i, 1)} disabled={i === coordinators.length - 1} title="Move down"
-                        className="px-2 py-1 rounded border border-blue-200 bg-white text-blue-700 hover:bg-blue-100 disabled:opacity-30">▼</button>
-                      <button onClick={() => handleRemoveCoordinator(c.faculty_id || c.faculty.id)} className="text-sm text-red-600 hover:underline font-medium ml-1">
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <hr className="border-gray-200" />
-
-          <div>
-            <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Add Coordinator</h3>
-            
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="col-span-1">
-                <label className="block text-xs font-bold text-gray-600 mb-1">Role</label>
-                <select 
-                  value={selectedRole} 
-                  onChange={(e) => setSelectedRole(e.target.value)} 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
+          {coordinators.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-field bg-canvas p-4 text-center text-sm text-ink-2">
+              No coordinators yet. Search below to add one.
+            </p>
+          ) : (
+            <ol className="space-y-1.5">
+              {coordinators.map((c, i) => (
+                <li
+                  key={c.faculty_id || c.faculty?.id || i}
+                  draggable={!isSaving}
+                  onDragStart={(e) => { setDragIndex(i); e.dataTransfer.effectAllowed = 'move'; }}
+                  onDragOver={(e) => { e.preventDefault(); dragOver(i); }}
+                  onDragEnd={() => setDragIndex(null)}
+                  onDrop={(e) => { e.preventDefault(); setDragIndex(null); }}
+                  className={`flex items-center gap-2 rounded-lg border bg-white py-1.5 pl-1.5 pr-2 transition-colors ${
+                    dragIndex === i ? 'border-accent bg-accent-tint shadow-card' : 'border-line'
+                  }`}
                 >
-                  <option value="National">National</option>
-                  <option value="Lead Coordinator">Lead Coordinator</option>
-                  <option value="Local">Local</option>
-                </select>
-              </div>
-              <div className="col-span-2 relative">
-                <label className="block text-xs font-bold text-gray-600 mb-1">Search Faculty</label>
-                <input 
-                  type="text" 
-                  placeholder="Type name or email..." 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
-                  value={searchFaculty}
-                  onChange={(e) => setSearchFaculty(e.target.value)}
-                />
-                
-                {searchFaculty.length > 0 && (
-                  <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
-                    {filteredFaculty.length === 0 ? (
-                      <div className="p-3 text-sm text-gray-500">No faculty found</div>
-                    ) : (
-                      filteredFaculty.map(f => (
-                        <button
-                          key={f.id}
-                          onClick={() => handleAddCoordinator(f)}
-                          className="w-full text-left p-3 border-b border-gray-100 hover:bg-blue-50 text-sm transition-colors"
-                        >
-                          <div className="font-semibold text-gray-900">{f.canonical_name}</div>
-                          <div className="text-xs text-gray-500">{f.email}</div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
+                  <span className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center text-muted active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">
+                    <GripIcon />
+                  </span>
+                  <span className="tnum w-5 shrink-0 text-center text-sm font-semibold text-ink-2">{i + 1}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
+                  </span>
+                  <Badge tone={roleTone(c.role)}>{c.role}</Badge>
+                  <span className="flex shrink-0 flex-col">
+                    <button type="button" onClick={() => moveCoordinator(i, -1)} disabled={i === 0}
+                      aria-label={`Move ${c.faculty?.canonical_name} up`} title="Move up"
+                      className="flex h-4 w-6 items-center justify-center rounded text-[10px] leading-none text-ink-2 hover:bg-accent-tint hover:text-accent disabled:opacity-25">▲</button>
+                    <button type="button" onClick={() => moveCoordinator(i, 1)} disabled={i === coordinators.length - 1}
+                      aria-label={`Move ${c.faculty?.canonical_name} down`} title="Move down"
+                      className="flex h-4 w-6 items-center justify-center rounded text-[10px] leading-none text-ink-2 hover:bg-accent-tint hover:text-accent disabled:opacity-25">▼</button>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveCoordinator(c.faculty_id || c.faculty.id)}
+                    aria-label={`Remove ${c.faculty?.canonical_name}`}
+                    title="Remove"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-danger hover:text-white"
+                  >
+                    <CloseIcon width={18} height={18} />
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+
+        <section aria-labelledby="coord-add" className="border-t border-line pt-4">
+          <h3 id="coord-add" className="mb-2 text-sm font-semibold text-ink">Add a coordinator</h3>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <label htmlFor="coord-role" className="mb-1.5 block text-sm font-medium text-ink">Role</label>
+              <select id="coord-role" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} className={inputCls}>
+                <option value="National">National</option>
+                <option value="Lead Coordinator">Lead Coordinator</option>
+                <option value="Local">Local</option>
+              </select>
+            </div>
+            <div className="relative sm:col-span-2">
+              <label htmlFor="coord-search" className="mb-1.5 block text-sm font-medium text-ink">Search faculty</label>
+              <input
+                id="coord-search"
+                type="search"
+                placeholder="Type a name or email"
+                className={inputCls}
+                value={searchFaculty}
+                onChange={(e) => setSearchFaculty(e.target.value)}
+              />
+              {searchFaculty.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-line bg-white shadow-pop">
+                  {filteredFaculty.length === 0 ? (
+                    <p className="p-3 text-sm text-ink-2">No faculty found.</p>
+                  ) : (
+                    filteredFaculty.map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => handleAddCoordinator(f)}
+                        className="block w-full border-b border-line px-3 py-2 text-left text-sm last:border-b-0 hover:bg-accent-tint"
+                      >
+                        <span className="block font-medium text-ink">{f.canonical_name}</span>
+                        <span className="block text-xs text-muted">{f.email}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="p-5 border-t bg-gray-50 flex justify-end gap-3">
-          <button onClick={onClose} className="px-5 py-2.5 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 bg-white">Cancel</button>
-          <button onClick={handleSave} disabled={isSaving} className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-            {isSaving ? 'Saving...' : 'Save Coordinators'}
-          </button>
-        </div>
+        {error && <Notice tone="danger">{error}</Notice>}
       </div>
-    </div>
+    </Modal>
   );
 }

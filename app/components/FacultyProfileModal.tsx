@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import SendEmailsDialog from './SendEmailsDialog';
-import Badge from './Badge';
+import Badge, { roleTone } from './Badge';
+import { Button, LoadingBlock } from './ui';
+import { CloseIcon } from './Icons';
+import { roleName } from '../lib/topicPeople';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { removeConfirmation } from '../actions';
 
@@ -129,186 +132,207 @@ export default function FacultyProfileModal({
   // Already emailed before -> send a schedule update; otherwise the first full email
   const kind = faculty.email_sent ? 'update' : 'first';
 
+  // Topics grouped under a heading per role: Chairperson, Moderator, Panelist, Debater, Faculty (speaker)
+  const TOPIC_ROLE_ORDER = ['Chairperson', 'Moderator', 'Panelist', 'Debater', 'Faculty'];
+  const roleGroups = new Map<string, any[]>();
+  for (const s of speakingSessions) {
+    const r = roleName(s.role);
+    roleGroups.set(r, [...(roleGroups.get(r) || []), s]);
+  }
+  const orderedRoleGroups = [...roleGroups.entries()].sort(
+    ([a], [b]) =>
+      (TOPIC_ROLE_ORDER.indexOf(a) === -1 ? 99 : TOPIC_ROLE_ORDER.indexOf(a)) -
+      (TOPIC_ROLE_ORDER.indexOf(b) === -1 ? 99 : TOPIC_ROLE_ORDER.indexOf(b)),
+  );
+  const headingFor = (role: string) => (role === 'Faculty' ? 'Speaker' : role);
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-end z-50">
-      <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-slide-in">
-        <div className="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-start">
-          <div className="flex gap-4 items-center">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center font-bold text-lg shadow-sm tracking-tight">
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-slate-950/50"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onKeyDown={(e) => { if (e.key === 'Escape' && !showSend && !unconfirming) onClose(); }}
+    >
+      <div role="dialog" aria-modal="true" aria-label={`Profile of ${faculty.canonical_name}`} className="modal-in flex h-full w-full max-w-md flex-col bg-white shadow-pop">
+        <div className="flex items-start justify-between gap-3 border-b border-line bg-canvas p-5">
+          <div className="flex min-w-0 items-center gap-3.5">
+            <div aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-tint text-base font-semibold text-accent ring-1 ring-inset ring-indigo-200">
               {initials}
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">{faculty.canonical_name}</h2>
-              <p className="text-sm text-gray-500 font-mono mt-0.5">{faculty.faculty_id}</p>
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-semibold text-ink">{faculty.canonical_name}</h2>
+              <p className="tnum font-mono text-sm text-muted">{faculty.faculty_id}</p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-800 text-3xl leading-none"
+            autoFocus
+            aria-label="Close profile"
+            title="Close"
+            className="-mr-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-danger hover:text-white"
           >
-            &times;
+            <CloseIcon width={24} height={24} strokeWidth={2.25} />
           </button>
         </div>
 
-        <div className="p-6 border-b border-gray-200 space-y-4 bg-white">
+        <div className="space-y-4 border-b border-line bg-white p-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                 Email
               </div>
               {email ? (
                 <a
                   href={`mailto:${email}`}
-                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate block"
+                  className="text-sm text-accent hover:underline truncate block"
                   title={email}
                 >
                   {email}
                 </a>
               ) : (
-                <div className="text-sm text-gray-400">--</div>
+                <div className="text-sm text-muted">Not set</div>
               )}
             </div>
             <div>
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                 Phone
               </div>
               {phone ? (
                 <a
                   href={`tel:${phoneDigits}`}
-                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                  className="text-sm text-accent hover:underline"
                 >
                   {phone}
                 </a>
               ) : (
-                <div className="text-sm text-gray-400">--</div>
+                <div className="text-sm text-muted">Not set</div>
               )}
             </div>
             <div>
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                 Country
               </div>
-              <div className="text-sm text-gray-900">{faculty.country || '--'}</div>
+              <div className="text-sm text-ink">{faculty.country || 'Not set'}</div>
             </div>
             <div>
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                 Type
               </div>
-              <div className="text-sm text-gray-900">{faculty.person_type || '--'}</div>
+              <div className="text-sm text-ink">{faculty.person_type || 'Not set'}</div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-100">
-            <button
+          <div className="border-t border-line pt-4">
+            <Button
+              variant="primary"
+              className="w-full"
               onClick={() => setShowSend(true)}
               disabled={speakingSessions.length === 0}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {kind === 'update' ? 'Email schedule update…' : 'Email schedule…'}
-            </button>
-            <p className="mt-1.5 text-center text-xs text-gray-500">
+            </Button>
+            <p className="mt-1.5 text-center text-xs text-muted">
               You will see exactly what is sent before anything goes out.
             </p>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain bg-gray-50 p-6 space-y-6">
+        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain bg-canvas p-5">
+          {loading && <LoadingBlock>Loading roles…</LoadingBlock>}
+
+          {!loading && coordinatingSessions.length === 0 && speakingSessions.length === 0 && (
+            <p className="rounded-xl border border-dashed border-field bg-white p-6 text-center text-sm text-ink-2">
+              No sessions or topics assigned yet.
+            </p>
+          )}
+
           {coordinatingSessions.length > 0 && (
-            <div>
-              <h3 className="text-sm font-bold text-purple-800 uppercase tracking-wider mb-3 border-b border-purple-200 pb-2">
-                Coordinating Roles ({coordinatingSessions.length})
+            <section aria-labelledby="role-coordinator">
+              <h3 id="role-coordinator" className="mb-2.5 flex items-center justify-between border-b border-line pb-2 text-sm font-semibold text-ink">
+                Coordinator
+                <span className="tnum rounded-full bg-slate-200 px-2 py-0.5 text-xs text-ink-2">{coordinatingSessions.length}</span>
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {coordinatingSessions.map((c, i) => {
                   const session = c.conference_sessions;
                   return (
                     <a
                       key={i}
                       href={`/sessions?code=${session?.session_code}`}
-                      className="block bg-white p-4 rounded-lg border-l-4 border-purple-500 shadow-sm hover:shadow-md hover:border-purple-600 transition-all cursor-pointer group"
+                      className="block rounded-xl border border-line bg-white p-3.5 shadow-sm transition-colors hover:border-accent"
                     >
-                      <div className="flex justify-between items-start mb-1">
-                        <div className="font-bold text-gray-900 text-sm group-hover:text-purple-700 transition-colors">
-                          {session?.session_code} - {session?.session_name}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="text-sm font-semibold text-ink">
+                          <span className="tnum text-accent">{session?.session_code}</span> · {session?.session_name}
                         </div>
-                        <div className="text-[10px] font-bold text-white bg-purple-600 px-2 py-0.5 rounded uppercase shadow-sm">
-                          {c.role}
-                        </div>
+                        <Badge tone={roleTone(c.role)}>{c.role}</Badge>
                       </div>
-                      <div className="text-xs text-gray-500 mt-2 flex justify-between">
-                        <span>{formatDateDdMmYyyy(session?.session_date)}</span>
-                        <span>Hall {session?.hall || 'TBD'}</span>
+                      <div className="mt-2 flex justify-between gap-2 text-xs text-ink-2">
+                        <span className="tnum">{formatDateDdMmYyyy(session?.session_date)}</span>
+                        <span>Hall {session?.hall || 'not set'}</span>
                       </div>
                     </a>
                   );
                 })}
               </div>
-            </div>
+            </section>
           )}
 
-          <div>
-            <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider mb-3 border-b border-blue-200 pb-2">
-              Schedule ({speakingSessions.length})
-            </h3>
-
-            {loading ? (
-              <div className="text-center text-gray-500 text-sm py-4">Loading...</div>
-            ) : speakingSessions.length === 0 ? (
-              <div className="text-center text-gray-500 italic text-sm py-4 bg-white rounded-lg border border-gray-200">
-                No topics assigned yet.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {speakingSessions.map((s, i) => {
+          {orderedRoleGroups.map(([role, list]) => (
+            <section key={role} aria-labelledby={`role-${role}`}>
+              <h3 id={`role-${role}`} className="mb-2.5 flex items-center justify-between border-b border-line pb-2 text-sm font-semibold text-ink">
+                {headingFor(role)}
+                <span className="tnum rounded-full bg-slate-200 px-2 py-0.5 text-xs text-ink-2">{list.length}</span>
+              </h3>
+              <div className="space-y-2.5">
+                {list.map((s, i) => {
                   const topic = s.session_topics;
                   const session = topic?.conference_sessions;
                   return (
                     <a
                       key={i}
                       href={`/sessions?code=${session?.session_code}`}
-                      className="block bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-400 transition-all cursor-pointer group"
+                      className="block rounded-xl border border-line bg-white p-3.5 shadow-sm transition-colors hover:border-accent"
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="font-bold text-blue-800 text-sm group-hover:text-blue-600 transition-colors">
-                          {session?.session_code}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="text-sm font-semibold text-ink">
+                          <span className="tnum text-accent">{session?.session_code}</span>
+                          {session?.session_name ? <> · {session.session_name}</> : null}
                         </div>
-                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
                           {s.confirmed && <Badge tone="success">Confirmed</Badge>}
-                          <div className="text-xs font-bold text-gray-600 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
-                            {s.role}
-                          </div>
+                          <Badge tone={roleTone(s.role)}>{roleName(s.role)}</Badge>
                         </div>
                       </div>
-                      <div className="text-sm font-medium text-gray-900 mb-2 leading-tight">
-                        {topic?.topic_title}
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500 mt-2 pt-2 border-t border-gray-100 gap-2">
+                      <div className="mt-1.5 text-sm leading-snug text-ink">{topic?.topic_title}</div>
+                      <div className="tnum mt-2 flex justify-between gap-2 border-t border-line pt-2 text-xs text-ink-2">
                         <span>{formatDateDdMmYyyy(session?.session_date)}</span>
                         <span className="whitespace-nowrap">
-                          {formatTimeAmPm(topic?.start_time)} - {formatTimeAmPm(topic?.end_time)}
+                          {formatTimeAmPm(topic?.start_time)} – {formatTimeAmPm(topic?.end_time)}
                         </span>
-                        <span>Hall {session?.hall || 'TBD'}</span>
+                        <span>Hall {session?.hall || 'not set'}</span>
                       </div>
                       {s.confirmed && (
                         <div className="mt-2 flex justify-end">
-                          <button
-                            type="button"
+                          <Button
+                            variant="danger-quiet"
+                            size="sm"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               setUnconfirming(s);
                             }}
-                            className="text-xs font-medium text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded"
                           >
                             Remove confirmation
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </a>
                   );
                 })}
               </div>
-            )}
-          </div>
+            </section>
+          ))}
         </div>
       </div>
 

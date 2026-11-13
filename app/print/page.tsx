@@ -284,6 +284,7 @@ function SessionPrint() {
   const [contacts, setContacts] = useState(false);
   const [confirmed, setConfirmed] = useState(true);
   const [pagePerSession, setPagePerSession] = useState(true);
+  const [emptySlots, setEmptySlots] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -341,7 +342,7 @@ function SessionPrint() {
     setPdfUrl(null);
     try {
       const ordered = sessions.filter((s) => picked.has(String(s.id))).map((s) => String(s.id));
-      const r = await fetchPdf({ kind: 'sessions', sessionIds: ordered, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession }, 'DERMACON_Print');
+      const r = await fetchPdf({ kind: 'sessions', sessionIds: ordered, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession, emptySlots }, 'DERMACON_Print');
       setPdfUrl(r.url);
     } catch (e: any) {
       setError(e?.message || 'The PDF could not be made.');
@@ -445,6 +446,7 @@ function SessionPrint() {
               <Check checked={chairs} onChange={setChairs} disabled={!schedule} title="Include chairpersons" desc="A Chairperson column next to the faculty." />
               <Check checked={contacts} onChange={setContacts} disabled={!schedule} title="Include contact details" desc="Phone and email under every coordinator, faculty and chair." />
               <Check checked={confirmed} onChange={setConfirmed} disabled={!schedule} title="Show who has confirmed" desc="✓ after names (as of the last sync)." />
+              <Check checked={emptySlots} onChange={setEmptySlots} disabled={!schedule} title="Show empty slots" desc="A marked row wherever no topic is scheduled." />
               <Check checked={pagePerSession} onChange={setPagePerSession} disabled={!schedule} title="Each session on a new page" />
             </div>
 

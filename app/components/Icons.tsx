@@ -51,6 +51,13 @@ export const ChevronDownIcon = (p: P) => (
 export const DownloadIcon = (p: P) => (
   <svg {...base(p)}><path d="M12 3v12M7 10l5 5 5-5M4 21h16" /></svg>
 );
-export const PlusIcon =(p: P) => (
+export const GripIcon = (p: P) => (
+  <svg {...base(p)} fill="currentColor" stroke="none">
+    <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+    <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+    <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
+  </svg>
+);
+export const PlusIcon = (p: P) => (
   <svg {...base(p)}><path d="M12 5v14M5 12h14" /></svg>
 );

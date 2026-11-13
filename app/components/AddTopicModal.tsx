@@ -5,7 +5,7 @@ import { supabase } from '../supabase';
 import { generatePDFData, generatePDFForSession } from '../actions';
 import Modal from './Modal';
 import Field, { inputCompactCls } from './Field';
-import { AlertIcon, CheckIcon } from './Icons';
+import { AlertIcon, CheckIcon, CloseIcon } from './Icons';
 import { TimeRange } from './TimeField';
 import { addMinutes, formatTime12 as formatTimeAmPm } from '../lib/time';
 
@@ -641,9 +641,10 @@ setShowSuccessPrompt(true);
                       type="button"
                       onClick={() => removeFaculty(l.faculty_id)}
                       aria-label={`Remove ${l.faculty.canonical_name}`}
-                      className={smallLinkBtn}
+                      title="Remove from this topic"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-danger hover:text-white"
                     >
-                      Remove
+                      <CloseIcon width={20} height={20} strokeWidth={2.25} />
                     </button>
                   </li>
                 ))}
