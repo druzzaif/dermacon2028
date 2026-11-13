@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Modal from './Modal';
 import Badge from './Badge';
 import { AlertIcon, CheckIcon } from './Icons';
+import { Button, LoadingBlock, Notice } from './ui';
 import { previewEmails, sendEmailToFaculty } from '../actions';
 
 type Kind = 'first' | 'update' | 'reminder';
@@ -43,6 +44,8 @@ export default function SendEmailsDialog({
   const [status, setStatus] = useState<Record<string, Status>>({});
   const stopRef = useRef(false);
   const [stopped, setStopped] = useState(false);
+  // Second step: after clicking Send, the user must confirm once more before anything is emailed
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -95,27 +98,33 @@ export default function SendEmailsDialog({
   const failCount = Object.values(status).filter((s) => s.state === 'failed').length;
   const notSent = Object.values(status).filter((s) => s.state === 'waiting' || s.state === 'sending').length;
 
-  const secondary = 'inline-flex h-11 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
-  const primary = 'inline-flex h-11 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50';
+  const sendWord = `${sendable.length} email${sendable.length === 1 ? '' : 's'}`;
 
   let footer;
-  if (phase === 'preview') {
+  if (phase === 'preview' && confirming) {
     footer = (
       <>
-        <button type="button" onClick={onClose} className={secondary}>Cancel</button>
-        <button type="button" onClick={run} disabled={sendable.length === 0 || notEnough || !!loadError} className={primary}>
-          Send {sendable.length} email{sendable.length === 1 ? '' : 's'}
-        </button>
+        <Button onClick={() => setConfirming(false)}>Go back</Button>
+        <Button variant="primary" onClick={run}>Yes, send {sendWord}</Button>
+      </>
+    );
+  } else if (phase === 'preview') {
+    footer = (
+      <>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button variant="primary" onClick={() => setConfirming(true)} disabled={sendable.length === 0 || notEnough || !!loadError}>
+          Send {sendWord}…
+        </Button>
       </>
     );
   } else if (phase === 'sending') {
     footer = (
-      <button type="button" onClick={() => { stopRef.current = true; }} className={secondary}>
+      <Button onClick={() => { stopRef.current = true; }}>
         Stop after the current email
-      </button>
+      </Button>
     );
   } else if (phase === 'done') {
-    footer = <button type="button" onClick={onClose} className={primary}>Close</button>;
+    footer = <Button variant="primary" onClick={onClose}>Close</Button>;
   }
 
   return (
@@ -127,14 +136,20 @@ export default function SendEmailsDialog({
       onClose={onClose}
       footer={footer}
     >
-      {phase === 'loading' && <p role="status" className="py-8 text-center text-ink-2">Preparing the list…</p>}
+      {phase === 'loading' && <LoadingBlock>Preparing the list…</LoadingBlock>}
 
       {phase === 'preview' && loadError && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{loadError}</p>
+        <Notice tone="danger">{loadError}</Notice>
       )}
 
       {phase === 'preview' && !loadError && (
         <div className="space-y-4">
+          {confirming && (
+            <Notice tone="warning" title={`You are about to send ${sendWord}`}>
+              Real emails will go to the addresses listed below, each with a PDF attached. Sent emails cannot be recalled.
+              Click <strong>Yes, send {sendWord}</strong> to start, or <strong>Go back</strong> to change the list.
+            </Notice>
+          )}
           <div className="rounded-xl bg-canvas p-4 text-sm text-ink ring-1 ring-inset ring-line">
             <p className="font-semibold">
               {sendable.length} email{sendable.length === 1 ? '' : 's'} will be sent from the Google account that runs your script.

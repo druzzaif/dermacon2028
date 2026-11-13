@@ -4,12 +4,18 @@ import { useEffect, useState } from 'react';
 import { getEmailsOverview } from '../actions';
 import SendEmailsDialog from '../components/SendEmailsDialog';
 import SyncButton from '../components/SyncButton';
-import { SearchIcon } from '../components/Icons';
+import { SearchIcon, MailIcon } from '../components/Icons';
 import { inputCls } from '../components/Field';
-import { PersonLink } from '../components/ui';
+import { Button, EmptyState, LoadingBlock, Notice, PageHeader, PageShell, PersonLink, Tabs, cardCls } from '../components/ui';
 import FacultyProfileHost from '../components/FacultyProfileHost';
 
 type Tab = 'first' | 'changes' | 'reminders';
+
+const TAB_HELP: Record<Tab, string> = {
+  first: 'Faculty who have not been emailed yet. Their first email shows the current schedule, with the PDF and the confirm button.',
+  changes: 'Faculty who were already emailed and whose schedule has changed since. The email lists what changed.',
+  reminders: 'Faculty who were emailed but have not fully confirmed: nothing confirmed after 5 days, or some topics still unconfirmed.',
+};
 
 export default function EmailsPage() {
   const [data, setData] = useState<any>({ first: [], changes: [], reminders: [] });
@@ -43,47 +49,37 @@ export default function EmailsPage() {
   const toggle = (id: string) =>
     setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'first', label: `First email (${data.first?.length || 0})` },
-    { key: 'changes', label: `Schedule changes (${data.changes?.length || 0})` },
-    { key: 'reminders', label: `Reminders (${data.reminders?.length || 0})` },
+  const tabs = [
+    { key: 'first' as Tab, label: 'First email', count: data.first?.length || 0 },
+    { key: 'changes' as Tab, label: 'Schedule changes', count: data.changes?.length || 0 },
+    { key: 'reminders' as Tab, label: 'Reminders', count: data.reminders?.length || 0 },
   ];
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-canvas text-ink">
-      <main className="mx-auto w-full max-w-5xl p-4 sm:p-8">
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-semibold">Emails</h1>
-            <p className="mt-1.5 text-ink-2">
-              Nothing is sent automatically. Tick the faculty you want, then review before sending.
-            </p>
-          </div>
-          <SyncButton onSynced={load} />
-        </div>
+    <>
+      <PageShell>
+        <PageHeader
+          title="Emails"
+          description="Nothing is sent automatically. Choose who should receive an email, check the list, then confirm."
+          actions={<SyncButton onSynced={load} />}
+        />
 
-        <div role="tablist" className="mb-4 flex flex-wrap gap-2">
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              role="tab"
-              aria-selected={tab === t.key}
-              onClick={() => { setTab(t.key); setSelected(new Set()); }}
-              className={`h-10 rounded-lg border px-4 text-sm font-medium ${
-                tab === t.key ? 'border-accent bg-accent text-white' : 'border-line bg-white text-ink-2 hover:bg-slate-50'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          label="Email type"
+          idPrefix="emailtab"
+          items={tabs}
+          value={tab}
+          onChange={(k) => { setTab(k); setSelected(new Set()); }}
+        />
+        <p className="-mt-2 mb-4 max-w-3xl text-sm text-ink-2">{TAB_HELP[tab]}</p>
 
-        <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-slate-50/70 p-4">
-            <label className="flex items-center gap-2 text-sm">
+        <div id={`emailtab-panel-${tab}`} role="tabpanel" aria-labelledby={`emailtab-${tab}`} className={`overflow-hidden ${cardCls}`}>
+          <div className="flex flex-wrap items-center gap-3 border-b border-line bg-slate-50 p-3 sm:px-4">
+            <label className="flex min-h-9 items-center gap-2.5 text-sm font-medium text-ink">
               <input
                 type="checkbox"
                 checked={allSelected}
+                disabled={sendable.length === 0}
                 onChange={() =>
                   setSelected((prev) => {
                     const n = new Set(prev);
@@ -95,7 +91,7 @@ export default function EmailsPage() {
               />
               {q ? `Select all shown (${sendable.length})` : `Select all (${sendable.length})`}
             </label>
-            <div className="relative order-last w-full sm:order-none sm:w-72">
+            <div className="relative order-last w-full sm:order-none sm:ml-2 sm:w-72">
               <label htmlFor="email-search" className="sr-only">Search by name or email</label>
               <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
@@ -104,37 +100,44 @@ export default function EmailsPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search name or email"
-                className={`${inputCls} pl-9`}
+                className={`${inputCls} h-10 pl-9`}
               />
             </div>
-            <button
-              disabled={selected.size === 0}
-              onClick={() => setSending(true)}
-              className="h-10 rounded-lg bg-accent px-4 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              Review &amp; send selected ({selected.size})
-            </button>
+            <div className="ml-auto flex items-center gap-3">
+              <span role="status" aria-live="polite" className="tnum text-sm text-ink-2">
+                <strong className="text-ink">{selected.size}</strong> selected
+              </span>
+              <Button variant="primary" disabled={selected.size === 0} onClick={() => setSending(true)}>
+                <MailIcon /> Review &amp; send…
+              </Button>
+            </div>
           </div>
 
           {loading ? (
-            <p className="p-8 text-center text-ink-2">Loading…</p>
+            <LoadingBlock>Loading the email lists…</LoadingBlock>
           ) : rows.length === 0 ? (
-            <div className="p-8 text-center text-ink-2">
-              <p>{q ? `Nobody here matches “${query}”.` : 'Nobody in this list.'}</p>
-              {tab === 'changes' && !q && firstWithChanges > 0 && (
-                <p className="mx-auto mt-2 max-w-md text-sm">
+            <EmptyState
+              title={q ? `Nobody here matches “${query}”` : 'Nobody in this list'}
+              tone={q ? 'neutral' : 'success'}
+              action={q ? <Button onClick={() => setQuery('')}>Clear search</Button> : undefined}
+            >
+              {!q && tab === 'changes' && firstWithChanges > 0 ? (
+                <>
                   {firstWithChanges} faculty with schedule changes have not had their first email yet, so they are listed under{' '}
                   <button type="button" onClick={() => { setTab('first'); setSelected(new Set()); }} className="font-semibold text-accent underline">
                     First email
                   </button>
                   . Their first email already shows the updated schedule.
-                </p>
-              )}
-            </div>
+                </>
+              ) : !q ? 'Nothing needs sending here right now.' : undefined}
+            </EmptyState>
           ) : (
             <ul className="divide-y divide-line">
               {rows.map((r) => (
-                <li key={r.id} className="flex items-start gap-3 p-4">
+                <li
+                  key={r.id}
+                  className={`flex items-start gap-3 p-4 transition-colors ${selected.has(r.id) ? 'bg-accent-tint' : 'hover:bg-slate-50'}`}
+                >
                   <input
                     type="checkbox"
                     className="mt-1"
@@ -146,23 +149,22 @@ export default function EmailsPage() {
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold"><PersonLink name={r.name} onOpen={() => setProfileId(r.id)} className="font-semibold" /></p>
                     <p className="text-sm text-ink-2">
-                      {r.hasEmail ? r.email : <span className="text-red-700">No valid email</span>} ·{' '}
+                      {r.hasEmail ? r.email : <span className="font-medium text-danger">No valid email</span>} ·{' '}
                       {r.topicCount} topic{r.topicCount === 1 ? '' : 's'} · {r.confirmedCount} confirmed
                       {r.sentAt && <> · first emailed {new Date(r.sentAt).toLocaleDateString('en-GB')}</>}
                     </p>
                     {r.lines && (
-                      <ul className="mt-1 list-disc pl-5 text-sm text-ink-2">
+                      <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-sm text-ink-2">
                         {r.lines.map((l: string, i: number) => <li key={i}>{l}</li>)}
                       </ul>
                     )}
-                    {r.note && <p className="mt-1 text-sm font-medium text-amber-900">{r.note}</p>}
+                    {r.note && <Notice tone="warning" className="mt-2">{r.note}</Notice>}
                     {r.pendingLines?.length > 0 && (
-                      <div className="mt-1.5 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-inset ring-amber-200">
-                        <p className="font-medium">Changed since added (the first email already shows the new schedule):</p>
-                        <ul className="mt-0.5 list-disc pl-5">
+                      <Notice tone="warning" className="mt-2" title="Changed since added (the first email already shows the new schedule):">
+                        <ul className="list-disc pl-5">
                           {r.pendingLines.map((l: string, i: number) => <li key={i}>{l}</li>)}
                         </ul>
-                      </div>
+                      </Notice>
                     )}
                   </div>
                 </li>
@@ -170,7 +172,7 @@ export default function EmailsPage() {
             </ul>
           )}
         </div>
-      </main>
+      </PageShell>
 
       {profileId && (
         <FacultyProfileHost facultyId={profileId} onClose={() => setProfileId(null)} onChanged={load} />
@@ -185,6 +187,6 @@ export default function EmailsPage() {
           onDone={() => { setSending(false); load(); }}
         />
       )}
-    </div>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import Badge, { roleTone } from './Badge';
 import { AlertIcon, CheckIcon } from './Icons';
+import { Button, LoadingBlock, Notice } from './ui';
 import { generatePDFForSession, previewCoordinatorReport, sendCoordinatorReport } from '../actions';
 
 const roleLabel = (r: string) => (r === 'Lead Coordinator' ? 'Lead' : r);
@@ -21,6 +22,8 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  // Second step before anything is emailed
+  const [confirming, setConfirming] = useState(false);
 
   // Separate from sending: only makes the session PDF, emails nobody
   async function makePdf() {
@@ -45,14 +48,13 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
   }, [session.id]);
 
   async function send() {
+    setConfirming(false);
     setBusy(true);
     const r: any = await sendCoordinatorReport(session.id, [...picked]);
     setResult({ ok: r.success, message: r.message });
     setBusy(false);
   }
 
-  const secondary = 'inline-flex h-11 items-center justify-center rounded-lg border border-field bg-white px-5 text-sm font-medium text-ink hover:bg-slate-50 disabled:opacity-50';
-  const primary = 'inline-flex h-11 items-center justify-center rounded-lg bg-accent px-5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50';
 
   const people: any[] = data?.allCoordinators || [];
   const withEmail = people.filter((c) => c.hasEmail);
@@ -73,26 +75,42 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
       footer={
         result?.ok ? (
           <>
-            <button type="button" onClick={makePdf} disabled={pdfBusy} className={secondary}>{pdfBusy ? 'Making PDF…' : 'Generate PDF'}</button>
-            <button type="button" onClick={onClose} className={primary}>Close</button>
+            <Button onClick={makePdf} busy={pdfBusy}>{pdfBusy ? 'Making PDF…' : 'Generate PDF'}</Button>
+            <Button variant="primary" onClick={onClose}>Close</Button>
+          </>
+        ) : confirming ? (
+          <>
+            <Button onClick={() => setConfirming(false)}>Go back</Button>
+            <Button variant="primary" onClick={send}>Yes, send to {count} coordinator{count === 1 ? '' : 's'}</Button>
           </>
         ) : (
           <>
-            <button type="button" onClick={onClose} disabled={busy || pdfBusy} className="mr-auto inline-flex h-11 items-center justify-center rounded-lg px-4 text-sm font-medium text-ink-2 hover:bg-slate-100 disabled:opacity-50">Cancel</button>
-            <button type="button" onClick={makePdf} disabled={busy || pdfBusy} className={secondary}>{pdfBusy ? 'Making PDF…' : 'Generate PDF'}</button>
-            <button type="button" onClick={send} disabled={busy || pdfBusy || !data?.success || count === 0 || !enough} className={primary}>
-              {busy ? 'Sending…' : `Send to ${count} coordinator${count === 1 ? '' : 's'}`}
-            </button>
+            <Button variant="quiet" className="mr-auto" onClick={onClose} disabled={busy || pdfBusy}>Cancel</Button>
+            <Button onClick={makePdf} busy={pdfBusy} disabled={busy}>{pdfBusy ? 'Making PDF…' : 'Generate PDF'}</Button>
+            <Button
+              variant="primary"
+              onClick={() => setConfirming(true)}
+              busy={busy}
+              disabled={pdfBusy || !data?.success || count === 0 || !enough}
+            >
+              {busy ? 'Sending…' : `Send to ${count} coordinator${count === 1 ? '' : 's'}…`}
+            </Button>
           </>
         )
       }
     >
-      {!data && <p role="status" className="py-8 text-center text-ink-2">Preparing the report…</p>}
+      {!data && <LoadingBlock>Preparing the report…</LoadingBlock>}
       {data && !data.success && (
         <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{data.message}</p>
       )}
       {data?.success && (
         <div className="space-y-4">
+          {confirming && (
+            <Notice tone="warning" title={`You are about to send the report to ${count} coordinator${count === 1 ? "" : "s"}`}>
+              Real emails will be sent to the people ticked below. Sent emails cannot be recalled. Click{' '}
+              <strong>Yes, send</strong> to continue, or <strong>Go back</strong> to change who receives it.
+            </Notice>
+          )}
           <fieldset className="rounded-xl bg-canvas p-4 text-sm text-ink ring-1 ring-inset ring-line">
             <legend className="sr-only">Who should receive the report</legend>
             <div className="flex flex-wrap items-center justify-between gap-2">
