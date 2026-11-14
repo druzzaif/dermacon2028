@@ -291,6 +291,7 @@ function SessionPrint() {
   const [schedule, setSchedule] = useState(true);
   const [missing, setMissing] = useState(false);
   const [overlaps, setOverlaps] = useState(false);
+  const [emptySlotsReport, setEmptySlotsReport] = useState(false);
   const [scope, setScope] = useState<'selected' | 'all'>('selected');
   const [chairs, setChairs] = useState(true);
   const [contacts, setContacts] = useState(false);
@@ -348,7 +349,7 @@ function SessionPrint() {
     });
   }
 
-  const nothingChosen = !schedule && !missing && !overlaps;
+  const nothingChosen = !schedule && !missing && !overlaps && !emptySlotsReport;
   const needsSessions = schedule && picked.size === 0 && !missing && !overlaps;
 
   async function makePdf() {
@@ -358,7 +359,7 @@ function SessionPrint() {
     setPdfUrl(null);
     try {
       const ordered = sessions.filter((s) => picked.has(String(s.id))).map((s) => String(s.id));
-      const r = await fetchPdf({ kind: 'sessions', sessionIds: ordered, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession, emptySlots, coordinators, topicsOnly, continuous, groupBy }, 'DERMACON_Print');
+      const r = await fetchPdf({ kind: 'sessions', sessionIds: ordered, schedule, missing, overlaps, emptySlotsReport, scope, chairs, contacts, confirmed, pagePerSession, emptySlots, coordinators, topicsOnly, continuous, groupBy }, 'DERMACON_Print');
       setPdfUrl(r.url);
     } catch (e: any) {
       setError(e?.message || 'The PDF could not be made.');
@@ -443,12 +444,13 @@ function SessionPrint() {
             <div className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
               <h2 className="mb-1 text-sm font-semibold text-ink">What to print</h2>
               <Check checked={schedule} onChange={setSchedule} title="Session schedules" desc="Each selected session: topics, times, faculty." />
+              <Check checked={emptySlotsReport} onChange={setEmptySlotsReport} title="Empty slots section" desc="A separate section listing sessions with open time slots; uses the report scope below." />
               <Check checked={missing} onChange={setMissing} title="Missing data" desc="No hall or date, no coordinators, topics without a speaker, wrong times." />
               <Check checked={overlaps} onChange={setOverlaps} title="Overlaps" desc="Faculty booked twice and halls double-booked." />
-              {(missing || overlaps) && (
+              {(missing || overlaps || emptySlotsReport) && (
                 <fieldset className="mt-2 rounded-lg bg-canvas p-3">
-                  <legend className="sr-only">Missing data and overlaps cover</legend>
-                  <p className="mb-1.5 text-xs font-medium text-ink-2">Missing data and overlaps cover</p>
+                  <legend className="sr-only">Report scope</legend>
+                  <p className="mb-1.5 text-xs font-medium text-ink-2">Report scope</p>
                   <label className="flex items-center gap-2 text-sm"><input type="radio" name="scope" checked={scope === 'selected'} onChange={() => setScope('selected')} /> Selected sessions only</label>
                   <label className="mt-1 flex items-center gap-2 text-sm"><input type="radio" name="scope" checked={scope === 'all'} onChange={() => setScope('all')} /> Whole programme</label>
                   {scope === 'selected' && picked.size === 0 && <p className="mt-1.5 text-xs text-ink-2">No session selected, so the whole programme is used.</p>}

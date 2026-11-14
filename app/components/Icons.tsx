@@ -33,6 +33,9 @@ export const CheckIcon = (p: P) => (
 export const SearchIcon = (p: P) => (
   <svg {...base(p)}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
 );
+export const ArrowLeftIcon = (p: P) => (
+  <svg {...base(p)}><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+);
 export const CloseIcon = (p: P) => (
   <svg {...base(p)}><path d="M18 6 6 18M6 6l12 12" /></svg>
 );

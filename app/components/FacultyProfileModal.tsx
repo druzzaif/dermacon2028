@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import SendEmailsDialog from './SendEmailsDialog';
-import Badge, { roleTone } from './Badge';
+import Badge from './Badge';
 import { Button, LoadingBlock } from './ui';
 import { CloseIcon } from './Icons';
 import { roleName } from '../lib/topicPeople';
@@ -167,14 +167,14 @@ export default function FacultyProfileModal({
       onKeyDown={(e) => { if (e.key === 'Escape' && !showSend && !unconfirming) onClose(); }}
     >
       <div role="dialog" aria-modal="true" aria-label={`Profile of ${faculty.canonical_name}`} className="modal-in flex h-full w-full max-w-md flex-col bg-white shadow-pop">
-        <div className="flex items-start justify-between gap-3 border-b border-line bg-canvas p-5">
-          <div className="flex min-w-0 items-center gap-3.5">
-            <div aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-tint text-base font-semibold text-accent ring-1 ring-inset ring-indigo-200">
+        <div className="flex items-start justify-between gap-3 border-b border-line bg-canvas p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-tint text-sm font-semibold text-accent ring-1 ring-inset ring-indigo-200">
               {initials}
             </div>
             <div className="min-w-0">
-              <h2 className="truncate text-lg font-semibold text-ink">{faculty.canonical_name}</h2>
-              <p className="tnum font-mono text-sm text-muted">{faculty.faculty_id}</p>
+              <h2 className="truncate text-base font-semibold text-ink">{faculty.canonical_name}</h2>
+              <p className="tnum font-mono text-xs text-muted">{faculty.faculty_id}</p>
             </div>
           </div>
           <button
@@ -189,8 +189,8 @@ export default function FacultyProfileModal({
           </button>
         </div>
 
-        <div className="space-y-4 border-b border-line bg-white p-5">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-3 border-b border-line bg-white p-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             <div>
               <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                 Email
@@ -236,7 +236,7 @@ export default function FacultyProfileModal({
             </div>
           </div>
 
-          <div className="border-t border-line pt-4">
+          <div className="border-t border-line pt-3">
             <Button
               variant="primary"
               className="w-full"
@@ -245,13 +245,10 @@ export default function FacultyProfileModal({
             >
               {kind === 'update' ? 'Email schedule update…' : 'Email schedule…'}
             </Button>
-            <p className="mt-1.5 text-center text-xs text-muted">
-              You will see exactly what is sent before anything goes out.
-            </p>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain bg-canvas p-5">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-canvas p-4">
           {loading && <LoadingBlock>Loading roles…</LoadingBlock>}
 
           {!loading && coordinatingSessions.length === 0 && speakingSessions.length === 0 && chairSessions.length === 0 && (
@@ -279,7 +276,6 @@ export default function FacultyProfileModal({
                         <div className="text-sm font-semibold text-ink">
                           <span className="tnum text-accent">{session?.session_code}</span> · {session?.session_name}
                         </div>
-                        <Badge tone={roleTone(c.role)}>{c.role}</Badge>
                       </div>
                       <div className="mt-2 flex justify-between gap-2 text-xs text-ink-2">
                         <span className="tnum">{formatDateDdMmYyyy(session?.session_date)}</span>
@@ -313,7 +309,6 @@ export default function FacultyProfileModal({
                         </div>
                         <div className="flex shrink-0 items-center gap-1.5">
                           {c.confirmed && <Badge tone="success">Confirmed</Badge>}
-                          <Badge tone="orange">Chairperson</Badge>
                         </div>
                       </div>
                       <div className="tnum mt-2 flex justify-between gap-2 border-t border-line pt-2 text-xs text-ink-2">
@@ -353,7 +348,6 @@ export default function FacultyProfileModal({
                         </div>
                         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
                           {s.confirmed && <Badge tone="success">Confirmed</Badge>}
-                          <Badge tone={roleTone(s.role)}>{roleName(s.role)}</Badge>
                         </div>
                       </div>
                       <div className="mt-1.5 text-sm leading-snug text-ink">{topic?.topic_title}</div>

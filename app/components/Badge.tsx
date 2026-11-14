@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 export type BadgeTone =
   | 'neutral' | 'accent' | 'success' | 'warning' | 'danger'
-  | 'purple' | 'emerald' | 'blue' | 'orange';
+  | 'purple' | 'emerald' | 'blue' | 'orange' | 'cyan';
 
 // Every pair is >= 4.5:1. Minimum text size is 12px.
 const tones: Record<BadgeTone, string> = {
@@ -15,15 +15,18 @@ const tones: Record<BadgeTone, string> = {
   emerald: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
   blue: 'bg-blue-100 text-blue-800 ring-blue-200',
   orange: 'bg-orange-100 text-orange-800 ring-orange-200',
+  cyan: 'bg-cyan-100 text-cyan-800 ring-cyan-200',
 };
 
 export function roleTone(role: string | null | undefined): BadgeTone {
   const r = (role || '').trim().toLowerCase();
-  if (r === 'national') return 'purple';
+  if (r === 'national' || r === 'moderator') return 'purple';
   if (r === 'lead coordinator' || r === 'lead') return 'warning';
   if (r === 'local') return 'emerald';
   if (r === 'faculty') return 'blue';
-  if (r === 'chairperson') return 'orange';
+  if (r === 'panel' || r === 'panelist' || r === 'penalist') return 'cyan';
+  if (r === 'debater') return 'orange';
+  if (r === 'chairperson') return 'warning';
   return 'neutral';
 }
 

@@ -3,7 +3,7 @@ import { buildPrintHtml, buildFacultySimpleHtml, type PrintRequest } from '@/app
 import { facultyLetterheadHtml } from '@/app/actions';
 
 // POST /api/print -> one A4 PDF.
-//   By session: { kind: 'sessions', sessionIds, schedule, missing, overlaps, scope, chairs, contacts, confirmed, pagePerSession, emptySlots }
+//   By session: { kind: 'sessions', sessionIds, schedule, missing, overlaps, emptySlotsReport, scope, chairs, contacts, confirmed, pagePerSession, emptySlots }
 //   By faculty: { kind: 'faculty', facultyIds, format: 'letterhead' | 'simple', contacts, confirmed, pagePerFaculty }
 export async function POST(req: Request) {
   let b: any;
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
         schedule: !!b.schedule,
         missing: !!b.missing,
         overlaps: !!b.overlaps,
+        emptySlotsReport: !!b.emptySlotsReport,
         scope: b.scope === 'all' ? 'all' : 'selected',
         chairs: !!b.chairs,
         contacts: !!b.contacts,
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
         continuous: !!b.continuous,
         groupBy: b.groupBy === 'hall' ? 'hall' : 'time',
       };
-      if (!body.schedule && !body.missing && !body.overlaps) {
+      if (!body.schedule && !body.missing && !body.overlaps && !body.emptySlotsReport) {
         return Response.json({ error: 'Choose at least one thing to print.' }, { status: 400 });
       }
       if (body.schedule && !body.missing && !body.overlaps && body.sessionIds.length === 0) {

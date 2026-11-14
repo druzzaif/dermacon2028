@@ -18,7 +18,7 @@ export default function DemoToggle({ mode }: { mode: AppMode }) {
       onClick={toggle}
       aria-pressed={demo}
       title={demo ? 'Back to your real data' : 'Show dummy faculty names for presentations'}
-      className={`ml-auto inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition-colors ${
+      className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition-colors ${
         demo
           ? 'border-amber-300 bg-amber-400 text-slate-900 hover:bg-amber-300'
           : 'border-white/20 bg-white/10 text-slate-200 hover:bg-white/20'

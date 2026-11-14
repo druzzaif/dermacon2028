@@ -25,6 +25,7 @@ import { inputCls } from '../components/Field';
 import { AlertIcon, CalendarIcon, CheckIcon, ClockIcon, MailIcon, MenuIcon, PencilIcon, PinIcon, PlusIcon, PrinterIcon, SearchIcon, TrashIcon } from '../components/Icons';
 import { Button, EmptyState, IconButton, LoadingBlock, PersonLink, SkeletonLines, thCls, theadRowCls } from '../components/ui';
 import FacultyProfileHost from '../components/FacultyProfileHost';
+import HallOverview from '../components/HallOverview';
 
 function formatDateLabel(dateStr: string | null): string {
   if (!dateStr) return 'No date';
@@ -43,6 +44,19 @@ function formatTimeAmPm(timeStr: string | null | undefined): string {
   else if (h > 12) h -= 12;
   return `${h}:${m} ${ampm}`;
 }
+
+type SessionViewSnapshot = {
+  hallView: boolean;
+  filterHall: string;
+  filterDate: string;
+  sessionCode: string | null;
+  sessionScrollTop: number;
+  hallScrollTop: number;
+};
+
+type SessionHistoryState = Record<string, unknown> & {
+  __dermaconSessionView?: SessionViewSnapshot;
+};
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<any[]>([]);
@@ -77,11 +91,37 @@ export default function SessionsPage() {
   const lastTarget = useRef<string | null | undefined>(undefined);
   const loadedOnce = useRef(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Choosing a hall fills the body with every session of that hall and its topics
+  const [hallView, setHallView] = useState(false);
+  const [hallScrollRestore, setHallScrollRestore] = useState<{ request: number; top: number } | null>(null);
+  const hallScrollRestoreRequest = useRef(0);
+  const hallScrollTop = useRef(0);
+  const scheduleScrollRef = useRef<HTMLDivElement>(null);
+  const pendingSessionScroll = useRef<number | null>(null);
   const [printOpen, setPrintOpen] = useState(false);
   const [printOptions, setPrintOptions] = useState<PrintOptions>(DEFAULT_PRINT_OPTIONS);
 
   const searchParams = useSearchParams();
   const targetCode = searchParams.get('code');
+
+  function rememberCurrentView() {
+    const historyState = (window.history.state || {}) as SessionHistoryState;
+    window.history.replaceState(
+      {
+        ...historyState,
+        __dermaconSessionView: {
+          hallView,
+          filterHall,
+          filterDate,
+          sessionCode: selectedSession?.session_code || null,
+          sessionScrollTop: scheduleScrollRef.current?.scrollTop || 0,
+          hallScrollTop: hallScrollTop.current,
+        } satisfies SessionViewSnapshot,
+      },
+      '',
+      window.location.href
+    );
+  }
 
   useEffect(() => {
     // The address bar was updated by picking a session here: the list is already loaded
@@ -128,14 +168,52 @@ export default function SessionsPage() {
     fetchSessions();
   }, [targetCode]);
 
+  useEffect(() => {
+    function restoreHistoryView(event: PopStateEvent) {
+      const historyState = event.state as SessionHistoryState | null;
+      const snapshot = historyState?.__dermaconSessionView;
+      if (!snapshot) {
+        setHallView(false);
+        setFilterHall('');
+        setFilterDate('');
+        pendingSessionScroll.current = null;
+        setHallScrollRestore(null);
+        return;
+      }
+
+      setHallView(snapshot.hallView);
+      setFilterHall(snapshot.filterHall);
+      setFilterDate(snapshot.filterDate);
+      hallScrollTop.current = snapshot.hallScrollTop;
+      lastTarget.current = snapshot.sessionCode;
+      pendingSessionScroll.current = snapshot.hallView ? null : snapshot.sessionScrollTop;
+      setHallScrollRestore(snapshot.hallView
+        ? { request: ++hallScrollRestoreRequest.current, top: snapshot.hallScrollTop }
+        : null);
+
+      const previousSession = sessions.find((session) => session.session_code === snapshot.sessionCode);
+      if (previousSession) {
+        selectedId.current = previousSession.id;
+        setSelectedSession(previousSession);
+      }
+    }
+
+    window.addEventListener('popstate', restoreHistoryView);
+    return () => window.removeEventListener('popstate', restoreHistoryView);
+  }, [sessions]);
+
   // Pick a session from the list. The address bar remembers it, so refreshing the
   // browser comes back to the same session.
   function chooseSession(s: any) {
+    if (hallView || targetCode !== s.session_code) {
+      rememberCurrentView();
+      window.history.pushState(null, '', `/sessions?code=${encodeURIComponent(s.session_code)}`);
+    }
     selectedId.current = s.id;
     lastTarget.current = s.session_code;
     setSelectedSession(s);
+    setHallView(false);
     setSidebarOpen(false);
-    window.history.replaceState(null, '', `/sessions?code=${encodeURIComponent(s.session_code)}`);
   }
 
   async function refreshDetails(): Promise<any[]> {
@@ -191,6 +269,23 @@ export default function SessionsPage() {
     refreshDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSession]);
+
+  useEffect(() => {
+    if (
+      hallView ||
+      loadingDetails ||
+      !selectedSession ||
+      detailsFor !== selectedSession.id ||
+      pendingSessionScroll.current === null
+    ) return;
+
+    const scrollTop = pendingSessionScroll.current;
+    pendingSessionScroll.current = null;
+    const frame = window.requestAnimationFrame(() => {
+      if (scheduleScrollRef.current) scheduleScrollRef.current.scrollTop = scrollTop;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [selectedSession, hallView, loadingDetails, detailsFor]);
 
   const distinctHalls = useMemo(() => {
     const set = new Set<string>();
@@ -264,8 +359,9 @@ export default function SessionsPage() {
     return (
       <tr key={`slot-${g.start}`} className="bg-danger-tint align-top">
         <td className="px-4 py-3.5 text-center text-danger"><AlertIcon className="inline" width={18} height={18} /></td>
-        <td className="tnum whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-danger-strong">
-          {formatTime12(g.start)} – {formatTime12(g.end)}
+        <td className="tnum px-4 py-3.5 text-sm font-semibold text-danger-strong">
+          <div className="whitespace-nowrap">{formatTime12(g.start)}</div>
+          <div className="whitespace-nowrap">{formatTime12(g.end)}</div>
         </td>
         <td className="px-4 py-3.5">
           <p className="text-[15px] font-semibold text-danger-strong">Empty slot · {g.minutes} minute{g.minutes === 1 ? '' : 's'}</p>
@@ -281,6 +377,7 @@ export default function SessionsPage() {
             <Button variant="danger-quiet" size="sm" className="ml-1" onClick={() => setClosingSlot(g)}>Close gap</Button>
           )}
         </td>
+        <td className="px-1 py-3" />
       </tr>
     );
   };
@@ -339,7 +436,16 @@ export default function SessionsPage() {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label htmlFor="filter-hall" className="sr-only">Filter by hall</label>
-              <select id="filter-hall" className={inputCls} value={filterHall} onChange={(e) => setFilterHall(e.target.value)}>
+              <select id="filter-hall" className={inputCls} value={filterHall} onChange={(e) => {
+                const nextHall = e.target.value;
+                setFilterHall(nextHall);
+                setHallView(!!nextHall);
+                setSidebarOpen(false);
+                hallScrollTop.current = 0;
+                setHallScrollRestore(nextHall
+                  ? { request: ++hallScrollRestoreRequest.current, top: 0 }
+                  : null);
+              }}>
                 <option value="">All halls</option>
                 {distinctHalls.map((h) => (
                   <option key={h} value={h}>Hall {h}</option>
@@ -348,7 +454,13 @@ export default function SessionsPage() {
             </div>
             <div>
               <label htmlFor="filter-date" className="sr-only">Filter by date</label>
-              <select id="filter-date" className={inputCls} value={filterDate} onChange={(e) => setFilterDate(e.target.value)}>
+              <select id="filter-date" className={inputCls} value={filterDate} onChange={(e) => {
+                setFilterDate(e.target.value);
+                if (hallView) {
+                  hallScrollTop.current = 0;
+                  setHallScrollRestore({ request: ++hallScrollRestoreRequest.current, top: 0 });
+                }
+              }}>
                 <option value="">All dates</option>
                 {distinctDates.map((d) => (
                   <option key={d} value={d}>{formatDateLabel(d)}</option>
@@ -408,7 +520,20 @@ export default function SessionsPage() {
         tabIndex={-1}
         className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden outline-none print:h-auto print:overflow-visible"
       >
-        {sel ? (
+        {filterHall && (
+          <div className={`${hallView ? 'flex' : 'hidden'} min-h-0 flex-1`}>
+            <HallOverview
+              sessions={filteredSessions}
+              hall={filterHall}
+              active={hallView}
+              onOpen={chooseSession}
+              onClose={() => setHallView(false)}
+              restoreScroll={hallScrollRestore}
+              onScrollPositionChange={(top) => { hallScrollTop.current = top; }}
+            />
+          </div>
+        )}
+        {hallView && filterHall ? null : sel ? (
           <>
             <SessionPrintSheet session={sel} topics={topics} coordinators={coordinators} sessionChairs={sessionChairs} options={printOptions} />
             <div className="session-header z-10 shrink-0 border-b border-line bg-white px-4 py-3 sm:px-6 print:hidden">
@@ -502,31 +627,39 @@ export default function SessionsPage() {
               </div>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-auto p-4 sm:p-6 print:hidden">
+            <div ref={scheduleScrollRef} className="min-h-0 flex-1 overflow-auto p-4 sm:p-6 print:hidden">
               <div role="status" aria-live="polite" className="sr-only">
                 {loadingDetails ? 'Loading schedule' : `${topics.length} topics loaded${emptySlots.length ? `, ${emptySlots.length} empty slot${emptySlots.length === 1 ? '' : 's'}` : ''}`}
               </div>
               <div className="overflow-x-auto rounded-xl border border-line bg-white shadow-card print:border-0 print:shadow-none">
-                <table className="w-full min-w-[620px] border-collapse text-left print:min-w-0">
+                <table className="w-full min-w-[800px] table-fixed border-collapse text-left print:min-w-0">
                   <caption className="sr-only">
                     Topics in session {sel.session_code}, in running order
                   </caption>
+                  <colgroup>
+                    <col className="w-14" />
+                    <col className="w-44" />
+                    <col />
+                    <col className="w-56" />
+                    <col className="w-12" />
+                  </colgroup>
                   <thead>
                     <tr className={theadRowCls}>
-                      <th scope="col" className={`${thCls} w-14 text-center`}>No.</th>
-                      <th scope="col" className={`${thCls} w-44`}>Time</th>
+                      <th scope="col" className={`${thCls} text-center`}>No.</th>
+                      <th scope="col" className={thCls}>Time</th>
                       <th scope="col" className={thCls}>Topic</th>
-                      <th scope="col" className={`${thCls} w-80`}>Faculty and role</th>
+                      <th scope="col" className={thCls}>Faculty and role</th>
+                      <th scope="col" className={thCls}><span className="sr-only">Actions</span></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line" aria-busy={loadingDetails}>
                     {showPlaceholders ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-4"><SkeletonLines rows={4} /></td>
+                        <td colSpan={5} className="px-4 py-4"><SkeletonLines rows={4} /></td>
                       </tr>
                     ) : topics.length === 0 ? (
                       <tr>
-                        <td colSpan={4}>
+                        <td colSpan={5}>
                           <EmptyState
                             title="No topics yet"
                             action={<Button variant="primary" onClick={() => setIsAddingTopic(true)}><PlusIcon /> Add topic</Button>}
@@ -545,6 +678,11 @@ export default function SessionsPage() {
                           g.beforeTopicId !== null && !slotsShown.has(g.start) && toMinutes(g.end) === toMinutes(t.start_time));
                         if (slotBefore) slotsShown.add(slotBefore.start);
                         const justSaved = focusTopic === t.id;
+                        const startMinutes = toMinutes(t.start_time);
+                        const endMinutes = toMinutes(t.end_time);
+                        const duration = startMinutes != null && endMinutes != null && endMinutes > startMinutes
+                          ? endMinutes - startMinutes
+                          : null;
                         return (
                           <Fragment key={t.id}>
                           {slotBefore && slotRow(slotBefore)}
@@ -554,16 +692,9 @@ export default function SessionsPage() {
                             className={`align-top transition-colors duration-700 ${justSaved ? 'bg-accent-tint' : 'hover:bg-slate-50/70'}`}
                           >
                             <td className="tnum px-4 py-3.5 text-center text-sm font-semibold text-muted">{t.sequence_no}</td>
-                            <td className="tnum whitespace-nowrap px-4 py-3 text-sm font-medium text-ink-2">
-                              {formatTimeAmPm(t.start_time)} – {formatTimeAmPm(t.end_time)}
-                              <div className="-ml-1.5 mt-1 flex items-center gap-0.5 print:hidden">
-                                <IconButton size="sm" label={`Edit topic ${t.sequence_no}: ${t.topic_title}`} onClick={() => setEditingTopic(t)}>
-                                  <PencilIcon width={15} height={15} />
-                                </IconButton>
-                                <IconButton size="sm" tone="danger" label={`Delete topic ${t.sequence_no}: ${t.topic_title}`} onClick={() => setDeletingTopic(t)}>
-                                  <TrashIcon width={15} height={15} />
-                                </IconButton>
-                              </div>
+                            <td className="tnum whitespace-nowrap px-4 py-3.5 text-sm font-medium leading-5 text-ink-2">
+                              <div>{formatTimeAmPm(t.start_time)} – {formatTimeAmPm(t.end_time)}</div>
+                              <div className="mt-0.5 text-xs font-normal leading-4 text-muted">({duration != null ? `${duration} min` : '—'})</div>
                             </td>
                             <th scope="row" className="px-4 py-3.5 text-left text-[15px] font-medium leading-snug text-ink">
                               {t.topic_title}
@@ -572,18 +703,22 @@ export default function SessionsPage() {
                               {facultyList.length === 0 && chairList.length === 0 ? (
                                 <Badge tone="warning">No speaker yet</Badge>
                               ) : (
-                                <ul className="space-y-1.5">
+                                <ul className="space-y-2">
                                   {facultyList.map((ft: any, i: number) => (
-                                    <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                      {facultyList.length > 1 && <span className="text-sm font-semibold text-ink-2">{i + 1}.</span>}
-                                      <PersonLink className="text-sm" name={ft.faculty?.canonical_name} onOpen={() => ft.faculty?.id && setProfileId(ft.faculty.id)} />
-                                      <Badge tone={roleTone(ft.role || 'Faculty')}>{roleName(ft.role)}</Badge>
-                                      {ft.confirmed && (
-                                        <Badge tone="success">
-                                          <CheckIcon width={12} height={12} strokeWidth={3} />
-                                          Confirmed
-                                        </Badge>
-                                      )}
+                                    <li key={i} className="grid min-w-0 gap-y-1">
+                                      <div className="flex min-w-0 items-start gap-1.5">
+                                        {facultyList.length > 1 && <span className="shrink-0 text-sm font-semibold text-ink-2">{i + 1}.</span>}
+                                        <PersonLink className="min-w-0 break-words text-sm leading-5" name={ft.faculty?.canonical_name} onOpen={() => ft.faculty?.id && setProfileId(ft.faculty.id)} />
+                                      </div>
+                                      <div className="flex flex-wrap items-center gap-1">
+                                        <Badge tone={roleTone(ft.role || 'Faculty')}>{roleName(ft.role)}</Badge>
+                                        {ft.confirmed && (
+                                          <Badge tone="success">
+                                            <CheckIcon width={12} height={12} strokeWidth={3} />
+                                            Confirmed
+                                          </Badge>
+                                        )}
+                                      </div>
                                     </li>
                                   ))}
                                   {facultyList.length === 0 && (
@@ -594,22 +729,34 @@ export default function SessionsPage() {
                               {chairList.length > 0 && (
                                 <div className="mt-2 border-t border-line pt-2">
                                   <p className="text-xs font-semibold uppercase tracking-wide text-muted">Chair</p>
-                                  <ul className="mt-1 space-y-1.5">
+                                  <ul className="mt-1 space-y-2">
                                     {chairList.map((ft: any, i: number) => (
-                                      <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                        <PersonLink className="text-sm" name={ft.faculty?.canonical_name} onOpen={() => ft.faculty?.id && setProfileId(ft.faculty.id)} />
-                                        <Badge tone="orange">Chairperson</Badge>
-                                        {ft.confirmed && (
-                                          <Badge tone="success">
-                                            <CheckIcon width={12} height={12} strokeWidth={3} />
-                                            Confirmed
-                                          </Badge>
-                                        )}
+                                      <li key={i} className="grid min-w-0 gap-y-1">
+                                        <PersonLink className="min-w-0 break-words text-sm leading-5" name={ft.faculty?.canonical_name} onOpen={() => ft.faculty?.id && setProfileId(ft.faculty.id)} />
+                                        <div className="flex flex-wrap items-center gap-1">
+                                          <Badge tone={roleTone('Chairperson')}>Chairperson</Badge>
+                                          {ft.confirmed && (
+                                            <Badge tone="success">
+                                              <CheckIcon width={12} height={12} strokeWidth={3} />
+                                              Confirmed
+                                            </Badge>
+                                          )}
+                                        </div>
                                       </li>
                                     ))}
                                   </ul>
                                 </div>
                               )}
+                            </td>
+                            <td className="px-1 py-3.5 print:hidden">
+                              <div className="flex flex-col items-center gap-0.5">
+                                <IconButton size="sm" label={`Edit topic ${t.sequence_no}: ${t.topic_title}`} onClick={() => setEditingTopic(t)}>
+                                  <PencilIcon width={15} height={15} />
+                                </IconButton>
+                                <IconButton size="sm" tone="danger" label={`Delete topic ${t.sequence_no}: ${t.topic_title}`} onClick={() => setDeletingTopic(t)}>
+                                  <TrashIcon width={15} height={15} />
+                                </IconButton>
+                              </div>
                             </td>
                           </tr>
                           </Fragment>

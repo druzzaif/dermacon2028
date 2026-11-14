@@ -4,6 +4,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import NavLinks from "./components/NavLinks";
 import DemoToggle from "./components/DemoToggle";
+import BackButton from "./components/BackButton";
 import { MODE_COOKIE } from "./lib/mode";
 import "./globals.css";
 
@@ -52,7 +53,10 @@ export default async function RootLayout({
             DERMACON <span className="font-medium tracking-[0.06em] text-indigo-300">2027</span>
           </Link>
           <NavLinks />
-          <DemoToggle mode={mode} />
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <BackButton />
+            <DemoToggle mode={mode} />
+          </div>
         </header>
         {mode === "demo" && (
           <div className="fixed inset-x-0 top-14 z-40 bg-amber-400 py-0.5 text-center text-[11px] font-semibold tracking-wide text-slate-900">

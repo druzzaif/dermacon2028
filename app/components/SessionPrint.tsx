@@ -6,6 +6,7 @@ import Modal from './Modal';
 import { formatTime12, toMinutes } from '../lib/time';
 import { findEmptySlots, type EmptySlot } from '../lib/slots';
 import { Fragment } from 'react';
+import { printCode } from '../lib/sessionLabel';
 import { Button } from './ui';
 
 export type PrintOptions = { chairs: boolean; confirmed: boolean; contacts: boolean; emptySlots: boolean; topicsOnly: boolean };
@@ -149,7 +150,7 @@ export function SessionPrintSheet({
 
   const titleBlock = (
     <div className="mb-3 border-b-2 border-black pb-2">
-      <h2 className="text-[15pt] font-bold leading-tight">{session.session_code} – {session.session_name}</h2>
+      <h2 className="text-[15pt] font-bold leading-tight">{printCode(session.session_code)} – {session.session_name}</h2>
       <p className="mt-1 text-[10pt]">
         {formatDate(session.session_date)} · {formatTime12(session.start_time)} – {formatTime12(session.end_time)} · {session.hall ? `Hall ${session.hall}` : 'Hall TBD'}
         {session.session_type ? ` · ${session.session_type}` : ''}
@@ -238,7 +239,7 @@ export function SessionPrintSheet({
       {options.contacts && (
         <div style={{ breakBefore: 'page' }}>
           <div className="mb-3 border-b-2 border-black pb-2">
-            <h2 className="text-[15pt] font-bold leading-tight">Contacts – {session.session_code} {session.session_name}</h2>
+            <h2 className="text-[15pt] font-bold leading-tight">Contacts – {printCode(session.session_code)} {session.session_name}</h2>
             <p className="mt-1 text-[10pt]">{formatDate(session.session_date)} · {session.hall ? `Hall ${session.hall}` : 'Hall TBD'}</p>
           </div>
           <ContactTable title="Coordinators" people={coordPeople} whatLabel="Role" />

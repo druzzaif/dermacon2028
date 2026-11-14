@@ -12,7 +12,8 @@ export type PrintRequest = {
   schedule: boolean;      // print the selected sessions
   missing: boolean;       // add the missing-data report
   overlaps: boolean;      // add the overlaps report
-  scope: 'selected' | 'all'; // missing/overlaps: only selected sessions, or the whole programme
+  emptySlotsReport: boolean; // add a report listing sessions with empty time slots
+  scope: 'selected' | 'all'; // reports: only selected sessions, or the whole programme
   chairs: boolean;        // show chairpersons in the schedule
   contacts: boolean;      // phone + email under every name
   confirmed: boolean;     // ✓ after people who confirmed
@@ -51,6 +52,7 @@ function fmtDate(d: string | null | undefined, long = true) {
     ? { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
     : { weekday: 'short', day: 'numeric', month: 'short' });
 }
+import { printCode } from './sessionLabel';
 const t12 = (t: string | null | undefined) => (t ? formatTime12(t) : '--:--');
 const range = (a: any, b: any) => (!a && !b ? 'Time not set' : `${t12(a)} – ${t12(b)}`);
 const hallTitle = (h: any) => !realHall(h) ? 'Hall not set' : String(h).trim().toLowerCase() === 'all' ? 'All halls' : `Hall ${String(h).trim()}`;
@@ -88,7 +90,7 @@ function sessionBanner(s: any) {
   return `
   <div class="banner">
     <div class="banner-top">
-      <span class="code">${esc(s.session_code)}</span>
+      <span class="code">${esc(printCode(s.session_code))}</span>
       <span class="sname">${esc(s.session_name || 'Untitled session')}</span>
       ${s.session_type ? `<span class="stype">${esc(s.session_type)}</span>` : ''}
     </div>
@@ -195,7 +197,7 @@ function continuousSchedule(sessions: any[], o: PrintRequest) {
       prevHall = hallKey;
       return `${hallHead}<tbody class="sess${s.session_topics.length ? '' : ' empty'}">
         <tr class="sess-head"><td colspan="${ncols}">
-          <span class="code">${esc(s.session_code)}</span>
+          <span class="code">${esc(printCode(s.session_code))}</span>
           <span class="sname">${esc(s.session_name || 'Untitled session')}</span>
           ${s.session_type && s.session_type !== 'Scientific Programme' ? `<span class="stype">${esc(s.session_type)}</span>` : ''}
           <span class="swhen">${esc(range(s.start_time, s.end_time))}${o.groupBy === 'hall' ? '' : ` · ${hallText(s.hall)}`}</span>
@@ -240,7 +242,7 @@ function missingSection(sessions: any[], scopeLabel: string) {
         <colgroup><col style="width:30%"><col style="width:22%"><col style="width:48%"></colgroup>
         <thead><tr><th>Session</th><th>Date · Time · Hall</th><th>What is missing</th></tr></thead>
         <tbody>${rows.map(({ s, issues }) => `<tr>
-          <td><span class="code-sm">${esc(s.session_code)}</span> ${esc(s.session_name || '')}</td>
+          <td><span class="code-sm">${esc(printCode(s.session_code))}</span> ${esc(s.session_name || '')}</td>
           <td><span class="hl">${esc(fmtDate(s.session_date, false))}</span><br>${esc(range(s.start_time, s.end_time))}<br>${hallText(s.hall)}</td>
           <td><ul class="issues">${issues.map((i) => `<li>${esc(i)}</li>`).join('')}</ul></td>
         </tr>`).join('')}</tbody>
@@ -250,6 +252,30 @@ function missingSection(sessions: any[], scopeLabel: string) {
   <section class="report newpage">
     <h1 class="rtitle">Missing data</h1>
     <p class="rsub">${esc(scopeLabel)} · ${rows.length} session${rows.length === 1 ? '' : 's'} with ${total} item${total === 1 ? '' : 's'} to fix</p>
+    ${body}
+  </section>`;
+}
+
+function emptySlotsSection(sessions: any[], scopeLabel: string) {
+  const rows = sessions
+    .map((s) => ({ s, slots: findEmptySlots(s.session_topics, s) }))
+    .filter((row) => row.slots.length > 0);
+  const total = rows.reduce((count, row) => count + row.slots.length, 0);
+  const body = rows.length
+    ? `<table class="grid">
+        <colgroup><col style="width:28%"><col style="width:24%"><col style="width:48%"></colgroup>
+        <thead><tr><th>Session</th><th>Date · Time · Hall</th><th>Empty slots</th></tr></thead>
+        <tbody>${rows.map(({ s, slots }) => `<tr>
+          <td><span class="code-sm">${esc(printCode(s.session_code))}</span> ${esc(s.session_name || '')}</td>
+          <td><span class="hl">${esc(fmtDate(s.session_date, false))}</span><br>${esc(range(s.start_time, s.end_time))}<br>${hallText(s.hall)}</td>
+          <td><ul class="issues">${slots.map((slot) => `<li>${esc(t12(slot.start))} – ${esc(t12(slot.end))} (${slot.minutes} min)</li>`).join('')}</ul></td>
+        </tr>`).join('')}</tbody>
+      </table>`
+    : '<p class="ok">No empty slots found.</p>';
+  return `
+  <section class="report newpage">
+    <h1 class="rtitle">Empty slots</h1>
+    <p class="rsub">${esc(scopeLabel)} · ${rows.length} session${rows.length === 1 ? '' : 's'} with ${total} empty slot${total === 1 ? '' : 's'}</p>
     ${body}
   </section>`;
 }
@@ -300,7 +326,7 @@ function overlapsSection(all: any[], inScope: Set<string>, scopeLabel: string) {
     }
 
   const slotCell = (x: any) => `
-    <div><span class="code-sm">${esc(x.s.session_code)}</span> ${esc(x.s.session_name || '')}</div>
+    <div><span class="code-sm">${esc(printCode(x.s.session_code))}</span> ${esc(x.s.session_name || '')}</div>
     <div class="slot"><span class="hl">${esc(range(x.t.start_time, x.t.end_time))}</span> · ${hallText(x.s.hall)}${x.role ? ` · ${esc(roleLabel(x.role))}` : ''}</div>
     <div class="muted">“${esc(x.t.topic_title || '')}”</div>`;
 
@@ -448,7 +474,7 @@ export async function buildFacultySimpleHtml(o: FacultyPrintRequest) {
           const lead = o.contacts ? leadOf(r.s) : null;
           return `<tr>
             <td class="c-time"><span class="hl">${esc(t12(r.t.start_time))}</span><br>${esc(t12(r.t.end_time))}</td>
-            <td><span class="code-sm">${esc(r.s.session_code)}</span> ${esc(r.s.session_name || '')}
+            <td><span class="code-sm">${esc(printCode(r.s.session_code))}</span> ${esc(r.s.session_name || '')}
               <div class="muted">${esc(range(r.s.start_time, r.s.end_time))}</div>
               ${lead ? `<div class="contact">Coordinator: ${esc(lead.canonical_name)}${lead.phone ? ` · ${esc(lead.phone)}` : ''}</div>` : ''}</td>
             <td><strong>${realHall(r.s.hall) ? esc(r.s.hall) : '<span class="bad">Not set</span>'}</strong></td>
@@ -464,7 +490,7 @@ export async function buildFacultySimpleHtml(o: FacultyPrintRequest) {
         <colgroup><col style="width:40%"><col style="width:24%"><col style="width:20%"><col style="width:16%"></colgroup>
         <thead><tr><th>Session</th><th>Date</th><th>Time</th><th>Hall · Role</th></tr></thead>
         <tbody>${coordOf.map(({ s, role }) => `<tr>
-          <td><span class="code-sm">${esc(s.session_code)}</span> ${esc(s.session_name || '')}</td>
+          <td><span class="code-sm">${esc(printCode(s.session_code))}</span> ${esc(s.session_name || '')}</td>
           <td><span class="hl">${esc(fmtDate(s.session_date, false))}</span></td>
           <td>${esc(range(s.start_time, s.end_time))}</td>
           <td>${hallText(s.hall)}<div class="muted">${esc(roleLabel(role))}</div></td>
@@ -519,6 +545,7 @@ export async function buildPrintHtml(o: PrintRequest) {
   const parts: string[] = [];
   const what = [
     o.schedule && selected.length ? `${selected.length} session${selected.length === 1 ? '' : 's'}` : '',
+    o.emptySlotsReport ? 'empty slots' : '',
     o.missing ? 'missing data' : '',
     o.overlaps ? 'overlaps' : '',
   ].filter(Boolean).join(' · ');
@@ -529,6 +556,10 @@ export async function buildPrintHtml(o: PrintRequest) {
   if (o.schedule) {
     if (o.continuous && selected.length) { parts.push(continuousSchedule(selected, o)); firstBlock = false; }
     else selected.forEach((s) => { parts.push(sessionSchedule(s, o, firstBlock)); firstBlock = false; });
+  }
+  if (o.emptySlotsReport) {
+    parts.push(emptySlotsSection(scoped, scopeLabel).replace('report newpage', firstBlock ? 'report' : 'report newpage'));
+    firstBlock = false;
   }
   if (o.missing) parts.push(missingSection(scoped, scopeLabel).replace('report newpage', firstBlock ? 'report' : 'report newpage'));
   if (o.missing) firstBlock = false;

@@ -5,11 +5,15 @@
 export const ROLE_OPTIONS = ['Faculty', 'Moderator', 'Panel', 'Debater', 'Chairperson', 'Coordinator'] as const;
 
 export function roleName(role?: string | null) {
-  const r = role || 'Faculty';
-  return r === 'Panel' ? 'Panelist' : r;
+  const r = role?.trim();
+  if (!r) return 'Faculty';
+  const normalized = r.toLowerCase();
+  if (normalized === 'panel' || normalized === 'panelist' || normalized === 'penalist') return 'Panelist';
+  if (normalized === 'moderator') return 'Moderator';
+  return r;
 }
 
-const RANK: Record<string, number> = { Moderator: 1, Faculty: 2, Panel: 3, Panelist: 3, Debater: 4, Chairperson: 5 };
+const RANK: Record<string, number> = { Moderator: 1, Faculty: 2, Panel: 3, Panelist: 3, Penalist: 3, Debater: 4, Chairperson: 5 };
 
 export function sortTopicPeople<T extends { role?: string | null; sort_order?: number | null }>(rows: T[]): T[] {
   return rows
@@ -23,7 +27,7 @@ export function sortTopicPeople<T extends { role?: string | null; sort_order?: n
     .map((x) => x.r);
 }
 
-export const isPanelRole = (role?: string | null) => role === 'Moderator' || role === 'Panel' || role === 'Panelist' || role === 'Debater';
+export const isPanelRole = (role?: string | null) => role === 'Moderator' || role === 'Panel' || role === 'Panelist' || role === 'Penalist' || role === 'Debater';
 
 export type PanelGroups = { moderators: string[]; panelists: string[]; debaters: string[] };
 
@@ -36,7 +40,7 @@ export function panelGroups(
   for (const r of sortTopicPeople(rows)) {
     if (skipId && r.id === skipId) continue;
     if (r.role === 'Moderator') g.moderators.push(r.name);
-    else if (r.role === 'Panel' || r.role === 'Panelist') g.panelists.push(r.name);
+    else if (r.role === 'Panel' || r.role === 'Panelist' || r.role === 'Penalist') g.panelists.push(r.name);
     else if (r.role === 'Debater') g.debaters.push(r.name);
   }
   return g;
