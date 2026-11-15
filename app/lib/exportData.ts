@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { supabase } from '../supabaseServer';
+import { getSupabaseServer } from '../supabaseServer';
 import { sortCoordinators } from './coordOrder';
 import { sortTopicPeople, panelGroups, roleName } from './topicPeople';
 
@@ -7,7 +7,7 @@ import { sortTopicPeople, panelGroups, roleName } from './topicPeople';
 async function fetchAll(table: string, select: string, order?: string): Promise<any[]> {
   const out: any[] = [];
   for (let from = 0; ; from += 1000) {
-    let q: any = supabase.from(table).select(select).range(from, from + 999);
+    let q: any = getSupabaseServer().from(table).select(select).range(from, from + 999);
     if (order) q = q.order(order, { ascending: true });
     const { data, error } = await q;
     if (error) throw new Error(`${table}: ${error.message}`);

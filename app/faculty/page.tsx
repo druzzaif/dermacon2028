@@ -12,16 +12,21 @@ import { DownloadIcon, SearchIcon } from '../components/Icons';
 import { Button, EmptyState, PageHeader, PageShell, SkeletonLines, buttonCls, cardCls, thCls, theadRowCls } from '../components/ui';
 import { inputCls } from '../components/Field';
 import { roleName } from '../lib/topicPeople';
+import { SHARED_VENUE_MAP_PATH } from '../lib/venueRooms.mjs';
 
 type CountFilter = 'all' | '0' | '1' | '2' | '3+' | '4+' | '5+';
 
 const FACULTY_SELECT = `
   *,
-  faculty_topics ( role, confirmed, session_topics ( conference_sessions ( session_code ) ) ),
-  session_chairs ( confirmed, conference_sessions ( session_code ) )
+  faculty_topics ( role, confirmed, session_topics ( conference_sessions ( session_code, session_date, hall ) ) ),
+  session_chairs ( confirmed, conference_sessions ( session_code, session_date, hall ) )
 `;
 
-type SessionCodeRelation = { session_code: string | null } | null;
+type SessionCodeRelation = {
+  session_code: string | null;
+  session_date?: string | null;
+  hall?: string | null;
+} | null;
 type FacultyRow = {
   id: string;
   canonical_name: string;
@@ -230,9 +235,9 @@ export default function FacultyDirectoryPage() {
             </caption>
             <thead>
               <tr className={theadRowCls}>
-                <th scope="col" className={`${thCls} w-[40%] px-3 lg:px-5`}>Name</th>
-                <th scope="col" className={`${thCls} w-[52%] px-3 lg:px-5`}>Roles · session assignments</th>
-                <th scope="col" className={`${thCls} w-[8%] px-3 lg:px-5 text-right`}>
+                <th scope="col" className={`${thCls} w-[35%] px-3 lg:px-5`}>Name</th>
+                <th scope="col" className={`${thCls} w-[47%] px-3 lg:px-5`}>Roles · session assignments</th>
+                <th scope="col" className={`${thCls} w-[18%] px-3 lg:px-5 text-right`}>
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
@@ -378,6 +383,17 @@ export default function FacultyDirectoryPage() {
 
                       <td className="px-3 py-2.5 lg:px-5 text-right">
                         <div className="flex justify-end gap-1">
+                          <a
+                            href={SHARED_VENUE_MAP_PATH}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className={buttonCls('quiet', 'sm')}
+                            title="Open shared venue map"
+                            aria-label="Open shared venue map"
+                          >
+                            Map
+                          </a>
                           <Button
                             variant="quiet"
                             size="sm"

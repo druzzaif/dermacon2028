@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { MODE_COOKIE, schemaFor } from './lib/mode'
 
@@ -20,8 +20,19 @@ const modeAwareFetch: typeof fetch = async (input, init) => {
   return fetch(input, { ...init, headers })
 }
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  { global: { fetch: modeAwareFetch } },
-)
+type ServerSupabaseClient = SupabaseClient
+
+let client: ServerSupabaseClient | undefined
+
+export function getSupabaseServer(): ServerSupabaseClient {
+  if (client) return client
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !anonKey) {
+    throw new Error('Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.')
+  }
+
+  client = createClient(url, anonKey, { global: { fetch: modeAwareFetch } })
+  return client
+}

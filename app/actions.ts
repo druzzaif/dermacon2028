@@ -21,11 +21,12 @@ function fmt12hForEmail(t: string | null | undefined): string {
 }
 
 
-import { supabase, isDemoMode } from './supabaseServer';
+import { getSupabaseServer, isDemoMode } from './supabaseServer';
 import puppeteer from 'puppeteer';
 import { renderCommitmentHTML, renderCommitmentDocument } from './lib/commitmentPdfHtml';
 import { sortCoordinators } from './lib/coordOrder';
 import { isPanelRole, panelGroups, sortTopicPeople, type PanelGroups } from './lib/topicPeople';
+import { buildVenueEmailLink } from './lib/venueEmail';
 import fs from 'fs';
 import path from 'path';
 
@@ -33,7 +34,7 @@ import path from 'path';
 // Used by the Faculty page "PDF" button, the Add/Edit topic windows and the email attachment.
 export async function generatePDFData(facultyId: string) {
   try {
-    const { data: faculty, error: facError } = await supabase
+    const { data: faculty, error: facError } = await getSupabaseServer()
       .from('faculty').select('*').eq('id', facultyId).single();
     if (facError || !faculty) throw new Error("Faculty not found.");
 
@@ -62,11 +63,11 @@ export async function updateFaculty(formData: FormData) {
   if (!email) return { success: false, message: 'Email is required.' };
   let canonical_name = [first_name, last_name].filter(Boolean).join(' ').trim();
   if (!canonical_name) {
-    const { data: existing } = await supabase.from('faculty').select('canonical_name').eq('id', id).single();
+    const { data: existing } = await getSupabaseServer().from('faculty').select('canonical_name').eq('id', id).single();
     canonical_name = existing?.canonical_name;
     if (!canonical_name) return { success: false, message: 'Name is required.' };
   }
-  const { error } = await supabase.from('faculty').update({
+  const { error } = await getSupabaseServer().from('faculty').update({
       first_name: first_name || null, last_name: last_name || null, canonical_name, email,
       phone: getStr('phone'), designation: getStr('designation'), country: getStr('country'),
       faculty_id: getStr('faculty_id'), alt_email: getStr('alt_email'), person_type: getStr('person_type'),
@@ -89,7 +90,7 @@ export async function updateFaculty(formData: FormData) {
 // Print page, "By faculty" on letterhead: the same commitment letter as the emailed PDF,
 // for several faculty in one document. Faculty with no topics are skipped (names returned).
 export async function facultyLetterheadHtml(facultyIds: string[]) {
-  const { data: list, error } = await supabase.from('faculty').select('*').in('id', facultyIds);
+  const { data: list, error } = await getSupabaseServer().from('faculty').select('*').in('id', facultyIds);
   if (error) throw error;
   const byId = new Map((list || []).map((f: any) => [String(f.id), f]));
   const inputs: any[] = [];
@@ -109,7 +110,7 @@ export async function facultyLetterheadHtml(facultyIds: string[]) {
 export async function generatePDFForSession(sessionId: string) {
   try {
     // 1. Load the session
-    const { data: session, error: sErr } = await supabase
+    const { data: session, error: sErr } = await getSupabaseServer()
       .from('conference_sessions')
       .select('*')
       .eq('id', sessionId)
@@ -117,7 +118,7 @@ export async function generatePDFForSession(sessionId: string) {
     if (sErr || !session) throw new Error('Session not found.');
 
     // 2. Load every topic + faculty link in that session
-    const { data: topics, error: tErr } = await supabase
+    const { data: topics, error: tErr } = await getSupabaseServer()
       .from('session_topics')
       .select(`
         id, topic_title, start_time, end_time, sequence_no,
@@ -128,7 +129,7 @@ export async function generatePDFForSession(sessionId: string) {
     if (tErr) throw new Error('Topics load failed: ' + tErr.message);
 
     // 3. Lead coordinator lookup (same logic as generatePDFData)
-    const { data: leadCoordData } = await supabase
+    const { data: leadCoordData } = await getSupabaseServer()
       .from('session_coordinators')
       .select('faculty ( canonical_name, phone, email )')
       .eq('session_id', sessionId)
@@ -241,7 +242,7 @@ export async function generatePDFForSession(sessionId: string) {
 // url} so the caller can show a "Download all" summary.
 export async function generatePDFsForSessionFaculty(sessionId: string) {
   try {
-    const { data: links } = await supabase
+    const { data: links } = await getSupabaseServer()
       .from('session_topics')
       .select(`faculty_topics ( faculty_id )`)
       .eq('session_id', sessionId);
@@ -255,7 +256,7 @@ export async function generatePDFsForSessionFaculty(sessionId: string) {
     ) as string[];
 
     // Chairpersons of the whole session get a PDF too
-    const { data: chairLinks } = await supabase.from('session_chairs').select('faculty_id').eq('session_id', sessionId);
+    const { data: chairLinks } = await getSupabaseServer().from('session_chairs').select('faculty_id').eq('session_id', sessionId);
     (chairLinks || []).forEach((c: any) => { if (c.faculty_id && !facultyIds.includes(c.faculty_id)) facultyIds.push(c.faculty_id); });
 
     const results: { facultyId: string; url?: string; error?: string }[] = [];
@@ -280,7 +281,7 @@ export async function generatePDFsForSessionFaculty(sessionId: string) {
 //  repeatedly. Returns the updated numbering for diagnostics.
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function resequenceSession(sessionId: string) {
-  const { data, error } = await supabase.rpc('resequence_session', {
+  const { data, error } = await getSupabaseServer().rpc('resequence_session', {
     p_session_id: sessionId,
   });
   if (error) {
@@ -300,7 +301,7 @@ export async function deleteTopic(topicId: string, sessionId: string) {
   if (!sessionId) return { success: false, message: 'Missing session id.' };
 
   // Defence in depth: confirm the topic belongs to the claimed session.
-  const { data: existing, error: lookupErr } = await supabase
+  const { data: existing, error: lookupErr } = await getSupabaseServer()
     .from('session_topics')
     .select('id, session_id')
     .eq('id', topicId)
@@ -312,7 +313,7 @@ export async function deleteTopic(topicId: string, sessionId: string) {
     return { success: false, message: 'Topic does not belong to this session.' };
   }
 
-  const { error: delErr } = await supabase
+  const { error: delErr } = await getSupabaseServer()
     .from('session_topics')
     .delete()
     .eq('id', topicId);
@@ -320,7 +321,7 @@ export async function deleteTopic(topicId: string, sessionId: string) {
   if (delErr) return { success: false, message: delErr.message };
 
   // Renumber the remaining topics in this session
-  const { error: reseqErr } = await supabase.rpc('resequence_session', {
+  const { error: reseqErr } = await getSupabaseServer().rpc('resequence_session', {
     p_session_id: sessionId,
   });
   if (reseqErr) {
@@ -417,7 +418,7 @@ function prefilledFormLink(name: string, phone: string, sessionCodes: string) {
 async function buildFacultyPayload(faculty: any, opts: { coordinators?: boolean } = {}) {
   const withCoord = opts.coordinators !== false;
 
-  const { data: rows, error } = await supabase
+  const { data: rows, error } = await getSupabaseServer()
     .from('faculty_topics')
     .select(`role, confirmed, session_topics ( id, topic_title, start_time, end_time, sequence_no, conference_sessions ( id, session_code, session_name, session_type, session_date, hall, start_time, end_time ) )`)
     .eq('faculty_id', faculty.id);
@@ -427,7 +428,7 @@ async function buildFacultyPayload(faculty: any, opts: { coordinators?: boolean 
 
   // Chairperson for a whole session: shown in the letter like a topic that covers the whole session.
   // (Its id is "chair:<session id>"; Sync uses it to find the confirmation.)
-  const { data: chairRows } = await supabase
+  const { data: chairRows } = await getSupabaseServer()
     .from('session_chairs')
     .select('confirmed, session_id, conference_sessions ( id, session_code, session_name, session_type, session_date, hall, start_time, end_time )')
     .eq('faculty_id', faculty.id);
@@ -451,7 +452,7 @@ async function buildFacultyPayload(faculty: any, opts: { coordinators?: boolean 
   const panelByTopic: Record<string, PanelGroups> = {};
   const lookupIds = [...new Set([...chairTopicIds, ...panelTopicIds])];
   if (lookupIds.length) {
-    const { data: sp } = await supabase
+    const { data: sp } = await getSupabaseServer()
       .from('faculty_topics')
       .select('topic_id, role, sort_order, faculty ( id, canonical_name, faculty_id )')
       .in('topic_id', lookupIds);
@@ -477,7 +478,7 @@ async function buildFacultyPayload(faculty: any, opts: { coordinators?: boolean 
   for (const sid of sessionIds) {
     let lead: any = null;
     if (withCoord) {
-      const { data: coordData } = await supabase
+      const { data: coordData } = await getSupabaseServer()
         .from('session_coordinators')
         .select('faculty ( canonical_name, phone, email )')
         .eq('session_id', sid).eq('role', 'Lead Coordinator').maybeSingle();
@@ -556,6 +557,7 @@ async function buildFacultyPayload(faculty: any, opts: { coordinators?: boolean 
     topicId: i.topic.id,
     title: i.topic.topic_title || '',
     session: i.session.session_code,
+    hall: i.session.hall || 'TBD',
     time: `${fmt12hForEmail(i.topic.start_time)} - ${fmt12hForEmail(i.topic.end_time)}`,
     role: roleDisplay(i.role),
     confirmed: !!i.r.confirmed,
@@ -609,7 +611,7 @@ function netChanges(rows: any[]) {
 }
 
 async function pendingChangesFor(facultyId: string) {
-  const { data } = await supabase
+  const { data } = await getSupabaseServer()
     .from('change_log').select('*')
     .eq('faculty_id', facultyId).eq('notify', true).is('notified_at', null)
     .order('id', { ascending: true });
@@ -636,18 +638,20 @@ export async function previewEmails(items: { facultyId: string; kind: EmailKind 
   for (let i = 0; i < items.length; i += 8) {
     const batch = items.slice(i, i + 8);
     const res = await Promise.all(batch.map(async (it) => {
-      const { data: faculty } = await supabase.from('faculty').select('*').eq('id', it.facultyId).single();
+      const { data: faculty } = await getSupabaseServer().from('faculty').select('*').eq('id', it.facultyId).single();
       if (!faculty) return { facultyId: it.facultyId, kind: it.kind, name: 'Unknown', email: '', problem: 'Faculty not found.', topics: [], changes: [] };
       const base = { facultyId: faculty.id, kind: it.kind, name: faculty.canonical_name, email: faculty.email || '', topics: [] as any[], changes: [] as string[], problem: '' };
       if (!validEmail(faculty.email)) return { ...base, problem: 'No valid email address.' };
       try {
         const p = await buildFacultyPayload(faculty, { coordinators: false });
+        const venueUrl = buildVenueEmailLink();
         const pending = it.kind === 'update' ? await pendingChangesFor(faculty.id) : { rows: [], lines: [], ids: [] };
         const changedTopics = new Set(pending.rows.map((c: any) => c.topic_id).filter(Boolean));
         return {
           ...base,
           topics: p.topics.map((t: any) => ({ ...t, isNew: changedTopics.has(t.topicId) })),
           changes: pending.lines,
+          venueUrl,
         };
       } catch (e: any) {
         return { ...base, problem: e?.message || 'Could not prepare this email.' };
@@ -661,23 +665,25 @@ export async function previewEmails(items: { facultyId: string; kind: EmailKind 
 // ─── Send ONE email (the dialog calls this once per faculty, with a delay between) ───
 export async function sendEmailToFaculty(facultyId: string, kind: EmailKind) {
   try {
-    const { data: faculty } = await supabase.from('faculty').select('*').eq('id', facultyId).single();
+    const { data: faculty } = await getSupabaseServer().from('faculty').select('*').eq('id', facultyId).single();
     if (!faculty) return { success: false, message: 'Faculty not found.' };
     if (!validEmail(faculty.email)) return { success: false, message: 'No valid email address.' };
 
     if (kind === 'reminder') {
       const p = await buildFacultyPayload(faculty, { coordinators: false });
+      const venueUrl = buildVenueEmailLink();
       const r = await callScript({
         action: 'sendReminder', name: faculty.canonical_name, email: faculty.email,
         phone: faculty.phone || '', sessions: p.assignedSessionCodes, formSessions: p.formSessions,
-        pendingTopics: p.pendingTopics, sessionsData: p.sessionsData,
+        pendingTopics: p.pendingTopics, sessionsData: p.sessionsData, venueUrl,
       });
       if (r.status !== 'Success') return { success: false, message: r.message || 'Failed to send.', quotaLeft: r.quotaLeft };
-      await supabase.from('faculty').update({ reminder_sent: true }).eq('id', faculty.id);
+      await getSupabaseServer().from('faculty').update({ reminder_sent: true }).eq('id', faculty.id);
       return { success: true, message: 'Reminder sent.', quotaLeft: r.quotaLeft };
     }
 
     const p = await buildFacultyPayload(faculty);
+    const venueUrl = buildVenueEmailLink();
     const pending = await pendingChangesFor(faculty.id);
 
     // ONE PDF with one page per session. If it fails the email still goes, without it.
@@ -695,14 +701,15 @@ export async function sendEmailToFaculty(facultyId: string, kind: EmailKind) {
       action: kind === 'update' ? 'sendScheduleUpdate' : 'sendFormLink',
       facultyId: faculty.id, name: faculty.canonical_name, email: faculty.email, phone: faculty.phone || '',
       role: p.role, sessions: p.assignedSessionCodes, formSessions: p.formSessions, sessionsData: p.sessionsData, pdfs,
+      venueUrl,
       changes: kind === 'update' ? pending.lines : [],
     });
     if (r.status !== 'Success') return { success: false, message: r.message || 'Failed to send.', quotaLeft: r.quotaLeft };
 
     // Sent: remember it, and clear this faculty's pending changes (the letter now shows everything)
-    await supabase.from('faculty').update({ email_sent: true, email_sent_date: new Date().toISOString(), reminder_sent: false }).eq('id', faculty.id);
+    await getSupabaseServer().from('faculty').update({ email_sent: true, email_sent_date: new Date().toISOString(), reminder_sent: false }).eq('id', faculty.id);
     if (pending.ids.length) {
-      await supabase.from('change_log').update({ notified_at: new Date().toISOString() }).in('id', pending.ids);
+      await getSupabaseServer().from('change_log').update({ notified_at: new Date().toISOString() }).in('id', pending.ids);
     }
     const attached = typeof r.pdfsAttached === 'number' ? r.pdfsAttached : null;
     const pdfNote = pdfWarning || (attached === null ? ' (old Google Script version: PDF not confirmed)' : attached === pdfs.length ? ` with ${attached} PDF` : ' but the PDF was not attached');
@@ -715,13 +722,13 @@ export async function sendEmailToFaculty(facultyId: string, kind: EmailKind) {
 
 // ─── Emails page data ───
 export async function getEmailsOverview() {
-  const { data: fac, error } = await supabase
+  const { data: fac, error } = await getSupabaseServer()
     .from('faculty')
     .select('id, canonical_name, email, email_sent, email_sent_date, reminder_sent, faculty_topics ( confirmed ), session_chairs ( confirmed )')
     .order('canonical_name');
   if (error) return { success: false, message: error.message, first: [], changes: [], reminders: [] };
 
-  const { data: pend } = await supabase
+  const { data: pend } = await getSupabaseServer()
     .from('change_log').select('*')
     .eq('notify', true).is('notified_at', null).not('faculty_id', 'is', null)
     .order('id', { ascending: true });
@@ -770,7 +777,7 @@ export async function getEmailsOverview() {
 // ─── Sync: read confirmations from the Google Sheet into the database ───
 // Confirmations removed in the app that the Google sheet does not know about yet
 async function queuedRemovals() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseServer()
     .from('change_log').select('id, faculty_id, topic_id, created_at')
     .eq('event_type', 'unconfirmed').is('notified_at', null)
     .order('id', { ascending: true });
@@ -797,7 +804,7 @@ async function pushQueuedRemovals() {
   }
   const ids = queued.map((q: any) => q.id);
   for (let i = 0; i < ids.length; i += 200) {
-    const { error } = await supabase.from('change_log')
+    const { error } = await getSupabaseServer().from('change_log')
       .update({ notified_at: new Date().toISOString() }).in('id', ids.slice(i, i + 200));
     if (error) throw error;
   }
@@ -816,7 +823,7 @@ export async function syncFromGoogle() {
     const pairs = allPairs.filter((p) => !isChairKey(p.topicId));
     const chairPairs = allPairs.filter((p) => isChairKey(p.topicId));
 
-    const { data: open, error } = await supabase
+    const { data: open, error } = await getSupabaseServer()
       .from('faculty_topics')
       .select('faculty_id, topic_id, role, faculty ( canonical_name ), session_topics ( topic_title, conference_sessions ( session_code ) )')
       .eq('confirmed', false);
@@ -829,7 +836,7 @@ export async function syncFromGoogle() {
     // The Google sheet is the source of truth: a topic that is Confirmed here but no longer
     // in the sheet's list (the faculty answered "No" afterwards) goes back to unconfirmed.
     const inSheet = new Set(pairs.map((p) => `${p.facultyId}|${p.topicId}`));
-    const { data: done, error: doneErr } = await supabase
+    const { data: done, error: doneErr } = await getSupabaseServer()
       .from('faculty_topics')
       .select('faculty_id, topic_id, role, faculty ( canonical_name ), session_topics ( topic_title, conference_sessions ( session_code ) )')
       .eq('confirmed', true);
@@ -839,7 +846,7 @@ export async function syncFromGoogle() {
       : [];
     for (let i = 0; i < toRevoke.length; i += 20) {
       await Promise.all(toRevoke.slice(i, i + 20).map((r: any) =>
-        supabase.from('faculty_topics')
+        getSupabaseServer().from('faculty_topics')
           .update({ confirmed: false, confirmed_at: null })
           .eq('faculty_id', r.faculty_id).eq('topic_id', r.topic_id)
       ));
@@ -853,7 +860,7 @@ export async function syncFromGoogle() {
 
     for (let i = 0; i < toUpdate.length; i += 20) {
       await Promise.all(toUpdate.slice(i, i + 20).map((p) =>
-        supabase.from('faculty_topics')
+        getSupabaseServer().from('faculty_topics')
           .update({ confirmed: true, confirmed_at: p.confirmedAt || new Date().toISOString() })
           .eq('faculty_id', p.facultyId).eq('topic_id', p.topicId)
       ));
@@ -870,20 +877,20 @@ export async function syncFromGoogle() {
     // Whole-session chairs: confirm those in the sheet, un-confirm those that are no longer in it
     let chairUp = 0, chairDown = 0;
     try {
-      const { data: chairs } = await supabase
+      const { data: chairs } = await getSupabaseServer()
         .from('session_chairs')
         .select('session_id, faculty_id, confirmed, faculty ( canonical_name ), conference_sessions ( session_code )');
       for (const c of (chairs || []) as any[]) {
         const hit = chairPairs.find((p) => p.facultyId === c.faculty_id && p.topicId === `chair:${c.session_id}`);
         const label = `${c.conference_sessions?.session_code || ''} – Chairperson (whole session)`;
         if (hit && !c.confirmed) {
-          await supabase.from('session_chairs')
+          await getSupabaseServer().from('session_chairs')
             .update({ confirmed: true, confirmed_at: hit.confirmedAt || new Date().toISOString() })
             .eq('session_id', c.session_id).eq('faculty_id', c.faculty_id);
           const g = groupMap.get(c.faculty_id) || { name: c.faculty?.canonical_name || 'Unknown', topics: [] };
           g.topics.push(label); groupMap.set(c.faculty_id, g); chairUp++;
         } else if (!hit && c.confirmed && Array.isArray(data.topics)) {
-          await supabase.from('session_chairs')
+          await getSupabaseServer().from('session_chairs')
             .update({ confirmed: false, confirmed_at: null })
             .eq('session_id', c.session_id).eq('faculty_id', c.faculty_id);
           const g = revokedMap.get(c.faculty_id) || { name: c.faculty?.canonical_name || 'Unknown', topics: [] };
@@ -892,7 +899,7 @@ export async function syncFromGoogle() {
       }
     } catch (e) { console.error('session chair sync skipped:', e); }
 
-    await supabase.from('change_log').insert({
+    await getSupabaseServer().from('change_log').insert({
       event_type: 'sync',
       detail: ((toUpdate.length + chairUp) ? `${toUpdate.length + chairUp} new topic confirmation(s) from ${groupMap.size} faculty` : 'No new confirmations')
         + ((toRevoke.length + chairDown) ? `; ${toRevoke.length + chairDown} topic(s) un-confirmed (declined) for ${revokedMap.size} faculty` : '')
@@ -916,7 +923,7 @@ export async function removeConfirmation(facultyId: string, topicId: string) {
   try {
     if (!facultyId || !topicId) return { success: false, message: 'Missing faculty or topic.' };
 
-    const { data: row, error } = await supabase
+    const { data: row, error } = await getSupabaseServer()
       .from('faculty_topics')
       .update({ confirmed: false, confirmed_at: null })
       .eq('faculty_id', facultyId).eq('topic_id', topicId)
@@ -924,7 +931,7 @@ export async function removeConfirmation(facultyId: string, topicId: string) {
       .maybeSingle();
     if (error) throw error;
 
-    await supabase.from('change_log').insert({
+    await getSupabaseServer().from('change_log').insert({
       event_type: 'unconfirmed',
       faculty_id: facultyId,
       faculty_name: row?.faculty?.canonical_name || null,
@@ -944,7 +951,7 @@ export async function removeConfirmation(facultyId: string, topicId: string) {
 }
 
 export async function getLastSync() {
-  const { data } = await supabase
+  const { data } = await getSupabaseServer()
     .from('change_log').select('created_at').eq('event_type', 'sync')
     .order('id', { ascending: false }).limit(1).maybeSingle();
   return data?.created_at || null;
@@ -952,16 +959,16 @@ export async function getLastSync() {
 
 // ─── Coordinator report (a table in the email body, no PDF) ───
 async function buildCoordinatorReport(sessionId: string) {
-  const { data: session, error } = await supabase.from('conference_sessions').select('*').eq('id', sessionId).single();
+  const { data: session, error } = await getSupabaseServer().from('conference_sessions').select('*').eq('id', sessionId).single();
   if (error || !session) throw new Error('Session not found.');
 
-  const { data: topics } = await supabase
+  const { data: topics } = await getSupabaseServer()
     .from('session_topics')
     .select('id, topic_title, start_time, end_time, sequence_no, faculty_topics ( role, confirmed, sort_order, faculty ( canonical_name, faculty_id ) )')
     .eq('session_id', sessionId)
     .order('sequence_no', { ascending: true });
 
-  const { data: coordRows } = await supabase
+  const { data: coordRows } = await getSupabaseServer()
     .from('session_coordinators').select('role, coord_id, faculty ( id, canonical_name, email, faculty_id )').eq('session_id', sessionId);
   // Everyone coordinating this session (one entry per person, all their roles),
   // so the dialog can show National / Lead / Local and let you tick who gets it.

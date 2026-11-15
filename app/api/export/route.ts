@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/app/supabaseServer';
+import { getSupabaseServer } from '@/app/supabaseServer';
 import * as XLSX from 'xlsx';
 import { sortTopicPeople, roleName } from '@/app/lib/topicPeople';
 
 export async function GET() {
   try {
-    const { data: faculty } = await supabase.from('faculty').select('*').order('canonical_name');
-    const { data: topics } = await supabase.from('session_topics').select(`
+    const { data: faculty } = await getSupabaseServer().from('faculty').select('*').order('canonical_name');
+    const { data: topics } = await getSupabaseServer().from('session_topics').select(`
       *,
       conference_sessions ( session_code, session_name, session_date, hall ),
       faculty_topics ( role, sort_order, faculty ( canonical_name, email ) )

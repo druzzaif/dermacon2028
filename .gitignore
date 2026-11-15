@@ -31,3 +31,5 @@ CONTEXT_DUMP.txt
 
 # Database dumps (contain faculty emails and phone numbers)
 backups/
+
+.vercel

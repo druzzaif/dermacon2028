@@ -1,7 +1,7 @@
 // Server-only: builds the HTML for the Print page's single PDF.
 // Sections: session schedules (selected sessions), missing data, overlaps.
 // Rules for "missing" and "overlap" match the Missing data and Overlaps pages.
-import { supabase } from '../supabaseServer';
+import { getSupabaseServer } from '../supabaseServer';
 import { formatTime12, toMinutes } from './time';
 import { findEmptySlots, type EmptySlot } from './slots';
 import { sortCoordinators } from './coordOrder';
@@ -60,7 +60,7 @@ const hallText = (h: any) => (realHall(h) ? `Hall ${esc(h)}` : '<span class="bad
 
 async function loadProgramme() {
   const person = 'id, faculty_id, canonical_name, phone, email';
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseServer()
     .from('conference_sessions')
     .select(`id, session_code, session_name, session_type, session_date, hall, start_time, end_time,
       session_topics ( id, topic_title, sequence_no, start_time, end_time,
@@ -432,7 +432,7 @@ export type FacultyPrintRequest = {
 
 export async function buildFacultySimpleHtml(o: FacultyPrintRequest) {
   const all = await loadProgramme();
-  const { data: people, error } = await supabase
+  const { data: people, error } = await getSupabaseServer()
     .from('faculty').select('id, faculty_id, canonical_name, phone, email, designation, country')
     .in('id', o.facultyIds);
   if (error) throw error;

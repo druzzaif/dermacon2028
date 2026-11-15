@@ -9,6 +9,36 @@ import { previewEmails, sendEmailToFaculty } from '../actions';
 
 type Kind = 'first' | 'update' | 'reminder';
 export type SendItem = { facultyId: string; kind: Kind };
+type EmailTopicPreview = {
+  topicId: string;
+  title: string;
+  session: string;
+  hall: string;
+  time: string;
+  role: string;
+  isNew?: boolean;
+  confirmed: boolean;
+};
+type EmailPreviewRow = {
+  facultyId: string;
+  kind: Kind;
+  name: string;
+  email: string;
+  problem: string;
+  topics: EmailTopicPreview[];
+  changes: string[];
+  venueUrl?: string;
+};
+type EmailPreviewResponse = {
+  success: boolean;
+  message?: string;
+  quota: number;
+  reserve: number;
+  quotaOk: boolean;
+  quotaMessage?: string;
+  rows: EmailPreviewRow[];
+};
+type SendEmailResponse = { success: boolean; message?: string };
 
 const KIND_LABEL: Record<Kind, string> = {
   first: 'First email: full schedule, PDF attached, confirm button',
@@ -36,7 +66,7 @@ export default function SendEmailsDialog({
   onDone?: () => void;
 }) {
   const [phase, setPhase] = useState<'loading' | 'preview' | 'sending' | 'done'>('loading');
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<EmailPreviewRow[]>([]);
   const [quota, setQuota] = useState(0);
   const [reserve, setReserve] = useState(5);
   const [quotaProblem, setQuotaProblem] = useState('');
@@ -49,7 +79,7 @@ export default function SendEmailsDialog({
 
   useEffect(() => {
     let alive = true;
-    previewEmails(items).then((r: any) => {
+    previewEmails(items).then((r: EmailPreviewResponse) => {
       if (!alive) return;
       if (!r.success) { setLoadError(r.message || 'Could not prepare the emails.'); setPhase('preview'); return; }
       setRows(r.rows);
@@ -79,7 +109,7 @@ export default function SendEmailsDialog({
       if (stopRef.current) break;
       const r = queue[i];
       setStatus((s) => ({ ...s, [r.facultyId]: { state: 'sending' } }));
-      const res: any = await sendEmailToFaculty(r.facultyId, r.kind);
+      const res: SendEmailResponse = await sendEmailToFaculty(r.facultyId, r.kind);
       setStatus((s) => ({ ...s, [r.facultyId]: { state: res.success ? 'ok' : 'failed', message: res.message } }));
       if (!res.success && /left today|limit|Unauthorized|unexpected reply/i.test(res.message || '')) {
         stopRef.current = true;           // a limit or setup problem would fail every remaining email
@@ -155,7 +185,7 @@ export default function SendEmailsDialog({
               {sendable.length} email{sendable.length === 1 ? '' : 's'} will be sent from the Google account that runs your script.
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-ink-2">
-              <li>One email at a time, with a {DELAY_SECONDS}-second pause between emails (about {minutes} minute{minutes === 1 ? '' : 's'} in total).</li>
+              <li>One email at a time, with a {DELAY_SECONDS}-second pause between emails and the same minimum enforced by Google Apps Script (about {minutes} minute{minutes === 1 ? '' : 's'} in total).</li>
               <li>Each email has one PDF attached, with one page per session.</li>
               <li>No coordinator or committee member receives anything.</li>
             </ul>
@@ -199,15 +229,16 @@ export default function SendEmailsDialog({
                       <div className="mt-2 rounded-lg bg-warning-tint p-2.5 text-sm text-warning">
                         <p className="font-semibold">What changed (shown at the top of the email)</p>
                         <ul className="mt-1 list-disc space-y-0.5 pl-5">
-                          {r.changes.map((c: string, i: number) => <li key={i}>{c}</li>)}
+                          {r.changes.map((change, i) => <li key={i}>{change}</li>)}
                         </ul>
                       </div>
                     )}
                     <ul className="mt-2 space-y-1">
-                      {r.topics.map((t: any) => (
+                      {r.topics.map((t) => (
                         <li key={t.topicId} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                           <span className="tnum font-medium text-accent">{t.session}</span>
                           <span className="text-ink">{t.title}</span>
+                          <span className="text-muted">Hall {t.hall}</span>
                           <span className="tnum text-muted">{t.time}</span>
                           <Badge tone={t.role === 'Chairperson' ? 'orange' : 'blue'}>{t.role}</Badge>
                           {t.isNew && <Badge tone="warning">new / changed</Badge>}
@@ -215,6 +246,20 @@ export default function SendEmailsDialog({
                         </li>
                       ))}
                     </ul>
+                    <div className="mt-3 border-t border-line pt-3">
+                      <p className="text-sm font-semibold text-ink">Shared venue map link</p>
+                      <p className="mt-1 text-xs text-ink-2">The same map URL will be included in every email.</p>
+                      {r.venueUrl && (
+                        <a
+                          href={r.venueUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-2 inline-flex min-h-9 items-center rounded-lg border border-accent px-3 py-1.5 text-sm font-semibold text-accent hover:bg-accent-tint"
+                        >
+                          Open shared map
+                        </a>
+                      )}
+                    </div>
                   </>
                 )}
               </li>
