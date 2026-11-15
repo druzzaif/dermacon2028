@@ -31,7 +31,7 @@ export default function VenueGuide({
   const currentStop = stops[activeStep];
 
   return (
-    <main className="mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-7xl flex-col gap-4 p-3 sm:p-5">
+    <main id="main-content" className="mx-auto flex min-h-[100dvh] max-w-7xl flex-col gap-4 p-3 sm:p-5">
       <section className="rounded-xl border border-line bg-white p-4 shadow-card sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
