@@ -43,24 +43,6 @@ export default function VenueGuide({
           </span>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Route stops">
-          {stops.map((stop, index) => (
-            <button
-              key={`${stop.id}-${index}`}
-              type="button"
-              onClick={() => setActiveStep(index)}
-              aria-current={index === activeStep ? 'step' : undefined}
-              className={`min-h-10 rounded-lg border px-3 py-2 text-sm font-medium ${
-                index === activeStep
-                  ? 'border-accent bg-accent text-white'
-                  : 'border-line bg-white text-ink-2 hover:border-accent hover:text-accent'
-              }`}
-            >
-              {index + 1}. {stop.title}
-            </button>
-          ))}
-        </div>
-
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
           <div aria-live="polite">
             <h2 className="font-semibold text-ink">{currentStop.title}</h2>
