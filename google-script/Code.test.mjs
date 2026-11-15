@@ -87,14 +87,22 @@ test('a failed email send releases the lock', () => {
   assert.equal(harness.isLockHeld(), false);
 });
 
-test('venue email buttons accept only the shared map URL and escape attributes', () => {
+test('faculty commitment emails omit the shared map button', () => {
   const harness = createHarness();
-  const button = harness.context.venueButtonHtml('https://conference.example/venue');
+  const template = readFileSync(join(__dirname, 'Template.html'), 'utf8');
+  harness.context.readTemplate = () => template;
+  harness.context.Date = Date;
+  harness.context.Utilities.formatDate = () => '15/11/2026';
+  const html = harness.context.buildLetterHtml([], {
+    name: 'Dr Example',
+    role: 'Faculty',
+    title: 'Commitment',
+    greeting: 'Hello',
+    intro: 'Your schedule is below.',
+    formLink: 'https://forms.example/confirm',
+    changes: [],
+    venueUrl: 'https://conference.example/venue',
+  });
 
-  assert.match(button, /href="https:\/\/conference\.example\/venue"/);
-  assert.match(button, /Open the shared venue map/);
-  assert.equal(harness.context.venueButtonHtml('javascript:alert(1)'), '');
-  assert.equal(harness.context.venueButtonHtml('https://conference.example/venue?rooms=hall-b'), '');
-  assert.equal(harness.context.venueButtonHtml('http://external.example/venue'), '');
-  assert.match(harness.context.venueButtonHtml('http://localhost:3000/venue'), /Open the shared venue map/);
+  assert.doesNotMatch(html, /Open the shared venue map|conference\.example\/venue|VenueButton/);
 });

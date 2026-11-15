@@ -27,7 +27,6 @@ type EmailPreviewRow = {
   problem: string;
   topics: EmailTopicPreview[];
   changes: string[];
-  venueUrl?: string;
 };
 type EmailPreviewResponse = {
   success: boolean;
@@ -246,20 +245,6 @@ export default function SendEmailsDialog({
                         </li>
                       ))}
                     </ul>
-                    <div className="mt-3 border-t border-line pt-3">
-                      <p className="text-sm font-semibold text-ink">Shared venue map link</p>
-                      <p className="mt-1 text-xs text-ink-2">The same map URL will be included in every email.</p>
-                      {r.venueUrl && (
-                        <a
-                          href={r.venueUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-2 inline-flex min-h-9 items-center rounded-lg border border-accent px-3 py-1.5 text-sm font-semibold text-accent hover:bg-accent-tint"
-                        >
-                          Open shared map
-                        </a>
-                      )}
-                    </div>
                   </>
                 )}
               </li>

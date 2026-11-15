@@ -26,7 +26,6 @@ import puppeteer from 'puppeteer';
 import { renderCommitmentHTML, renderCommitmentDocument } from './lib/commitmentPdfHtml';
 import { sortCoordinators } from './lib/coordOrder';
 import { isPanelRole, panelGroups, sortTopicPeople, type PanelGroups } from './lib/topicPeople';
-import { buildVenueEmailLink } from './lib/venueEmail';
 import fs from 'fs';
 import path from 'path';
 
@@ -644,14 +643,12 @@ export async function previewEmails(items: { facultyId: string; kind: EmailKind 
       if (!validEmail(faculty.email)) return { ...base, problem: 'No valid email address.' };
       try {
         const p = await buildFacultyPayload(faculty, { coordinators: false });
-        const venueUrl = buildVenueEmailLink();
         const pending = it.kind === 'update' ? await pendingChangesFor(faculty.id) : { rows: [], lines: [], ids: [] };
         const changedTopics = new Set(pending.rows.map((c: any) => c.topic_id).filter(Boolean));
         return {
           ...base,
           topics: p.topics.map((t: any) => ({ ...t, isNew: changedTopics.has(t.topicId) })),
           changes: pending.lines,
-          venueUrl,
         };
       } catch (e: any) {
         return { ...base, problem: e?.message || 'Could not prepare this email.' };
@@ -671,11 +668,10 @@ export async function sendEmailToFaculty(facultyId: string, kind: EmailKind) {
 
     if (kind === 'reminder') {
       const p = await buildFacultyPayload(faculty, { coordinators: false });
-      const venueUrl = buildVenueEmailLink();
       const r = await callScript({
         action: 'sendReminder', name: faculty.canonical_name, email: faculty.email,
         phone: faculty.phone || '', sessions: p.assignedSessionCodes, formSessions: p.formSessions,
-        pendingTopics: p.pendingTopics, sessionsData: p.sessionsData, venueUrl,
+        pendingTopics: p.pendingTopics, sessionsData: p.sessionsData,
       });
       if (r.status !== 'Success') return { success: false, message: r.message || 'Failed to send.', quotaLeft: r.quotaLeft };
       await getSupabaseServer().from('faculty').update({ reminder_sent: true }).eq('id', faculty.id);
@@ -683,7 +679,6 @@ export async function sendEmailToFaculty(facultyId: string, kind: EmailKind) {
     }
 
     const p = await buildFacultyPayload(faculty);
-    const venueUrl = buildVenueEmailLink();
     const pending = await pendingChangesFor(faculty.id);
 
     // ONE PDF with one page per session. If it fails the email still goes, without it.
@@ -701,7 +696,6 @@ export async function sendEmailToFaculty(facultyId: string, kind: EmailKind) {
       action: kind === 'update' ? 'sendScheduleUpdate' : 'sendFormLink',
       facultyId: faculty.id, name: faculty.canonical_name, email: faculty.email, phone: faculty.phone || '',
       role: p.role, sessions: p.assignedSessionCodes, formSessions: p.formSessions, sessionsData: p.sessionsData, pdfs,
-      venueUrl,
       changes: kind === 'update' ? pending.lines : [],
     });
     if (r.status !== 'Success') return { success: false, message: r.message || 'Failed to send.', quotaLeft: r.quotaLeft };

@@ -120,14 +120,6 @@ function sendManualFacultyEmail(send) {
   }
 }
 
-function venueButtonHtml(url) {
-  var link = String(url || '').trim();
-  var isHttpsVenueLink = /^https:\/\/[^/?#]+\/venue\/?$/i.test(link);
-  var isLocalVenueLink = /^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/venue\/?$/i.test(link);
-  if (!isHttpsVenueLink && !isLocalVenueLink) return '';
-  return '<p style="margin:0 0 22px;"><a href="' + esc(link) + '" style="background:#a3196c; color:#ffffff; padding:10px 18px; text-decoration:none; border-radius:4px; font-size:13px; font-weight:bold;">Open the shared venue map</a></p>';
-}
-
 function roleLabel(role) {
   var r = String(role || 'Faculty');
   if (r === 'Chairperson') return 'Chairperson';
@@ -395,7 +387,7 @@ function statusTag(status) {
   return '';
 }
 
-// o: { name, role, title, greeting, intro, formLink, changes, venueUrl }
+// o: { name, role, title, greeting, intro, formLink, changes }
 function buildLetterHtml(rows, o) {
   var template = readTemplate('Template');
   var sm = /<!--\s*SESSION_START\s*-->/i.exec(template);
@@ -429,8 +421,7 @@ function buildLetterHtml(rows, o) {
     EmailTitle:  o.title,
     Greeting:    o.greeting,
     IntroText:   o.intro,
-    ChangesBox:  changesBox(o.changes),
-    VenueButton: venueButtonHtml(o.venueUrl)
+    ChangesBox:  changesBox(o.changes)
   });
   html = html.replace('https://forms.gle/REPLACE_WITH_YOUR_GOOGLE_FORM_LINK', function () { return o.formLink || '#'; });
   return resolveImages(html);
@@ -508,8 +499,7 @@ function doPost(e) {
           ? "There has been a change in your scientific commitment. Your current details are below, with the changes listed first."
           : "We are delighted to welcome you as <strong>" + roleText + "</strong>. Your scientific commitment details are below.",
         formLink: prefilledLink,
-        changes: isUpdate ? data.changes : [],
-        venueUrl: data.venueUrl
+        changes: isUpdate ? data.changes : []
       });
 
       var pdfBlobs = savePdfs(data);
@@ -518,7 +508,7 @@ function doPost(e) {
         MailApp.sendEmail({
           to: data.email,
           subject: (isUpdate ? "[DERMACON International 2027] Schedule Update - " : "[DERMACON International 2027] Scientific Commitments - ") + data.name,
-          body: "Dear " + data.name + ",\n\nYour scientific commitment details are included in this email (PDF attached).\n\nConfirm your attendance here: " + prefilledLink + (data.venueUrl ? "\n\nShared venue map: " + data.venueUrl : ''),
+          body: "Dear " + data.name + ",\n\nYour scientific commitment details are included in this email (PDF attached).\n\nConfirm your attendance here: " + prefilledLink,
           htmlBody: htmlBody,
           attachments: pdfBlobs
         });
@@ -548,7 +538,6 @@ function doPost(e) {
         '<p style="font-size:14px; font-weight:bold; margin:0 0 12px;">Dear ' + esc(data.name) + ',</p>' +
         '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">This is a gentle reminder. We have emailed you your scientific commitment details for <strong>DERMACON International 2027</strong> and have not yet received your confirmation' + (pending.length ? ' for the topic(s) below' : '') + '.</p>' +
         (pendingHtml || (data.sessions ? '<p style="font-size:14px; margin:0 0 12px;"><strong>Your session(s):</strong> ' + esc(String(data.sessions).replace(/,/g, ', ')) + '</p>' : '')) +
-        venueButtonHtml(data.venueUrl) +
         '<p style="font-size:14px; margin:0 0 16px;">Please confirm your participation. It takes less than a minute.</p>' +
         '<p style="margin:0 0 20px;">' + confirmButton('Confirm participation', link) + '</p>' +
         '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
@@ -556,7 +545,7 @@ function doPost(e) {
         MailApp.sendEmail({
           to: data.email,
           subject: "[Reminder] [DERMACON International 2027] Please confirm your participation - " + data.name,
-          body: "Dear " + data.name + ",\n\nThis is a gentle reminder. Please confirm your participation: " + link + (data.venueUrl ? "\n\nShared venue map: " + data.venueUrl : ''),
+          body: "Dear " + data.name + ",\n\nThis is a gentle reminder. Please confirm your participation: " + link,
           htmlBody: buildShellHtml("Reminder – please confirm your participation", body)
         });
       });

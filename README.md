@@ -37,15 +37,13 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Faculty venue routes
 
-The faculty venue map is available at `/venue`. Faculty email links are generated from `APP_PUBLIC_URL`, which must be the public app origin (not `localhost`) for live emails.
+The faculty venue map is available at `/venue` and can be shared directly with attendees.
 
 ### Deploying on Vercel
 
 1. Sign in to Vercel and deploy this folder with `npx vercel`, or import the repository if it has been pushed to GitHub. Complete the prompts and use the production deployment when ready.
 2. Vercel assigns an HTTPS address ending in `.vercel.app`; a custom domain is optional.
-3. In the Vercel project, open **Settings → Environment Variables** and set `APP_PUBLIC_URL` to that exact HTTPS origin, for example `https://your-project.vercel.app`. Add the app's other required environment variables there as well.
-4. Redeploy after adding or changing the variable: use **Deployments → Redeploy**, push a commit when using Git integration, or run `npx vercel --prod` from this folder.
+3. Add the app's required environment variables in the Vercel project settings.
+4. Redeploy after adding or changing a variable: use **Deployments → Redeploy**, push a commit when using Git integration, or run `npx vercel --prod` from this folder.
 
-The email sender uses `http://localhost:3000` only for local development. It rejects a production `APP_PUBLIC_URL` that is not HTTPS or that includes a path.
-
-Google Apps Script is deployed separately from the Next.js app. After changing `google-script/Code.js` or `google-script/Template.html`, create and deploy a new version of the Apps Script web app so live faculty emails include the venue button and server-side email pacing.
+Google Apps Script is deployed separately from the Next.js app. After changing `google-script/Code.js` or `google-script/Template.html`, create and deploy a new version of the Apps Script web app so live faculty emails use the latest template and server-side email pacing.
