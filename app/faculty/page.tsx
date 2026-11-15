@@ -137,12 +137,6 @@ export default function FacultyDirectoryPage() {
     if (data) setFaculty(data);
   }
 
-  // One PDF per faculty, one page per session
-  const handleViewPDF = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    window.open(`/api/generate-pdf?id=${id}`, '_blank');
-  };
-
   const filteredFaculty = useMemo(() => {
     return faculty.filter((doc) => {
       const q = searchTerm.toLowerCase();
@@ -401,14 +395,6 @@ export default function FacultyDirectoryPage() {
                             aria-label={`Edit ${doc.canonical_name}`}
                           >
                             Edit
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            size="sm"
-                            onClick={(e) => handleViewPDF(doc.id, e)}
-                            aria-label={`Open PDF for ${doc.canonical_name}`}
-                          >
-                            PDF
                           </Button>
                         </div>
                       </td>
