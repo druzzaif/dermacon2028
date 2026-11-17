@@ -37,7 +37,7 @@ export async function generatePDFData(facultyId: string) {
 
     console.log("3. Building HTML...");
     const sessionsMap: Record<string, any> = {};
-    topics.forEach(t => {
+    (topics as any[]).forEach(t => {
       const session = t.session_topics?.conference_sessions;
       if (!session) return;
       if (!sessionsMap[session.id]) {
@@ -57,7 +57,7 @@ export async function generatePDFData(facultyId: string) {
         .eq('role', 'Lead Coordinator')
         .single();
 
-      const leadCoord = coordData?.faculty;
+      const leadCoord = coordData?.faculty as any;
       const coordName = leadCoord?.canonical_name || 'Scientific Committee';
       const coordPhone = leadCoord?.phone || '+91 99981 84930';
       const coordEmail = leadCoord?.email || 'osdermacon@iadvl.org';
@@ -136,7 +136,7 @@ export async function generatePDFData(facultyId: string) {
     console.log("4. Launching Puppeteer...");
     const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'], headless: true });
     const page = await browser.newPage();
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+    await page.setContent(fullHtml, { waitUntil: 'networkidle0' as any });
     
     console.log("5. Generating PDF Buffer...");
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
