@@ -1,0 +1,10 @@
+import { build } from 'esbuild';
+import fs from 'node:fs';
+const out = await build({ entryPoints: ['src/page-entry.js'], bundle: true, format: 'esm', external: ['three'], write: false, minify: process.argv.includes('--min'), target: 'es2020', legalComments: 'none' });
+const js = out.outputFiles[0].text.replace(/<\/script/g, '<\\/script');
+const tpl = fs.readFileSync('template.html', 'utf8');
+fs.mkdirSync('dist', { recursive: true });
+const mk = (url) => tpl.replace('__THREE_URL__', url).replace('__BUNDLE__', () => js);
+fs.writeFileSync('dist/index.html', mk('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js'));
+fs.writeFileSync('dist/local.html', mk('/node_modules/three/build/three.module.min.js'));
+console.log('built', (js.length / 1024).toFixed(0) + ' KB');

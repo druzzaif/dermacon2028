@@ -32,6 +32,12 @@
   --shadow-pop: 0 24px 64px rgb(15 23 42 / 0.22);
 }
 
+@media screen {
+  html {
+    zoom: 90%;
+  }
+}
+
 body {
   background: var(--color-canvas);
   color: var(--color-ink);

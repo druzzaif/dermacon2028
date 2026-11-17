@@ -121,6 +121,8 @@ function FacultyPrint() {
   const [contacts, setContacts] = useState(true);
   const [confirmed, setConfirmed] = useState(true);
   const [pagePerFaculty, setPagePerFaculty] = useState(true);
+  // Letters on letterhead: everything, only workshops (WS/MC), or only scientific sessions
+  const [letterGroup, setLetterGroup] = useState<'all' | 'workshop' | 'scientific'>('all');
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -173,7 +175,7 @@ function FacultyPrint() {
     try {
       // Keep alphabetical order in the PDF
       const ids = list.filter((f) => picked.has(f.id)).map((f) => f.id);
-      const r = await fetchPdf({ kind: 'faculty', facultyIds: ids, format, contacts, confirmed, pagePerFaculty },
+      const r = await fetchPdf({ kind: 'faculty', facultyIds: ids, format, contacts, confirmed, pagePerFaculty, group: letterGroup },
         format === 'letterhead' ? 'DERMACON_Letters' : 'DERMACON_Faculty');
       setPdfUrl(r.url);
       if (r.skipped) setNote(`Left out (no topics to put in a letter): ${r.skipped}`);
@@ -264,9 +266,22 @@ function FacultyPrint() {
           </div>
         )}
         {format === 'letterhead' && (
-          <p className="rounded-xl border border-line bg-white p-4 text-xs text-ink-2 shadow-card">
-            Letters include the coordinator contact and the confirmation link, exactly like the emailed PDF. Faculty with no topics are left out. Many faculty at once can take a minute.
-          </p>
+          <div className="space-y-2 rounded-xl border border-line bg-white p-4 shadow-card">
+            <h2 className="mb-1 text-sm font-semibold text-ink">Which sessions in each letter?</h2>
+            {([
+              ['all', 'Everything'],
+              ['workshop', 'Workshops only (WS / MC)'],
+              ['scientific', 'Scientific sessions only'],
+            ] as const).map(([v, label]) => (
+              <label key={v} className="flex cursor-pointer items-center gap-2 text-sm text-ink">
+                <input type="radio" name="letter-group" checked={letterGroup === v} onChange={() => setLetterGroup(v)} />
+                {label}
+              </label>
+            ))}
+            <p className="pt-1 text-xs text-ink-2">
+              Letters include the coordinator contact and the confirmation link, exactly like the emailed PDF. Faculty with no topics in the chosen part are left out. Many faculty at once can take a minute.
+            </p>
+          </div>
         )}
 
         <div className="space-y-3 rounded-xl border border-line bg-white p-4 shadow-card">

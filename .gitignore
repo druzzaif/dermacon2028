@@ -25,6 +25,7 @@ tsconfig.tsbuildinfo
 
 # Project context dump (regenerate as needed)
 CONTEXT_DUMP.txt
+newchat.txt
 
 # actions.ts backups (surgical-edit safety net)
 *.bak_*
@@ -33,3 +34,9 @@ CONTEXT_DUMP.txt
 backups/
 
 .vercel
+
+# Claude Code personal settings
+.claude/settings.local.json
+
+# Files pending manual deletion
+Temp/

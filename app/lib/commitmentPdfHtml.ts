@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { isWorkshopSession } from './sessionGroup';
 
 type CommitmentInput = {
   faculty: { canonical_name: string; phone?: string | null };
@@ -24,6 +25,9 @@ type CommitmentInput = {
     }>;
     role: string;
     coordinator: { name: string; phone: string; email: string };
+    // All lead coordinators of the session, in the order arranged in the Edit coordinators
+    // dialog. When present, the letter lists every one of them (not just the first).
+    coordinators?: Array<{ name: string; phone: string; email: string }>;
   }>;
   formLink: string;
 };
@@ -43,6 +47,18 @@ function escapeHtml(value: string | null | undefined): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// Phone numbers and email addresses in the letter are clickable (call / write)
+function phoneLink(phone: string | null | undefined): string {
+  const shown = String(phone ?? '').trim();
+  const digits = shown.replace(/[^0-9+]/g, '');
+  return digits ? `<a href="tel:${escapeHtml(digits)}">${escapeHtml(shown)}</a>` : escapeHtml(shown);
+}
+
+function emailLink(email: string | null | undefined): string {
+  const shown = String(email ?? '').trim();
+  return shown.includes('@') ? `<a href="mailto:${escapeHtml(shown)}">${escapeHtml(shown)}</a>` : escapeHtml(shown);
 }
 
 function formatTime(value: string | null | undefined): string {
@@ -67,10 +83,13 @@ function formatDate(value: string | null): string {
   });
 }
 
-// 34mm let a 5-row first page end 0.7mm above the signature scribbles (~248.7mm);
-// 26mm keeps the signature block ~5mm clear of them.
-const FIRST_PAGE_MM = 26;
+// Measured: rows up to ~32.5mm (a 5-row table, or 4 rows with a 3-line title) keep the signature block just above the signature scribbles (~248.7mm); anything longer continues on the next page.
+const FIRST_PAGE_MM = 32.5;
 const NEXT_PAGE_MM = 150;
+// When a session needs more than one page, the greeting + table start on page 1 (no details block there,
+// so it holds more rows) and the session details / coordinator / confirm link / signature go on the LAST page.
+const FIRST_PAGE_OPEN_MM = 100;
+const CLOSING_MM = 90;
 
 // Estimated height of one topic row in mm (one text line = 3.75 mm, plus padding)
 // "Moderator: A" / "Panelists: B, C" lines shown under a panel or debate topic
@@ -109,6 +128,10 @@ export function renderCommitmentDocument(inputs: CommitmentInput[]): string {
 </html>`;
 }
 
+// Workshops are the sessions whose code starts with WS or MC; every other session is a scientific session.
+// The rule lives in ./sessionGroup so client pages share it; re-exported here for the server code.
+export { isWorkshopSession };
+
 function commitmentPages(input: CommitmentInput): string {
   const today = new Date().toLocaleDateString('en-GB');
 
@@ -116,26 +139,42 @@ function commitmentPages(input: CommitmentInput): string {
   // so nothing is cut off at the bottom of the letterhead.
   const pages = input.sessions.flatMap((sessionData) => {
     const { session, coordinator } = sessionData;
+    // Show every lead coordinator of the session, in the order arranged (1, 2, 3 …).
+    // Older data without the list falls back to the single coordinator.
+    const leads = (sessionData.coordinators && sessionData.coordinators.length
+      ? sessionData.coordinators
+      : [coordinator]
+    ).filter((c) => c && String(c.name || '').trim());
     const sorted = [...sessionData.topics].sort((a, b) => (a.sequence_no ?? 0) - (b.sequence_no ?? 0));
-    const showRole = sorted.some((t) => t.role && t.role !== 'Faculty');
+    const showRole = true; // role always sits in its own column, right after the topic
+    const workshop = isWorkshopSession(session.session_code);
     // Split topics across pages by estimated height (measured from real renders):
     // the first page has about 26 mm for topic rows, later pages about 150 mm.
-    const chunks: (typeof sorted)[] = [];
-    let current: typeof sorted = [];
-    let used = 0;
-    let budget = FIRST_PAGE_MM;
-    for (const topic of sorted) {
-      const cost = rowCostMm(topic, showRole);
-      if (current.length > 0 && used + cost > budget) {
-        chunks.push(current);
-        current = [];
-        used = 0;
-        budget = NEXT_PAGE_MM;
+    const plan = (firstBudget: number, withClosing: boolean) => {
+      const out: (typeof sorted)[] = [];
+      let cur: typeof sorted = [];
+      let used = 0;
+      let budget = firstBudget;
+      for (const topic of sorted) {
+        const cost = rowCostMm(topic, showRole);
+        if (cur.length > 0 && used + cost > budget) {
+          out.push(cur);
+          cur = [];
+          used = 0;
+          budget = NEXT_PAGE_MM;
+        }
+        cur.push(topic);
+        used += cost;
       }
-      current.push(topic);
-      used += cost;
-    }
-    chunks.push(current);
+      out.push(cur);
+      // the closing block needs room on the last page, otherwise it gets a page of its own
+      if (withClosing && used + CLOSING_MM > budget) out.push([]);
+      return out;
+    };
+    let chunks = plan(FIRST_PAGE_MM, false);
+    // More than one page: details move to the last page, so nothing important sits on a bare "continued" page
+    const closingOnLast = chunks.length > 1;
+    if (closingOnLast) chunks = plan(FIRST_PAGE_OPEN_MM, true);
 
     const tableFor = (list: typeof sorted) => {
       const rows = list.map((topic) => `
@@ -151,15 +190,43 @@ function commitmentPages(input: CommitmentInput): string {
           </table>`;
     };
 
+    const closingHtml = () => `
+          <h2>SESSION DETAILS:</h2>
+          <table class="session-details">
+            <tbody>
+              <tr><th>NAME</th><td>${workshop ? 'Workshop' : 'Scientific Session'} &ndash; ${escapeHtml(session.session_code)} ${escapeHtml(session.session_name)}</td></tr>
+              <tr><th>HALL</th><td>${escapeHtml(session.hall || 'TBD')}</td></tr>
+              <tr><th>DATE</th><td>${formatDate(session.session_date)}</td></tr>
+              <tr><th>TIME</th><td>${formatTime(session.start_time)} &ndash; ${formatTime(session.end_time)}</td></tr>
+            </tbody>
+          </table>
+
+          ${leads.length ? `<p class="small">For any query contact your session coordinator${leads.length > 1 ? 's' : ''}<br/>${leads
+            .map((c) => `<strong>${escapeHtml(c.name)}</strong>${c.phone ? ` | ${phoneLink(c.phone)}` : ''}${c.email ? ` | ${emailLink(c.email)}` : ''}`)
+            .join('<br/>')}</p>` : ''}
+          <p class="small">As per IADVL Policy, Conference Registration, Travel and Accommodation will have to be arranged by faculty and delegates themselves.</p>
+          <p class="small">If you have not yet registered, you can register at the special faculty rate by <a href="https://dermacon27faculty.groupthink.events/">clicking here</a>.</p>
+          <p class="small">Thank you for contributing your time and expertise to the scientific programme. We look forward to your participation and welcoming you to DERMACON International 2027.</p>
+          <p class="small"><strong>Confirm your participation. <a href="${escapeHtml(input.formLink)}">Click Here to Confirm</a></strong></p>
+
+          <div class="signature small">
+            <p>Warm regards,</p>
+            ${workshop ? `<p><strong>Workshop Committee</strong></p>
+            <div class="signature-row"><em>Chairpersons:</em><span>Dr. Aarti Shah, Dr. Janak Thakkar</span></div>
+            <div class="signature-row"><em>Co-Chairs:</em><span>Dr. Bhavesh Devani, Dr. Geeta Patel, Dr. Kirti Shah,<br/>Dr. Smita Nagpal</span></div>` : '<p><strong>Scientific Committee</strong></p>'}
+          </div>`;
+
     return chunks.map((list, index) => {
+      const isLast = index === chunks.length - 1;
       if (index > 0) {
         return `
       <section class="page">
         <main class="content">
           <div class="topline">DATE: ${today}</div>
           <div class="subject">SUBJECT: Faculty Scientific Commitment DERMACON International 2027</div>
-          <h2>SCIENTIFIC COMMITMENT (continued) &ndash; ${escapeHtml(session.session_code)} ${escapeHtml(session.session_name)}</h2>
-          ${tableFor(list)}
+          ${list.length ? `<h2>SCIENTIFIC COMMITMENT (continued) &ndash; ${escapeHtml(session.session_code)} ${escapeHtml(session.session_name)}</h2>` : ''}
+          ${list.length ? tableFor(list) : ''}
+          ${closingOnLast && isLast ? closingHtml() : ''}
         </main>
       </section>`;
       }
@@ -170,7 +237,7 @@ function commitmentPages(input: CommitmentInput): string {
           <div class="subject">SUBJECT: Faculty Scientific Commitment DERMACON International 2027</div>
 
           <p>Dear <strong>${escapeHtml(input.faculty.canonical_name)}</strong>,</p>
-          <p>Greetings from the Scientific Committee of DERMACON International 2027. We are delighted to welcome you as <strong>${escapeHtml(sessionData.role || 'Faculty')}</strong> and share the details of your scientific commitment.</p>
+          <p>Greetings from the Scientific Committee of DERMACON International 2027. We are delighted to welcome you and share the details of your scientific commitment.</p>
 
           <h2>CONFERENCE DETAILS</h2>
           <div class="block">
@@ -183,28 +250,7 @@ function commitmentPages(input: CommitmentInput): string {
           <h2>SCIENTIFIC COMMITMENT:</h2>
           ${tableFor(list)}
 
-          <h2>SESSION DETAILS:</h2>
-          <table class="session-details">
-            <tbody>
-              <tr><th>NAME</th><td>${escapeHtml(session.session_type || 'Workshop')} &ndash; ${escapeHtml(session.session_code)} ${escapeHtml(session.session_name)}</td></tr>
-              <tr><th>HALL</th><td>${escapeHtml(session.hall || 'TBD')}</td></tr>
-              <tr><th>DATE</th><td>${formatDate(session.session_date)}</td></tr>
-              <tr><th>TIME</th><td>${formatTime(session.start_time)} &ndash; ${formatTime(session.end_time)}</td></tr>
-            </tbody>
-          </table>
-
-          <p class="small">For any query contact your session coordinator<br/><strong>${escapeHtml(coordinator.name)}</strong> | ${escapeHtml(coordinator.phone)} | ${escapeHtml(coordinator.email)}</p>
-          <p class="small">As per IADVL Policy, Conference Registration, Travel and Accommodation will have to be arranged by faculty and delegates themselves.</p>
-          <p class="small">If you have not yet registered, you can register at the special faculty rate by <a href="https://dermacon27faculty.groupthink.events/">clicking here</a>.</p>
-          <p class="small">Thank you for contributing your time and expertise to the scientific programme. We look forward to your participation and welcoming you to DERMACON International 2027.</p>
-          <p class="small"><strong>Confirm your participation. <a href="${escapeHtml(input.formLink)}">Click Here to Confirm</a></strong></p>
-
-          <div class="signature small">
-            <p>Warm regards,</p>
-            <p><strong>Workshop Committee</strong></p>
-            <div class="signature-row"><em>Chairpersons:</em><span>Dr. Aarti Shah, Dr. Janak Thakkar</span></div>
-            <div class="signature-row"><em>Co-Chairs:</em><span>Dr. Bhavesh Devani, Dr. Geeta Patel, Dr. Kirti Shah,<br/>Dr. Smita Nagpal</span></div>
-          </div>
+          ${closingOnLast ? '' : closingHtml()}
         </main>
       </section>`;
     });
@@ -239,5 +285,6 @@ function commitmentCss(background: string): string {
   .signature p { margin-bottom: 1mm; }
   .signature-row { display: grid; grid-template-columns: 47mm 1fr; }
   a { color: #0b57d0; text-decoration: underline; font-weight: bold; }
+  .small a[href^="tel:"], .small a[href^="mailto:"] { font-weight: normal; }
 `;
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../supabase';
 import { generatePDFData, generatePDFForSession } from '../actions';
 import Modal from './Modal';
+import GroupChoiceDialog, { type GroupChoice } from './GroupChoiceDialog';
 import Field, { inputCompactCls } from './Field';
 import { AlertIcon, CheckIcon, CloseIcon } from './Icons';
 import { TimeRange } from './TimeField';
@@ -77,11 +78,24 @@ export default function AddTopicModal({
   const [topicTitle, setTopicTitle] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
+  const [allPanel, setAllPanel] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [askGroup, setAskGroup] = useState(false);
+
+  // Which part of each person's schedule goes into the PDFs: asked first (everything / workshops / scientific)
+  async function makeFacultyPdfs(ids: string[], group: GroupChoice) {
+    setPdfBusy(true); setPdfError(null);
+    const results = [];
+    for (const id of ids) results.push(await generatePDFData(id, { group }));
+    const ok = results.filter((r) => r.success);
+    setPdfBusy(false);
+    if (ok.length === 0) setPdfError((results[0] as any)?.message || 'No PDFs were generated. Try again.');
+    else setPdfUrl((ok[0] as any).url);
+  }
   const [pdfError, setPdfError] = useState<string | null>(null);
   const skipConflictCheck = useRef(false);
 
@@ -367,6 +381,7 @@ export default function AddTopicModal({
         sequence_no: newSeq,
         start_time: parsedStart,
         end_time: parsedEnd,
+        all_faculty_panel: allPanel,
       })
       .select('id')
       .single();
@@ -442,23 +457,17 @@ setShowSuccessPrompt(true);
           {pdfError && (
             <p role="alert" className="rounded-lg bg-danger-tint p-3 text-sm text-danger-strong">{pdfError}</p>
           )}
+            {askGroup && (
+              <GroupChoiceDialog
+                onClose={() => setAskGroup(false)}
+                onChoose={(g) => { setAskGroup(false); makeFacultyPdfs(facultyLinks.map((l) => l.faculty_id), g); }}
+              />
+            )}
           <div className="grid gap-2 sm:grid-cols-2">
             <button
               type="button"
               disabled={pdfBusy || facultyLinks.length === 0}
-              onClick={async () => {
-                setPdfBusy(true); setPdfError(null);
-                const ids = facultyLinks.map(l => l.faculty_id);
-                const results = [];
-                for (const id of ids) {
-                  const r = await generatePDFData(id);
-                  results.push(r);
-                }
-                const ok = results.filter(r => r.success);
-                setPdfBusy(false);
-                if (ok.length === 0) setPdfError('No PDFs were generated. Try again.');
-                else setPdfUrl((ok[0] as any).url);
-              }}
+              onClick={() => setAskGroup(true)}
               className={primaryBtn}
             >
               PDF for new faculty
@@ -568,6 +577,14 @@ setShowSuccessPrompt(true);
                 </div>
               </div>
             )}
+
+            <label className="mb-2 flex items-start gap-2 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink">
+              <input type="checkbox" checked={allPanel} onChange={(e) => setAllPanel(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                <span className="font-medium">All faculty of this session are panelists</span>
+                <span className="block text-xs text-muted">Shown as “All faculty” in the schedule. Each faculty member of this session gets this topic as Panelist in their email and PDF.</span>
+              </span>
+            </label>
 
             <Field label="Search faculty by name or email" srOnlyLabel>
               {(p) => (

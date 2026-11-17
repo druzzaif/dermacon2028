@@ -65,15 +65,12 @@ test('manual faculty sends wait only for the remaining six-second interval', () 
   assert.equal(harness.isLockHeld(), false);
 });
 
-test('quota exhaustion rejects the send and always releases the lock', () => {
+test('the app no longer holds emails back: a low remaining quota does not block a send', () => {
   const harness = createHarness();
   harness.setQuota(5);
 
-  assert.throws(
-    () => harness.context.sendManualFacultyEmail(() => harness.sentAt.push(1000)),
-    /daily email reserve has been reached/,
-  );
-  assert.deepEqual(harness.sentAt, []);
+  harness.context.sendManualFacultyEmail(() => harness.sentAt.push(1000));
+  assert.deepEqual(harness.sentAt, [1000]);
   assert.equal(harness.isLockHeld(), false);
 });
 

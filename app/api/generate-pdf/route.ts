@@ -13,7 +13,11 @@ export async function GET(req: Request) {
 
   try {
     // Reuse the generatePDFData server action (it also keeps a copy in public/pdfs).
-    const result = await generatePDFData(facultyId);
+    // Optional: ?topics=id1,id2 (exact topics) and/or ?group=workshop|scientific
+    const topicIds = (searchParams.get('topics') || '').split(',').map((t) => t.trim()).filter(Boolean);
+    const groupParam = searchParams.get('group');
+    const group = groupParam === 'workshop' || groupParam === 'scientific' ? groupParam : undefined;
+    const result = await generatePDFData(facultyId, { topicIds: topicIds.length ? topicIds : undefined, group });
 
     if (!result.success || !result.url) {
       return NextResponse.json({ error: result.message }, { status: 500 });

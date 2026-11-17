@@ -25,7 +25,8 @@ export async function POST(req: Request) {
       name = 'Faculty';
       if (b.format === 'letterhead') {
         letterhead = true;
-        const r = await facultyLetterheadHtml(facultyIds);
+        const group = b.group === 'workshop' || b.group === 'scientific' ? b.group : undefined;
+        const r = await facultyLetterheadHtml(facultyIds, { group });
         if (!r.html) return Response.json({ error: 'None of the selected faculty has a topic assigned, so there is no letter to print.' }, { status: 400 });
         html = r.html;
         skipped = r.skipped;

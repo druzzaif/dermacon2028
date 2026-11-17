@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { sortTopicPeople } from '../lib/topicPeople';
+import { sortTopicPeople, visiblePeople } from '../lib/topicPeople';
 import Modal from './Modal';
 import { formatTime12, toMinutes } from '../lib/time';
 import { findEmptySlots, type EmptySlot } from '../lib/slots';
@@ -22,6 +22,39 @@ function formatDate(d: string | null | undefined) {
   if (!d) return 'Date TBD';
   const dt = new Date(`${d}T00:00:00`);
   return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// Print table styling. Kept at module scope so the contact table below is a
+// stable component (defining it inside the sheet made React remount every row
+// on each render).
+const PRINT_CELL = 'border border-[#bbb] px-2 py-1.5 align-top';
+const PRINT_HEAD = 'border border-[#bbb] bg-[#eee] px-2 py-1.5 text-left font-bold';
+
+type Person = { name: string; phone: string; email: string; what: string[] };
+
+function ContactTable({ title, people, whatLabel }: { title: string; people: Person[]; whatLabel: string }) {
+  if (people.length === 0) return null;
+  return (
+    <div className="mb-5" style={{ breakInside: 'avoid-page' }}>
+      <h3 className="mb-1.5 text-[11pt] font-bold">{title} ({people.length})</h3>
+      <table className="w-full border-collapse text-[9.5pt]" style={{ tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: '30%' }} /><col style={{ width: '20%' }} /><col style={{ width: '18%' }} /><col style={{ width: '32%' }} />
+        </colgroup>
+        <thead><tr><th className={PRINT_HEAD}>Name</th><th className={PRINT_HEAD}>{whatLabel}</th><th className={PRINT_HEAD}>Phone</th><th className={PRINT_HEAD}>Email</th></tr></thead>
+        <tbody>
+          {people.map((p, i) => (
+            <tr key={i}>
+              <td className={`${PRINT_CELL} font-semibold`}>{p.name}</td>
+              <td className={PRINT_CELL}>{p.what.join(', ')}</td>
+              <td className={`${PRINT_CELL} tnum`}>{p.phone || '—'}</td>
+              <td className={PRINT_CELL} style={{ overflowWrap: 'anywhere' }}>{p.email || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 /** Small dialog shown when you click Print on the Sessions page */
@@ -87,11 +120,10 @@ export function SessionPrintSheet({
   sessionChairs?: any[];
   options: PrintOptions;
 }) {
-  const cell = 'border border-[#bbb] px-2 py-1.5 align-top';
-  const head = 'border border-[#bbb] bg-[#eee] px-2 py-1.5 text-left font-bold';
+  const cell = PRINT_CELL;
+  const head = PRINT_HEAD;
 
   // ---- contact lists (one row per person per section) ----
-  type Person = { name: string; phone: string; email: string; what: string[] };
   const collect = (rows: { f: any; what: string }[]) => {
     const m = new Map<string, Person>();
     for (const { f, what } of rows) {
@@ -112,29 +144,6 @@ export function SessionPrintSheet({
     topics.flatMap((t) => (t.faculty_topics || []).filter((ft: any) => ft.role !== 'Chairperson')
       .map((ft: any) => ({ f: ft.faculty, what: roleLabel(ft.role) })))
   ).sort((a, b) => a.name.localeCompare(b.name));
-
-  const ContactTable = ({ title, people, whatLabel }: { title: string; people: Person[]; whatLabel: string }) =>
-    people.length === 0 ? null : (
-      <div className="mb-5" style={{ breakInside: 'avoid-page' }}>
-        <h3 className="mb-1.5 text-[11pt] font-bold">{title} ({people.length})</h3>
-        <table className="w-full border-collapse text-[9.5pt]" style={{ tableLayout: 'fixed' }}>
-          <colgroup>
-            <col style={{ width: '30%' }} /><col style={{ width: '20%' }} /><col style={{ width: '18%' }} /><col style={{ width: '32%' }} />
-          </colgroup>
-          <thead><tr><th className={head}>Name</th><th className={head}>{whatLabel}</th><th className={head}>Phone</th><th className={head}>Email</th></tr></thead>
-          <tbody>
-            {people.map((p, i) => (
-              <tr key={i}>
-                <td className={`${cell} font-semibold`}>{p.name}</td>
-                <td className={cell}>{p.what.join(', ')}</td>
-                <td className={`${cell} tnum`}>{p.phone || '—'}</td>
-                <td className={cell} style={{ overflowWrap: 'anywhere' }}>{p.email || '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
 
   // Empty slots (worked out from the times), printed only when ticked
   const slots: EmptySlot[] = options.emptySlots ? findEmptySlots(topics, session) : [];
@@ -198,7 +207,7 @@ export function SessionPrintSheet({
         <tbody>
           {topics.map((t) => {
             const links = t.faculty_topics || [];
-            const speakers = sortTopicPeople(links.filter((ft: any) => ft.role !== 'Chairperson'));
+            const speakers = visiblePeople(t, sortTopicPeople(links.filter((ft: any) => ft.role !== 'Chairperson')));
             const chairs = options.chairs ? links.filter((ft: any) => ft.role === 'Chairperson') : [];
             const before = slots.find((g) => g.beforeTopicId !== null && !slotsPrinted.has(g.start) && toMinutes(g.end) === toMinutes(t.start_time));
             if (before) slotsPrinted.add(before.start);
@@ -210,7 +219,8 @@ export function SessionPrintSheet({
                 <td className={`${cell} tnum whitespace-nowrap`}>{formatTime12(t.start_time)}<br />{formatTime12(t.end_time)}</td>
                 <td className={`${cell} font-semibold leading-snug`}>{t.topic_title}</td>
                 <td className={cell}>
-                  {speakers.length === 0 && chairs.length === 0 && <em>Unassigned</em>}
+                  {speakers.length === 0 && chairs.length === 0 && !t.all_faculty_panel && <em>Unassigned</em>}
+                  {t.all_faculty_panel && <div><strong>All faculty</strong> (Panelists)</div>}
                   {speakers.map((ft: any, i: number) => (
                     <div key={i}>
                       {speakers.length > 1 ? `${i + 1}. ` : ''}{ft.faculty?.canonical_name}

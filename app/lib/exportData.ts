@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import { getSupabaseServer } from '../supabaseServer';
 import { sortCoordinators } from './coordOrder';
-import { sortTopicPeople, panelGroups, roleName } from './topicPeople';
+import { sortTopicPeople, panelGroups, roleName, visiblePeople } from './topicPeople';
 
 // Reads every row (PostgREST caps a single request at 1000 rows)
 async function fetchAll(table: string, select: string, order?: string): Promise<any[]> {
@@ -63,7 +63,10 @@ export async function buildBackupWorkbook() {
 
   const speakers = ft.filter((r) => r.role !== 'Chairperson');
   const chairs = ft.filter((r) => r.role === 'Chairperson');
-  const topicsWithSpeaker = new Set(speakers.filter((r) => !isTbd(fById.get(r.faculty_id))).map((r) => r.topic_id));
+  const topicsWithSpeaker = new Set([
+    ...speakers.filter((r) => !isTbd(fById.get(r.faculty_id))).map((r) => r.topic_id),
+    ...topics.filter((t) => t.all_faculty_panel).map((t) => t.id), // "all faculty" panels have their speakers
+  ]);
   const confirmed = ft.filter((r) => r.confirmed);
 
   sheet(wb, 'Summary', [
@@ -99,7 +102,7 @@ export async function buildBackupWorkbook() {
   const topicRows = topics.map((t) => {
     const s = sById.get(t.session_id);
     // In the order arranged on the topic; moderator / panelists / debaters get their own columns
-    const people = sortTopicPeople(speakers.filter((r) => r.topic_id === t.id));
+    const people = visiblePeople(t, sortTopicPeople(speakers.filter((r) => r.topic_id === t.id)));
     const num = (a: string[]) => (a.length > 1 ? a.map((n, i) => `${i + 1}. ${n}`) : a);
     const sp = num(people.filter((r) => !['Moderator', 'Panel', 'Panelist', 'Debater'].includes(r.role))
       .map((r) => `${fById.get(r.faculty_id)?.canonical_name}${r.role && r.role !== 'Faculty' ? ` (${roleName(r.role)})` : ''}`));
@@ -108,7 +111,7 @@ export async function buildBackupWorkbook() {
     return {
       Session: s?.session_code || '', 'Session name': s?.session_name || '', Date: s?.session_date || '', Hall: s?.hall || '', '#': t.sequence_no ?? '',
       Start: t5(t.start_time), End: t5(t.end_time), Topic: t.topic_title,
-      Speakers: sp.join('; '), Moderator: pg.moderators.join('; '), Panelists: num(pg.panelists).join('; '),
+      Speakers: sp.join('; '), Moderator: pg.moderators.join('; '), Panelists: t.all_faculty_panel ? ['All faculty of the session', ...num(pg.panelists)].join('; ') : num(pg.panelists).join('; '),
       Debaters: num(pg.debaters).join('; '), Chairpersons: ch.join('; '),
     };
   }).sort((a, b) => (a.Date + a.Session + String(a['#']).padStart(4, '0')).localeCompare(b.Date + b.Session + String(b['#']).padStart(4, '0')));

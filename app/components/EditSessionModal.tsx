@@ -37,6 +37,12 @@ export default function EditSessionModal({
   const [chairs, setChairs] = useState<ChairPerson[]>([]);
   const [chairsLoaded, setChairsLoaded] = useState(false);
   const initialChairs = useRef<ChairPerson[]>([]);
+  const noticeRef = useRef<HTMLDivElement>(null);
+
+  // A warning or error sits at the bottom of a scrolling dialog: bring it into view so Save never looks like it did nothing
+  useEffect(() => {
+    if (error || overlaps.length > 0) noticeRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [error, overlaps]);
 
   useEffect(() => {
     supabase.from('session_chairs')
@@ -79,7 +85,7 @@ export default function EditSessionModal({
       }
     }
 
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from('conference_sessions')
       .update({
         session_name: name.trim(),
@@ -89,9 +95,15 @@ export default function EditSessionModal({
         start_time: startTime,
         end_time: endTime,
       })
-      .eq('id', session.id);
+      .eq('id', session.id)
+      .select('id');
 
     if (updateError) { setIsSaving(false); return setError(updateError.message); }
+    // The database said "ok" but changed nothing (for example, blocked by a permission rule)
+    if (!updated || updated.length === 0) {
+      setIsSaving(false);
+      return setError('The session was not saved: the database did not change any row. Please reload the page and try again.');
+    }
 
     // Only rewrite the chairpersons once they have been loaded (never wipe them by accident)
     if (chairsLoaded) {
@@ -161,10 +173,12 @@ export default function EditSessionModal({
 
         <SessionChairsPicker value={chairs} onChange={setChairs} />
 
-        {overlaps.length > 0 && (
-          <SessionOverlapWarning overlaps={overlaps} onBack={() => setOverlaps([])} onSaveAnyway={saveAnyway} />
-        )}
-        {error && <p role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-2.5 text-sm text-danger-strong">{error}</p>}
+        <div ref={noticeRef} className="scroll-mb-4 space-y-3">
+          {overlaps.length > 0 && (
+            <SessionOverlapWarning overlaps={overlaps} onBack={() => setOverlaps([])} onSaveAnyway={saveAnyway} />
+          )}
+          {error && <p role="alert" className="rounded-lg border border-danger-line bg-danger-tint p-2.5 text-sm text-danger-strong">{error}</p>}
+        </div>
       </form>
     </Modal>
   );

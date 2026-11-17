@@ -14,7 +14,7 @@ const EditTopicModal = dynamic(() => import('../components/EditTopicModal'));
 import { DEFAULT_PRINT_OPTIONS, PrintOptionsDialog, SessionPrintSheet, type PrintOptions } from '../components/SessionPrint';
 import SyncButton from '../components/SyncButton';
 import { sortCoordinators } from '../lib/coordOrder';
-import { sortTopicPeople, roleName } from '../lib/topicPeople';
+import { sortTopicPeople, visiblePeople, roleName } from '../lib/topicPeople';
 import { useSearchParams } from 'next/navigation';
 import DeleteTopicDialog from '../components/DeleteTopicDialog';
 import CloseGapDialog from '../components/CloseGapDialog';
@@ -231,7 +231,7 @@ export default function SessionsPage() {
       .from('session_topics')
       .select(
         `
-        id, topic_title, start_time, end_time, sequence_no,
+        id, topic_title, start_time, end_time, sequence_no, all_faculty_panel,
         faculty_topics ( role, confirmed, sort_order, faculty ( id, canonical_name, phone, email, faculty_id ) )
       `
       )
@@ -671,7 +671,7 @@ export default function SessionsPage() {
                     ) : (
                       topics.map((t) => {
                         const allLinks = t.faculty_topics || [];
-                        const facultyList = sortTopicPeople(allLinks.filter((ft: any) => ft.role !== 'Chairperson'));
+                        const facultyList = visiblePeople(t, sortTopicPeople(allLinks.filter((ft: any) => ft.role !== 'Chairperson')));
                         const chairList = allLinks.filter((ft: any) => ft.role === 'Chairperson');
                         // An empty slot sits just before the first topic that starts when the slot ends
                         const slotBefore = emptySlots.find((g) =>
@@ -700,7 +700,13 @@ export default function SessionsPage() {
                               {t.topic_title}
                             </th>
                             <td className="px-4 py-3.5">
-                              {facultyList.length === 0 && chairList.length === 0 ? (
+                              {t.all_faculty_panel && (
+                                <div className="mb-2 flex flex-wrap items-center gap-1">
+                                  <span className="text-sm font-medium text-ink">All faculty</span>
+                                  <Badge tone="cyan">Panelists</Badge>
+                                </div>
+                              )}
+                              {facultyList.length === 0 && chairList.length === 0 && !t.all_faculty_panel ? (
                                 <Badge tone="warning">No speaker yet</Badge>
                               ) : (
                                 <ul className="space-y-2">
@@ -721,7 +727,7 @@ export default function SessionsPage() {
                                       </div>
                                     </li>
                                   ))}
-                                  {facultyList.length === 0 && (
+                                  {facultyList.length === 0 && !t.all_faculty_panel && (
                                     <li><Badge tone="warning">No speaker yet</Badge></li>
                                   )}
                                 </ul>
@@ -800,10 +806,19 @@ export default function SessionsPage() {
                 .select('*')
                 .eq('id', sel.id)
                 .single();
-              if (data) setSelectedSession(data);
-              // Resequence in case times changed relative to other topics
-              await resequenceSession(sel.id);
-              await refreshDetails();
+              if (data) {
+                setSelectedSession(data);
+                // Keep the session list (sidebar, hall view, re-opening the session) in step with what was saved
+                setSessions((list) => list.map((s) => (s.id === data.id ? data : s)));
+              }
+              // Resequence in case times changed relative to other topics. The session itself is already
+              // saved, so a problem here must not leave the dialog open as if nothing happened.
+              try {
+                await resequenceSession(sel.id);
+                await refreshDetails();
+              } catch (e) {
+                console.error('Session saved, but re-ordering its topics failed:', e);
+              }
               setIsEditingSession(false);
             }}
           />

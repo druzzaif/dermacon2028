@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DERMACON - Confirm your lectures</title>
+<style>
+  body{font-family:Arial,sans-serif;background:#f3f4f6;margin:0;padding:16px;color:#111}
+  .card{max-width:640px;margin:0 auto;background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px #0002}
+  h1{font-size:20px;margin:0 0 4px} .sub{color:#555;font-size:14px;margin-bottom:16px}
+  .lec{border:1px solid #ddd;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .lec.off{background:#fff6f6;border-color:#e5a3a3}
+  label.main{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+  label.main input{width:20px;height:20px;margin-top:2px}
+  .meta{font-size:12px;color:#666}
+  .why{display:none;margin-top:8px;gap:6px;flex-direction:column}
+  .lec.off .why{display:flex}
+  select,input[type=text]{padding:8px;border:1px solid #bbb;border-radius:6px;font-size:14px}
+  .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+  button{padding:10px 16px;border:0;border-radius:6px;font-size:15px;cursor:pointer}
+  .go{background:#0b5ed7;color:#fff;flex:1} .no{background:#eee}
+  #done{display:none} li{margin:4px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="form">
+    <h1 id="hi">Loading...</h1>
+    <div class="sub">All your lectures are ticked. Untick any you cannot do and tell us why.</div>
+    <div id="list"></div>
+    <div class="row">
+      <button class="no" onclick="declineAll()">Decline all</button>
+      <button class="go" onclick="submitIt()">Submit</button>
+    </div>
+  </div>
+  <div id="done"></div>
+</div>
+<script>
+// Local preview: when opened as a plain file there is no google.script, so stub it.
+if (typeof google === 'undefined') {
+  window.google = { script: { run: {
+    withSuccessHandler: function (cb) { return {
+      getData: function () { cb({ name: 'Dr. Sample Faculty', lectures: [
+        {id:1,code:'SS01',name:'Update on Psoriasis Biologics',hall:'Hall A',time:'10 Jan, 09:00'},
+        {id:2,code:'SS07',name:'Hair Transplant Pearls',hall:'Hall B',time:'10 Jan, 11:30'},
+        {id:3,code:'WS02',name:'Hands-on: Chemical Peels',hall:'Workshop 1',time:'11 Jan, 14:00'},
+        {id:4,code:'SS15',name:'Pediatric Dermatology Cases',hall:'Hall A',time:'12 Jan, 16:00'}]}); },
+      submitConfirmation: function (p) { console.log(p); cb({ok:true}); }
+    }; }
+  } } };
+}
+var data;
+google.script.run.withSuccessHandler(function (d) {
+  data = d;
+  document.getElementById('hi').textContent = 'Hello ' + d.name + ' - confirm your lectures';
+  document.getElementById('list').innerHTML = d.lectures.map(function (l) {
+    return '<div class="lec" id="l' + l.id + '"><label class="main"><input type="checkbox" checked onchange="tog(' + l.id + ')">' +
+      '<span><b>' + l.code + '</b> ' + l.name + '<div class="meta">' + l.hall + ' | ' + l.time + '</div></span></label>' +
+      '<div class="why"><select id="r' + l.id + '"><option>Clash with another commitment</option><option>Unavailable on that date</option>' +
+      '<option>Suggest another speaker</option><option>Other</option></select>' +
+      '<input type="text" id="n' + l.id + '" placeholder="Note (optional)"></div></div>';
+  }).join('');
+}).getData();
+
+function tog(id) {
+  var box = document.querySelector('#l' + id + ' input[type=checkbox]');
+  document.getElementById('l' + id).classList.toggle('off', !box.checked);
+}
+function declineAll() {
+  data.lectures.forEach(function (l) {
+    var b = document.querySelector('#l' + l.id + ' input[type=checkbox]'); b.checked = false; tog(l.id);
+  });
+}
+function submitIt() {
+  var yes = [], no = [];
+  data.lectures.forEach(function (l) {
+    var on = document.querySelector('#l' + l.id + ' input[type=checkbox]').checked;
+    if (on) yes.push(l);
+    else no.push({ lecture: l, reason: document.getElementById('r' + l.id).value, note: document.getElementById('n' + l.id).value });
+  });
+  google.script.run.withSuccessHandler(function () {
+    document.getElementById('form').style.display = 'none';
+    var d = document.getElementById('done'); d.style.display = 'block';
+    d.innerHTML = '<h1>Thank you, ' + data.name + '</h1><b>Confirmed (' + yes.length + ')</b><ul>' +
+      yes.map(function (l) { return '<li>' + l.code + ' ' + l.name + '</li>'; }).join('') + '</ul>' +
+      '<b>Declined (' + no.length + ')</b><ul>' +
+      no.map(function (x) { return '<li>' + x.lecture.code + ' ' + x.lecture.name + ' - ' + x.reason + (x.note ? ' (' + x.note + ')' : '') + '</li>'; }).join('') + '</ul>';
+  }).submitConfirmation({ confirmed: yes.map(function (l) { return l.id; }), declined: no });
+}
+</script>
+</body>
+</html>

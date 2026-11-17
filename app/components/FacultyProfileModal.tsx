@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import SendEmailsDialog from './SendEmailsDialog';
+import SendWhatsAppDialog from './SendWhatsAppDialog';
+import PdfOptionsDialog from './PdfOptionsDialog';
 import Badge from './Badge';
 import { Button, LoadingBlock } from './ui';
 import { CloseIcon } from './Icons';
@@ -45,7 +47,11 @@ export default function FacultyProfileModal({
   const [chairSessions, setChairSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSend, setShowSend] = useState(false);
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
+  const [showPdf, setShowPdf] = useState(false);
   const [unconfirming, setUnconfirming] = useState<any | null>(null);
+  // Kept locally so the badge updates right after a send without reopening the panel
+  const [whatsappSent, setWhatsappSent] = useState<boolean>(!!faculty.whatsapp_sent);
 
   async function handleRemoveConfirmation() {
     const s = unconfirming;
@@ -164,7 +170,7 @@ export default function FacultyProfileModal({
     <div
       className="fixed inset-0 z-50 flex justify-end bg-slate-950/50"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      onKeyDown={(e) => { if (e.key === 'Escape' && !showSend && !unconfirming) onClose(); }}
+      onKeyDown={(e) => { if (e.key === 'Escape' && !showSend && !showWhatsApp && !showPdf && !unconfirming) onClose(); }}
     >
       <div role="dialog" aria-modal="true" aria-label={`Profile of ${faculty.canonical_name}`} className="modal-in flex h-full w-full max-w-md flex-col bg-white shadow-pop">
         <div className="flex items-start justify-between gap-3 border-b border-line bg-canvas p-4">
@@ -221,6 +227,11 @@ export default function FacultyProfileModal({
               ) : (
                 <div className="text-sm text-muted">Not set</div>
               )}
+              {whatsappSent && (
+                <div className="mt-1">
+                  <Badge tone="success">WhatsApp sent</Badge>
+                </div>
+              )}
             </div>
             <div>
               <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
@@ -236,14 +247,28 @@ export default function FacultyProfileModal({
             </div>
           </div>
 
-          <div className="border-t border-line pt-3">
+          <div className="flex flex-wrap gap-2 border-t border-line pt-3">
             <Button
               variant="primary"
-              className="w-full"
+              className="min-w-0 flex-1"
               onClick={() => setShowSend(true)}
               disabled={loading || (speakingSessions.length === 0 && chairSessions.length === 0)}
             >
               {kind === 'update' ? 'Email schedule update…' : 'Email schedule…'}
+            </Button>
+            <Button
+              onClick={() => setShowPdf(true)}
+              disabled={loading || (speakingSessions.length === 0 && chairSessions.length === 0)}
+              title="Generate a PDF for chosen topics"
+            >
+              PDF…
+            </Button>
+            <Button
+              onClick={() => setShowWhatsApp(true)}
+              disabled={loading || !phone || (speakingSessions.length === 0 && chairSessions.length === 0)}
+              title={phone ? 'Send the approved WhatsApp reminder' : 'No phone number'}
+            >
+              WhatsApp…
             </Button>
           </div>
         </div>
@@ -382,10 +407,18 @@ export default function FacultyProfileModal({
         </div>
       </div>
 
+      {showPdf && <PdfOptionsDialog facultyId={faculty.id} name={faculty.canonical_name} onClose={() => setShowPdf(false)} />}
       {showSend && (
         <SendEmailsDialog
           items={[{ facultyId: faculty.id, kind }]}
           onClose={() => setShowSend(false)}
+        />
+      )}
+      {showWhatsApp && (
+        <SendWhatsAppDialog
+          facultyIds={[faculty.id]}
+          onClose={() => setShowWhatsApp(false)}
+          onDone={() => setWhatsappSent(true)}
         />
       )}
 

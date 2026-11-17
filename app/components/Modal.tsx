@@ -40,10 +40,19 @@ export default function Modal({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   const busyRef = useRef(busy);
+  // True once the person has typed or changed anything in the dialog
+  const dirtyRef = useRef(false);
   useEffect(() => {
     closeRef.current = onClose;
     busyRef.current = busy;
   });
+
+  // Esc and the X button ask before throwing away what was typed. Clicking outside never closes a dialog that has edits.
+  function requestClose() {
+    if (busyRef.current) return;
+    if (dirtyRef.current && !window.confirm('Close without saving? What you entered will be lost.')) return;
+    closeRef.current();
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -63,7 +72,7 @@ export default function Modal({
       if (e.key === 'Escape') {
         if (!busyRef.current) {
           e.stopPropagation();
-          closeRef.current();
+          requestClose();
         }
         return;
       }
@@ -101,7 +110,8 @@ export default function Modal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-[2px] sm:p-4"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !busy) onClose();
+        // A click outside only closes a dialog that has nothing typed in it
+        if (e.target === e.currentTarget && !busy && !dirtyRef.current) onClose();
       }}
     >
       <div
@@ -121,7 +131,7 @@ export default function Modal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             disabled={busy}
             aria-label="Close dialog"
             className={`-mr-2 -mt-1 inline-flex ${dense ? 'h-10 w-10' : 'h-11 w-11'} shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-danger hover:text-white disabled:opacity-50`}
@@ -130,7 +140,11 @@ export default function Modal({
           </button>
         </div>
 
-        <div data-modal-body className={`min-h-0 flex-1 overflow-y-auto overscroll-contain ${dense ? 'px-5 py-3' : 'px-6 py-5'}`}>
+        <div
+          data-modal-body
+          onInputCapture={() => { dirtyRef.current = true; }}
+          onChangeCapture={() => { dirtyRef.current = true; }}
+          className={`min-h-0 flex-1 overflow-y-auto overscroll-contain ${dense ? 'px-5 py-3' : 'px-6 py-5'}`}>
           {children}
         </div>
 

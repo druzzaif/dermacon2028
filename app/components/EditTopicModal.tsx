@@ -1,13 +1,14 @@
 'use client';
 
 import { sortTopicPeople } from '../lib/topicPeople';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../supabase';
 import { generatePDFData, generatePDFForSession, removeConfirmation, resequenceSession } from '../actions';
 import DeleteTopicDialog from './DeleteTopicDialog';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import Badge from './Badge';
 import Modal from './Modal';
+import GroupChoiceDialog, { type GroupChoice } from './GroupChoiceDialog';
 import Field, { inputCompactCls } from './Field';
 import { AlertIcon, CheckIcon, CloseIcon } from './Icons';
 import { TimeRange } from './TimeField';
@@ -32,6 +33,14 @@ type Conflict = {
   otherDate: string;
   otherStart: string;
   otherEnd: string;
+};
+
+type SiblingTopic = {
+  id: string;
+  topic_title: string | null;
+  sequence_no: number | null;
+  start_time: string | null;
+  end_time: string | null;
 };
 
 function isTbdFacultyName(name: string | null | undefined): boolean {
@@ -88,12 +97,26 @@ export default function EditTopicModal({
   const [facultyLinks, setFacultyLinks] = useState<FacultyLink[]>([]);
   const [topicTitle, setTopicTitle] = useState(topic.topic_title || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [allPanel, setAllPanel] = useState<boolean>(!!topic.all_faculty_panel);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [overlapBlocked, setOverlapBlocked] = useState(false);
   const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [askGroup, setAskGroup] = useState(false);
+
+  // Which part of each person's schedule goes into the PDFs: asked first (everything / workshops / scientific)
+  async function makeFacultyPdfs(ids: string[], group: GroupChoice) {
+    setPdfBusy(true); setPdfError(null);
+    const results = [];
+    for (const id of ids) results.push(await generatePDFData(id, { group }));
+    const ok = results.filter((r) => r.success);
+    setPdfBusy(false);
+    if (ok.length === 0) setPdfError((results[0] as any)?.message || 'No PDFs were generated. Try again.');
+    else setPdfUrl((ok[0] as any).url);
+  }
   const [pdfError, setPdfError] = useState<string | null>(null);
   const skipConflictCheck = useRef(false);
 
@@ -124,6 +147,32 @@ export default function EditTopicModal({
   // "HH:MM:00" (24-hour) strings, shown as 12-hour time with AM/PM
   const [startTime, setStartTime] = useState<string>(topic.start_time || '');
   const [endTime, setEndTime] = useState<string>(topic.end_time || '');
+
+  // Other topics in this session, used to warn when the edited time overlaps one
+  const [siblingTopics, setSiblingTopics] = useState<SiblingTopic[]>([]);
+
+  useEffect(() => {
+    async function loadSiblingTopics() {
+      const { data } = await supabase
+        .from('session_topics')
+        .select('id, topic_title, sequence_no, start_time, end_time')
+        .eq('session_id', session.id)
+        .neq('id', topic.id) // exclude the topic being edited
+        .order('sequence_no', { ascending: true });
+      if (data) setSiblingTopics(data as any);
+    }
+    loadSiblingTopics();
+  }, [session.id, topic.id]);
+
+  const invalidRange = !startTime || !endTime || endTime <= startTime;
+
+  // Overlap = the two time ranges share any minutes (touching ends do not count)
+  const topicOverlaps = useMemo(() => {
+    if (invalidRange) return [];
+    return siblingTopics.filter(
+      (t) => t.start_time && t.end_time && startTime < t.end_time && t.start_time < endTime
+    );
+  }, [siblingTopics, startTime, endTime, invalidRange]);
 
   useEffect(() => {
     async function loadFaculty() {
@@ -277,6 +326,7 @@ export default function EditTopicModal({
     setIsSaving(true);
     setError(null);
     setConflicts([]);
+    setOverlapBlocked(false);
 
     if (!topicTitle.trim()) {
       setError('Enter the topic title.');
@@ -294,12 +344,14 @@ export default function EditTopicModal({
       return;
     }
 
-    // "Save anyway" skips the check once; otherwise it would find the same overlap again
+    // "Save anyway" skips the checks once; otherwise they would find the same overlap again
     const skip = skipConflictCheck.current;
     skipConflictCheck.current = false;
     const conflictsFound = skip ? [] : await checkConflicts(startTime, endTime);
-    if (conflictsFound.length > 0) {
+    const overlapFound = !skip && topicOverlaps.length > 0;
+    if (conflictsFound.length > 0 || overlapFound) {
       setConflicts(conflictsFound);
+      setOverlapBlocked(overlapFound);
       setIsSaving(false);
       return;
     }
@@ -310,6 +362,7 @@ export default function EditTopicModal({
         topic_title: topicTitle.trim(),
         start_time: startTime,
         end_time: endTime,
+        all_faculty_panel: allPanel,
       })
       .eq('id', topic.id);
 
@@ -365,6 +418,7 @@ export default function EditTopicModal({
   function forceSaveAnyway() {
     skipConflictCheck.current = true;
     setConflicts([]);
+    setOverlapBlocked(false);
     const form = document.getElementById('edit-topic-form') as HTMLFormElement | null;
     if (form) form.requestSubmit();
   }
@@ -392,20 +446,17 @@ export default function EditTopicModal({
             )}
           </div>
           {pdfError && <p role="alert" className="rounded-lg bg-danger-tint p-3 text-sm text-danger-strong">{pdfError}</p>}
+            {askGroup && (
+              <GroupChoiceDialog
+                onClose={() => setAskGroup(false)}
+                onChoose={(g) => { setAskGroup(false); makeFacultyPdfs(newIds.length ? newIds : facultyLinks.map((l) => l.faculty_id), g); }}
+              />
+            )}
           <div className="grid gap-2 sm:grid-cols-2">
             <button
               type="button"
               disabled={pdfBusy || facultyLinks.length === 0}
-              onClick={async () => {
-                setPdfBusy(true); setPdfError(null);
-                const ids = newIds.length ? newIds : facultyLinks.map((l) => l.faculty_id);
-                const results = [];
-                for (const id of ids) results.push(await generatePDFData(id));
-                const ok = results.filter((r) => r.success);
-                setPdfBusy(false);
-                if (ok.length === 0) setPdfError('No PDFs were generated. Try again.');
-                else setPdfUrl((ok[0] as any).url);
-              }}
+              onClick={() => setAskGroup(true)}
               className={primaryBtn}
             >
               {newIds.length ? 'PDF for new faculty' : 'PDF for this topic’s faculty'}
@@ -518,6 +569,14 @@ export default function EditTopicModal({
               </div>
             )}
 
+            <label className="mb-2 flex items-start gap-2 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink">
+              <input type="checkbox" checked={allPanel} onChange={(e) => setAllPanel(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                <span className="font-medium">All faculty of this session are panelists</span>
+                <span className="block text-xs text-muted">Shown as “All faculty” in the schedule. Each faculty member of this session gets this topic as Panelist in their email and PDF.</span>
+              </span>
+            </label>
+
             <Field label="Search faculty by name or email" srOnlyLabel>
               {(p) => (
                 <input
@@ -608,11 +667,47 @@ export default function EditTopicModal({
           </section>
         </div>
 
-        {conflicts.length > 0 && (
-          <div role="alert" className="space-y-2 rounded-xl border border-danger-line bg-danger-tint p-3">
-            <p className="flex items-center gap-2 text-sm font-semibold text-danger-strong">
-              <AlertIcon width={16} height={16} /> Overlap: this faculty is already booked at that time.
+        {/* Live warning while the time is being edited */}
+        {!overlapBlocked && topicOverlaps.length > 0 && (
+          <div role="status" aria-live="polite" className="rounded-lg border border-warning-line bg-warning-tint p-3 text-sm text-warning">
+            <p className="flex items-center gap-2 font-semibold">
+              <AlertIcon width={16} height={16} />
+              This time overlaps {topicOverlaps.length === 1 ? 'another topic' : `${topicOverlaps.length} other topics`} in this session.
             </p>
+            <p className="mt-1">You can still save, and you’ll be asked to confirm.</p>
+          </div>
+        )}
+
+        {/* Shown after a blocked save: same-session overlap and/or faculty double-booking */}
+        {(conflicts.length > 0 || (overlapBlocked && topicOverlaps.length > 0)) && (
+          <div role="alert" className="space-y-3 rounded-xl border border-danger-line bg-danger-tint p-3">
+            {overlapBlocked && topicOverlaps.length > 0 && (
+              <div className="space-y-2">
+                <p className="flex items-center gap-2 text-sm font-semibold text-danger-strong">
+                  <AlertIcon width={16} height={16} /> This topic overlaps another topic in {session.session_code}.
+                </p>
+                <ul className="space-y-1">
+                  {topicOverlaps.map((t) => {
+                    const same = t.start_time === startTime && t.end_time === endTime;
+                    return (
+                      <li key={t.id} className="rounded-lg border border-danger-line bg-white px-2.5 py-1.5 text-sm text-danger-strong">
+                        <span className="tnum font-semibold">
+                          {formatTimeAmPm(t.start_time!)} – {formatTimeAmPm(t.end_time!)}
+                        </span>
+                        {t.sequence_no != null && <> · No. {t.sequence_no}</>}
+                        {' '}· {t.topic_title || 'Untitled topic'}
+                        {same && <span className="block text-xs">Same time slot. This is fine for a co-presented topic.</span>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+            {conflicts.length > 0 && (
+              <p className="flex items-center gap-2 text-sm font-semibold text-danger-strong">
+                <AlertIcon width={16} height={16} /> Overlap: this faculty is already booked at that time.
+              </p>
+            )}
             <ul className="space-y-1">
               {conflicts.map((c, i) => (
                 <li key={i} className="rounded-lg border border-danger-line bg-white px-2.5 py-1.5 text-sm text-danger-strong">
@@ -622,7 +717,7 @@ export default function EditTopicModal({
               ))}
             </ul>
             <div className="flex flex-wrap justify-end gap-2">
-              <button type="button" onClick={() => setConflicts([])} className={secondaryBtn}>Go back and fix</button>
+              <button type="button" onClick={() => { setConflicts([]); setOverlapBlocked(false); }} className={secondaryBtn}>Go back and fix</button>
               <button type="button" onClick={forceSaveAnyway}
                 className="inline-flex h-10 items-center rounded-lg bg-danger px-5 text-sm font-medium text-white hover:bg-danger-strong">
                 Save anyway

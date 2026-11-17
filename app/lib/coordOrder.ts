@@ -1,7 +1,10 @@
+// The three coordinator roles stored in session_coordinators.role.
+export const LEAD_COORDINATOR_ROLE = 'Lead Coordinator';
+
 // Coordinators appear in the order the lead coordinator arranged them.
 // That order is stored in session_coordinators.coord_id (1, 2, 3 …).
 // Rows with no number yet (older data) fall back to National → Lead → Local.
-const ROLE_PRIORITY: Record<string, number> = { National: 1, 'Lead Coordinator': 2, Local: 3 };
+const ROLE_PRIORITY: Record<string, number> = { National: 1, [LEAD_COORDINATOR_ROLE]: 2, Local: 3 };
 
 export function sortCoordinators<T extends { coord_id?: number | null; role?: string | null }>(rows: T[]): T[] {
   return rows

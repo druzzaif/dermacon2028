@@ -6,13 +6,17 @@ import dynamic from 'next/dynamic';
 // Modals load only when opened
 const EditFacultyModal = dynamic(() => import('../components/EditFacultyModal'));
 const FacultyProfileModal = dynamic(() => import('../components/FacultyProfileModal'));
+const PdfOptionsDialog = dynamic(() => import('../components/PdfOptionsDialog'));
+const FacultyListPrintDialog = dynamic(() => import('../components/FacultyListPrintDialog'));
+const SendEmailsDialog =dynamic(() => import('../components/SendEmailsDialog'));
+const SendWhatsAppDialog = dynamic(() => import('../components/SendWhatsAppDialog'));
 import Badge, { roleTone } from '../components/Badge';
 import SyncButton from '../components/SyncButton';
-import { DownloadIcon, SearchIcon } from '../components/Icons';
+import { DownloadIcon, MailIcon, SearchIcon, WhatsAppIcon } from '../components/Icons';
 import { Button, EmptyState, PageHeader, PageShell, SkeletonLines, buttonCls, cardCls, thCls, theadRowCls } from '../components/ui';
 import { inputCls } from '../components/Field';
 import { roleName } from '../lib/topicPeople';
-import { SHARED_VENUE_MAP_PATH } from '../lib/venueRooms.mjs';
+import { sendThankYouToFaculty } from '../actions';
 
 type CountFilter = 'all' | '0' | '1' | '2' | '3+' | '4+' | '5+';
 
@@ -106,14 +110,59 @@ function matchesCount(assignmentCount: number, filter: CountFilter): boolean {
   }
 }
 
+const isWorkshopCode = (code: string | null | undefined) => /^(WS|MC)/i.test(String(code || '').trim());
+
+// Every session this person is linked to (topics and whole-session chairing)
+function sessionsOf(doc: FacultyRow): { code: string; date: string; hall: string; confirmed: boolean }[] {
+  const out: { code: string; date: string; hall: string; confirmed: boolean }[] = [];
+  for (const ft of doc.faculty_topics || []) {
+    const s = ft.session_topics?.conference_sessions;
+    out.push({ code: s?.session_code || '', date: s?.session_date || '', hall: s?.hall || '', confirmed: !!ft.confirmed });
+  }
+  for (const c of doc.session_chairs || []) {
+    const s = c.conference_sessions;
+    out.push({ code: s?.session_code || '', date: s?.session_date || '', hall: s?.hall || '', confirmed: !!c.confirmed });
+  }
+  return out;
+}
+
+// Calendar day in India time, which is how the Emails page counts "today"
+function istDay(iso: string | null | undefined): string {
+  if (!iso) return '';
+  return new Date(new Date(iso).getTime() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
+}
+function formatDay(d: string): string {
+  const dt = new Date(`${d}T00:00:00`);
+  return Number.isNaN(dt.getTime()) ? d : dt.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+// Compact filter dropdowns
+const selCls = 'h-8 w-auto rounded-md border border-field bg-white py-0 pl-2 pr-6 text-xs text-ink';
+
+type TypeFilter = 'all' | 'workshop' | 'scientific';
+type ConfirmFilter = 'all' | 'all-confirmed' | 'some-unconfirmed' | 'none-confirmed' | 'partial' | 'any-confirmed';
+type EmailFilter = 'all' | 'emailed' | 'not-emailed' | 'today';
+type WhatsAppFilter = 'all' | 'sent' | 'not-sent';
+
 export default function FacultyDirectoryPage() {
   const [faculty, setFaculty] = useState<FacultyRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [editingFaculty, setEditingFaculty] = useState<FacultyRow | null>(null);
   const [viewingProfile, setViewingProfile] = useState<FacultyRow | null>(null);
+  const [pdfFor, setPdfFor] = useState<FacultyRow | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [countFilter, setCountFilter] = useState<CountFilter>('all');
+  const [dayFilter, setDayFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [hallFilter, setHallFilter] = useState('all');
+  const [confirmFilter, setConfirmFilter] = useState<ConfirmFilter>('all');
+  const [emailFilter, setEmailFilter] = useState<EmailFilter>('all');
+  const [whatsappFilter, setWhatsappFilter] = useState<WhatsAppFilter>('all');
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [emailing, setEmailing] = useState(false);
+  const [whatsapping, setWhatsapping] = useState<string[] | null>(null);
+  const [printing, setPrinting] = useState(false);
   const [revealedContacts, setRevealedContacts] = useState<Set<string>>(() => new Set());
   useEffect(() => {
     async function fetchFaculty() {
@@ -137,22 +186,97 @@ export default function FacultyDirectoryPage() {
     if (data) setFaculty(data);
   }
 
-  const filteredFaculty = useMemo(() => {
-    return faculty.filter((doc) => {
-      const q = searchTerm.toLowerCase();
-      const matchesSearch =
-        !q ||
-        doc.canonical_name?.toLowerCase().includes(q) ||
-        doc.email?.toLowerCase().includes(q);
-      if (!matchesSearch) return false;
-      return matchesCount(assignmentCountOf(doc), countFilter);
-    });
-  }, [faculty, searchTerm, countFilter]);
+  const days = useMemo(() => [...new Set(faculty.flatMap((f) => sessionsOf(f).map((x) => x.date)).filter(Boolean))].sort(), [faculty]);
+  const halls = useMemo(
+    () => [...new Set(faculty.flatMap((f) => sessionsOf(f).map((x) => x.hall)).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    [faculty],
+  );
+  const today = istDay(new Date().toISOString());
 
-  const filtersActive = Boolean(searchTerm.trim()) || countFilter !== 'all';
+  const filteredFaculty = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return faculty.filter((doc) => {
+      const sessions = sessionsOf(doc);
+      if (q) {
+        const hay = [doc.canonical_name, doc.email, ...sessions.map((s) => s.code)].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (!matchesCount(assignmentCountOf(doc), countFilter)) return false;
+      // day, type and hall must all hold for the SAME session
+      if (dayFilter !== 'all' || typeFilter !== 'all' || hallFilter !== 'all') {
+        const ok = sessions.some((s) =>
+          (dayFilter === 'all' || s.date === dayFilter) &&
+          (hallFilter === 'all' || s.hall === hallFilter) &&
+          (typeFilter === 'all' || (typeFilter === 'workshop') === isWorkshopCode(s.code)));
+        if (!ok) return false;
+      }
+      if (confirmFilter !== 'all') {
+        const total = sessions.length;
+        const done = sessions.filter((s) => s.confirmed).length;
+        if (confirmFilter === 'all-confirmed' && !(total > 0 && done === total)) return false;
+        if (confirmFilter === 'some-unconfirmed' && !(done < total)) return false;
+        if (confirmFilter === 'none-confirmed' && !(total > 0 && done === 0)) return false;
+        if (confirmFilter === 'partial' && !(done > 0 && done < total)) return false;
+        if (confirmFilter === 'any-confirmed' && !(done > 0)) return false;
+      }
+      if (emailFilter === 'emailed' && !doc.email_sent) return false;
+      if (emailFilter === 'not-emailed' && doc.email_sent) return false;
+      if (emailFilter === 'today' && !(doc.email_sent && istDay(doc.email_sent_date) === today)) return false;
+      if (whatsappFilter === 'sent' && !doc.whatsapp_sent) return false;
+      if (whatsappFilter === 'not-sent' && doc.whatsapp_sent) return false;
+      return true;
+    });
+  }, [faculty, searchTerm, countFilter, dayFilter, typeFilter, hallFilter, confirmFilter, emailFilter, whatsappFilter, today]);
+
+  const filtersActive = Boolean(searchTerm.trim()) || countFilter !== 'all' || dayFilter !== 'all' || typeFilter !== 'all'
+    || hallFilter !== 'all' || confirmFilter !== 'all' || emailFilter !== 'all' || whatsappFilter !== 'all';
   function clearFilters() {
     setSearchTerm('');
     setCountFilter('all');
+    setDayFilter('all');
+    setTypeFilter('all');
+    setHallFilter('all');
+    setConfirmFilter('all');
+    setEmailFilter('all');
+    setWhatsappFilter('all');
+  }
+
+  // A row can be ticked when there is at least one way to reach the person:
+  // email for the email dialog, phone for the WhatsApp dialog.
+  const selectable = filteredFaculty.filter((f) => (f.email || f.phone) && assignmentCountOf(f) > 0);
+  const allShownSelected = selectable.length > 0 && selectable.every((f) => selected.has(f.id));
+  function toggleSelected(id: string) {
+    setSelected((cur) => { const n = new Set(cur); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  }
+  function toggleAllShown() {
+    setSelected((cur) => {
+      const n = new Set(cur);
+      if (allShownSelected) selectable.forEach((f) => n.delete(f.id));
+      else selectable.forEach((f) => n.add(f.id));
+      return n;
+    });
+  }
+  // Never-emailed faculty start as "new email", the rest as "schedule update"; the dialog lets you change each one
+  const emailItems = faculty
+    .filter((f) => selected.has(f.id) && f.email && assignmentCountOf(f) > 0)
+    .map((f) => ({ facultyId: f.id, kind: (f.email_sent ? 'update' : 'first') as 'first' | 'update' }));
+  // Only people with a phone get the WhatsApp reminder; the dialog checks the number again.
+  const whatsappIds = faculty
+    .filter((f) => selected.has(f.id) && f.phone && assignmentCountOf(f) > 0)
+    .map((f) => f.id);
+
+  const [thankingId, setThankingId] = useState<string | null>(null);
+  async function thankYou(doc: FacultyRow) {
+    if (!window.confirm(`Send the thank-you email to ${doc.canonical_name} (${doc.email})?\n\nIt lists the topics they have confirmed, with the PDF attached. Sent emails cannot be recalled.`)) return;
+    setThankingId(doc.id);
+    try {
+      const r = await sendThankYouToFaculty(doc.id);
+      window.alert(r.message || (r.success ? 'Sent.' : 'Could not send.'));
+    } catch (e: any) {
+      window.alert(e?.message || 'Could not send.');
+    } finally {
+      setThankingId(null);
+    }
   }
 
   function toggleContact(id: string) {
@@ -180,7 +304,7 @@ export default function FacultyDirectoryPage() {
           }
         />
 
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <div className="relative min-w-[16rem] flex-1 sm:max-w-md">
             <label htmlFor="faculty-search" className="sr-only">
               Search faculty by name or email
@@ -190,7 +314,7 @@ export default function FacultyDirectoryPage() {
               id="faculty-search"
               type="search"
               placeholder="Search name or email"
-              className={`${inputCls} pl-9`}
+              className={`${inputCls} h-8 pl-9 text-xs`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -203,7 +327,7 @@ export default function FacultyDirectoryPage() {
               id="faculty-count"
               value={countFilter}
               onChange={(e) => setCountFilter(e.target.value as CountFilter)}
-              className={`${inputCls} w-auto pr-8`}
+              className={selCls}
             >
               <option value="all">All assignment counts</option>
               <option value="0">0 assignments</option>
@@ -214,6 +338,38 @@ export default function FacultyDirectoryPage() {
               <option value="5+">5+ assignments</option>
             </select>
           </div>
+          <select aria-label="Filter by day" value={dayFilter} onChange={(e) => setDayFilter(e.target.value)} className={selCls}>
+            <option value="all">All days</option>
+            {days.map((d) => <option key={d} value={d}>{formatDay(d)}</option>)}
+          </select>
+          <select aria-label="Filter by session type" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as TypeFilter)} className={selCls}>
+            <option value="all">Workshops + scientific</option>
+            <option value="workshop">Workshops only</option>
+            <option value="scientific">Scientific sessions only</option>
+          </select>
+          <select aria-label="Filter by hall" value={hallFilter} onChange={(e) => setHallFilter(e.target.value)} className={selCls}>
+            <option value="all">All halls</option>
+            {halls.map((h) => <option key={h} value={h}>Hall {h}</option>)}
+          </select>
+          <select aria-label="Filter by confirmation" value={confirmFilter} onChange={(e) => setConfirmFilter(e.target.value as ConfirmFilter)} className={selCls}>
+            <option value="all">Any confirmation</option>
+            <option value="all-confirmed">Fully confirmed</option>
+            <option value="some-unconfirmed">Not fully confirmed</option>
+            <option value="none-confirmed">Nothing confirmed</option>
+            <option value="partial">Partially confirmed</option>
+            <option value="any-confirmed">Partial + confirmed</option>
+          </select>
+          <select aria-label="Filter by email status" value={emailFilter} onChange={(e) => setEmailFilter(e.target.value as EmailFilter)} className={selCls}>
+            <option value="all">Emailed or not</option>
+            <option value="emailed">Emailed</option>
+            <option value="not-emailed">Not emailed</option>
+            <option value="today">Emailed today</option>
+          </select>
+          <select aria-label="Filter by WhatsApp status" value={whatsappFilter} onChange={(e) => setWhatsappFilter(e.target.value as WhatsAppFilter)} className={selCls}>
+            <option value="all">WhatsApp: any</option>
+            <option value="sent">WhatsApp sent</option>
+            <option value="not-sent">WhatsApp not sent</option>
+          </select>
           {filtersActive && (
             <Button variant="quiet" onClick={clearFilters}>Clear filters</Button>
           )}
@@ -222,16 +378,35 @@ export default function FacultyDirectoryPage() {
           </p>
         </div>
 
+        <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
+          <label className="flex min-h-9 items-center gap-2 font-medium text-ink">
+            <input type="checkbox" checked={allShownSelected} disabled={selectable.length === 0} onChange={toggleAllShown} />
+            {filtersActive ? `Select all shown (${selectable.length})` : `Select all (${selectable.length})`}
+          </label>
+          <span role="status" aria-live="polite" className="tnum text-ink-2"><strong className="text-ink">{selected.size}</strong> selected</span>
+          {selected.size > 0 && <Button variant="quiet" onClick={() => setSelected(new Set())}>Clear selection</Button>}
+          <Button variant="primary" disabled={emailItems.length === 0} onClick={() => setEmailing(true)}>
+            <MailIcon /> Email selected…
+          </Button>
+          <Button disabled={whatsappIds.length === 0} onClick={() => setWhatsapping(whatsappIds)} title="Send the approved WhatsApp reminder to the ticked people who have a phone number">
+            <WhatsAppIcon /> WhatsApp selected…
+          </Button>
+          <Button onClick={() => setPrinting(true)} disabled={filteredFaculty.length === 0} title="Print the list as shown">
+            Print list ({filteredFaculty.length})
+          </Button>
+        </div>
+
         <div className={`overflow-x-auto ${cardCls}`}>
-          <table className="w-full min-w-[760px] border-collapse text-left">
+          <table className="w-full min-w-[760px] table-fixed border-collapse text-left">
             <caption className="sr-only">
               Faculty directory. Select a name to view the profile.
             </caption>
             <thead>
               <tr className={theadRowCls}>
-                <th scope="col" className={`${thCls} w-[35%] px-3 lg:px-5`}>Name</th>
-                <th scope="col" className={`${thCls} w-[47%] px-3 lg:px-5`}>Roles · session assignments</th>
-                <th scope="col" className={`${thCls} w-[18%] px-3 lg:px-5 text-right`}>
+                <th scope="col" className={`${thCls} w-10 px-3`}><span className="sr-only">Select</span></th>
+                <th scope="col" className={`${thCls} w-[30%] px-3 lg:px-5`}>Name</th>
+                <th scope="col" className={`${thCls} w-[46%] px-3 lg:px-5`}>Roles · session assignments</th>
+                <th scope="col" className={`${thCls} w-[20%] px-3 lg:px-5 text-right`}>
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
@@ -239,13 +414,13 @@ export default function FacultyDirectoryPage() {
             <tbody className="divide-y divide-line" aria-busy={loading}>
               {loading ? (
                 <tr>
-                  <td className="px-5 py-4" colSpan={3}>
+                  <td className="px-5 py-4" colSpan={4}>
                     <SkeletonLines rows={6} />
                   </td>
                 </tr>
               ) : filteredFaculty.length === 0 ? (
                 <tr>
-                  <td colSpan={3}>
+                  <td colSpan={4}>
                     <EmptyState
                       title={faculty.length === 0 ? 'No faculty yet' : 'No faculty match'}
                       action={filtersActive ? <Button onClick={clearFilters}>Clear filters</Button> : undefined}
@@ -274,6 +449,15 @@ export default function FacultyDirectoryPage() {
                       onClick={() => setViewingProfile(doc)}
                       className="cursor-pointer transition-colors hover:bg-slate-50"
                     >
+                      <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          disabled={(!doc.email && !doc.phone) || assignmentCountOf(doc) === 0}
+                          checked={selected.has(doc.id)}
+                          onChange={() => toggleSelected(doc.id)}
+                          aria-label={`Select ${doc.canonical_name}`}
+                        />
+                      </td>
                       <td className="px-3 py-2.5 lg:px-5">
                         <div className="flex items-center gap-3">
                           <div
@@ -287,11 +471,19 @@ export default function FacultyDirectoryPage() {
                               <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); setViewingProfile(doc); }}
-                                className="whitespace-nowrap rounded text-left font-medium text-ink hover:text-accent hover:underline"
+                                className="block max-w-full truncate rounded text-left font-medium text-ink hover:text-accent hover:underline"
                                 title={doc.canonical_name}
                               >
                                 {doc.canonical_name}
                               </button>
+                              {doc.email_sent && (
+                                <span className="mt-0.5 block text-[11px] leading-4 text-muted">
+                                  {istDay(doc.email_sent_date) === today ? 'Emailed today' : `Emailed ${doc.email_sent_date ? new Date(doc.email_sent_date).toLocaleDateString('en-GB') : ''}`}
+                                </span>
+                              )}
+                              {doc.whatsapp_sent && (
+                                <span className="mt-0.5 block text-[11px] leading-4 text-muted">WhatsApp sent</span>
+                              )}
                               {contactRevealed && (
                                 <div className="mt-1 space-y-0.5 text-xs text-ink-2">
                                   {doc.email ? (
@@ -338,7 +530,7 @@ export default function FacultyDirectoryPage() {
                         {roleSessions.length === 0 ? (
                           <span className="text-sm text-muted">No roles yet</span>
                         ) : (
-                          <ul className="flex flex-nowrap gap-3 overflow-x-auto py-0.5">
+                          <ul className="flex flex-wrap gap-x-3 gap-y-1.5 py-0.5">
                             {roleSessions.map((x) => {
                               const roleLabel = x.role === 'Moderator'
                                 ? 'MOD'
@@ -363,11 +555,17 @@ export default function FacultyDirectoryPage() {
                                       {roleLabel} {x.sessionCode} {x.total}
                                     </span>
                                   </Badge>
-                                  {fullyConfirmed && (
-                                    <span className="mt-0.5 block pl-1 text-[11px] leading-4 text-emerald-700">
-                                      Confirmed
+                                  {fullyConfirmed ? (
+                                    
+                                    <span className="mt-0.5 block rounded px-1 py-0.5 text-[14px] font-medium leading-4 text-green-600">
+                                    Confirmed
                                     </span>
-                                  )}
+                                    
+                                  ) : doc.email_sent ? (
+                                    <span className="mt-0.5 block pl-1 text-[14px] font-medium leading-4 tracking-wide text-yellow-600">
+  Emailed
+</span>
+                                  ) : null}
                                 </li>
                               );
                             })}
@@ -377,17 +575,35 @@ export default function FacultyDirectoryPage() {
 
                       <td className="px-3 py-2.5 lg:px-5 text-right">
                         <div className="flex justify-end gap-1">
-                          <a
-                            href={SHARED_VENUE_MAP_PATH}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className={buttonCls('quiet', 'sm')}
-                            title="Open shared venue map"
-                            aria-label="Open shared venue map"
+                          <Button
+                            variant="quiet"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); setPdfFor(doc); }}
+                            title={`Generate PDF for ${doc.canonical_name}`}
+                            aria-label={`Generate PDF for ${doc.canonical_name}`}
                           >
-                            Map
-                          </a>
+                            PDF
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            size="sm"
+                            disabled={!doc.phone}
+                            onClick={(e) => { e.stopPropagation(); setWhatsapping([doc.id]); }}
+                            title={doc.phone ? `Send the WhatsApp reminder to ${doc.canonical_name}` : `${doc.canonical_name} has no phone number`}
+                            aria-label={doc.phone ? `Send WhatsApp reminder to ${doc.canonical_name}` : `No phone number for ${doc.canonical_name}`}
+                          >
+                            WhatsApp
+                          </Button>
+                          <Button
+                            variant="quiet"
+                            size="sm"
+                            disabled={!doc.email || thankingId === doc.id}
+                            onClick={(e) => { e.stopPropagation(); thankYou(doc); }}
+                            title={`Send the thank-you (participation confirmed) email to ${doc.canonical_name}`}
+                            aria-label={`Send thank-you to ${doc.canonical_name}`}
+                          >
+                            {thankingId === doc.id ? 'Sending…' : 'Thank you'}
+                          </Button>
                           <Button
                             variant="quiet"
                             size="sm"
@@ -413,6 +629,41 @@ export default function FacultyDirectoryPage() {
           onClose={() => setEditingFaculty(null)}
           onSaved={refreshFaculty}
         />
+      )}
+
+      {emailing && (
+        <SendEmailsDialog
+          items={emailItems}
+          onClose={() => setEmailing(false)}
+          onDone={() => { refreshFaculty(); }}
+        />
+      )}
+
+      {whatsapping && (
+        <SendWhatsAppDialog
+          facultyIds={whatsapping}
+          onClose={() => setWhatsapping(null)}
+          onDone={() => { refreshFaculty(); }}
+        />
+      )}
+
+      {printing && (
+        <FacultyListPrintDialog
+          rows={filteredFaculty.map((f) => ({
+            name: f.canonical_name,
+            email: f.email || '',
+            phone: f.phone || '',
+            roles: roleSessionBreakdown(f)
+              .map((x) => `${x.role === 'Moderator' ? 'MOD' : x.role === 'Panelist' ? 'PANEL' : x.role === 'Session chair' || x.role === 'Chairperson' ? 'CHAIR' : x.role} ${x.sessionCode} (${x.total})`)
+              .join(', '),
+          }))}
+          filterNote={filtersActive ? 'filtered list' : 'all faculty'}
+          onClose={() => setPrinting(false)}
+        />
+      )}
+
+      {pdfFor && (
+        <PdfOptionsDialog facultyId={pdfFor.id} name={pdfFor.canonical_name} onClose={() => setPdfFor(null)} />
       )}
 
       {viewingProfile && (

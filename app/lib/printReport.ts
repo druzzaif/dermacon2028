@@ -5,7 +5,7 @@ import { getSupabaseServer } from '../supabaseServer';
 import { formatTime12, toMinutes } from './time';
 import { findEmptySlots, type EmptySlot } from './slots';
 import { sortCoordinators } from './coordOrder';
-import { sortTopicPeople } from './topicPeople';
+import { sortTopicPeople, visiblePeople } from './topicPeople';
 
 export type PrintRequest = {
   sessionIds: string[];
@@ -63,7 +63,7 @@ async function loadProgramme() {
   const { data, error } = await getSupabaseServer()
     .from('conference_sessions')
     .select(`id, session_code, session_name, session_type, session_date, hall, start_time, end_time,
-      session_topics ( id, topic_title, sequence_no, start_time, end_time,
+      session_topics ( id, topic_title, sequence_no, start_time, end_time, all_faculty_panel,
         faculty_topics ( role, confirmed, sort_order, faculty ( ${person} ) ) ),
       session_coordinators ( role, coord_id, faculty ( ${person} ) ),
       session_chairs ( sort_order, faculty ( ${person} ) )`)
@@ -142,10 +142,11 @@ function topicRows(s: any, o: PrintRequest) {
     const before = slots.find((g) => g.beforeTopicId !== null && !slotsPrinted.has(g.start) && toMinutes(g.end) === toMinutes(t.start_time));
     if (before) slotsPrinted.add(before.start);
     const links = t.faculty_topics || [];
-    const speakers = sortTopicPeople(links.filter((ft: any) => ft.role !== 'Chairperson'));
+    const speakers = visiblePeople(t, sortTopicPeople(links.filter((ft: any) => ft.role !== 'Chairperson')));
     const chairs = links.filter((ft: any) => ft.role === 'Chairperson');
-    const spHtml = speakers.length
-      ? speakers.map((ft: any, i: number) => personLine(ft.faculty, ft.role && ft.role !== 'Faculty' ? roleLabel(ft.role) : '', o, ft.confirmed, speakers.length > 1 ? `${i + 1}. ` : '')).join('')
+    const allHtml = t.all_faculty_panel ? '<div><strong>All faculty</strong> (Panelists)</div>' : '';
+    const spHtml = speakers.length || allHtml
+      ? allHtml + speakers.map((ft: any, i: number) => personLine(ft.faculty, ft.role && ft.role !== 'Faculty' ? roleLabel(ft.role) : '', o, ft.confirmed, speakers.length > 1 ? `${i + 1}. ` : '')).join('')
       : '<span class="bad">No speaker</span>';
     const chHtml = chairs.length ? chairs.map((ft: any) => personLine(ft.faculty, '', o, ft.confirmed)).join('') : '<span class="muted">—</span>';
     return `${before ? slotRow(before) : ''}<tr>
@@ -228,7 +229,7 @@ function missingFor(s: any) {
   if (!s.session_topics.length) issues.push('No topics yet');
   s.session_topics.forEach((t: any) => {
     const real = (t.faculty_topics || []).filter((ft: any) => ft.role !== 'Chairperson' && !isTbd(ft.faculty));
-    if (!real.length) issues.push(`No. ${t.sequence_no ?? '?'} – ${t.topic_title || '(no title)'}: needs a speaker`);
+    if (!real.length && !t.all_faculty_panel) issues.push(`No. ${t.sequence_no ?? '?'} – ${t.topic_title || '(no title)'}: needs a speaker`);
     if (t.start_time && t.end_time && t.end_time <= t.start_time) issues.push(`No. ${t.sequence_no ?? '?'} – ${t.topic_title || '(no title)'}: ends before it starts`);
   });
   return issues;
@@ -454,7 +455,8 @@ export async function buildFacultySimpleHtml(o: FacultyPrintRequest) {
       String(a.s.session_date || '9999').localeCompare(String(b.s.session_date || '9999')) ||
       String(a.t.start_time || '').localeCompare(String(b.t.start_time || '')));
 
-    const leadOf = (s: any) => s.session_coordinators.find((c: any) => c.role === 'Lead Coordinator' && !isTbd(c.faculty))?.faculty;
+    // Every lead coordinator of a session, in the order arranged in the Edit coordinators dialog
+    const leadsOf = (s: any) => s.session_coordinators.filter((c: any) => c.role === 'Lead Coordinator' && !isTbd(c.faculty));
     const nConf = rows.filter((r) => r.confirmed).length;
 
     const contactLine = o.contacts
@@ -471,12 +473,12 @@ export async function buildFacultySimpleHtml(o: FacultyPrintRequest) {
         <colgroup><col style="width:13%"><col style="width:27%"><col style="width:10%"><col style="width:34%"><col style="width:16%"></colgroup>
         <thead><tr><th>Time</th><th>Session</th><th>Hall</th><th>Topic</th><th>Role</th></tr></thead>
         <tbody>${list.map((r) => {
-          const lead = o.contacts ? leadOf(r.s) : null;
+          const leads = o.contacts ? leadsOf(r.s) : [];
           return `<tr>
             <td class="c-time"><span class="hl">${esc(t12(r.t.start_time))}</span><br>${esc(t12(r.t.end_time))}</td>
             <td><span class="code-sm">${esc(printCode(r.s.session_code))}</span> ${esc(r.s.session_name || '')}
               <div class="muted">${esc(range(r.s.start_time, r.s.end_time))}</div>
-              ${lead ? `<div class="contact">Coordinator: ${esc(lead.canonical_name)}${lead.phone ? ` · ${esc(lead.phone)}` : ''}</div>` : ''}</td>
+              ${leads.length ? `<div class="contact">Coordinator${leads.length > 1 ? 's' : ''}: ${leads.map((c: any) => `${esc(c.faculty.canonical_name)}${c.faculty.phone ? ` · ${esc(c.faculty.phone)}` : ''}`).join(' | ')}</div>` : ''}</td>
             <td><strong>${realHall(r.s.hall) ? esc(r.s.hall) : '<span class="bad">Not set</span>'}</strong></td>
             <td class="c-topic">${esc(r.t.topic_title || '(no title)')}</td>
             <td>${esc(roleLabel(r.role))}${o.confirmed ? (r.confirmed ? '<div class="tick">✓ Confirmed</div>' : '<div class="muted">Not confirmed</div>') : ''}</td>

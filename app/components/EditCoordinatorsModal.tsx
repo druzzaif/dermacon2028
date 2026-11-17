@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
 import Modal from './Modal';
-import Badge, { roleTone } from './Badge';
-import { inputCls } from './Field';
 import { CloseIcon, GripIcon } from './Icons';
 import { Button, Notice } from './ui';
+
+const ROLE_CHOICES = ['National', 'Lead Coordinator', 'Local'];
+
+const coordinatorInputCls =
+  'block h-8 w-full min-w-0 rounded-md border border-field bg-white px-2 text-xs text-ink placeholder:text-muted';
 
 export default function EditCoordinatorsModal({
   session,
@@ -27,6 +30,12 @@ export default function EditCoordinatorsModal({
   const [error, setError] = useState<string | null>(null);
   // Row being dragged (its position in the list), for drag-and-drop reordering
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  // While typing, keep the matching names in view (they sit in the page, above the Save bar)
+  useEffect(() => {
+    if (searchFaculty) resultsRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [searchFaculty]);
 
   useEffect(() => {
     async function loadFaculty() {
@@ -56,6 +65,11 @@ export default function EditCoordinatorsModal({
     setError(null);
     setCoordinators([...coordinators, newCoord]);
     setSearchFaculty('');
+  }
+
+  // Change the role of someone already in the list (National / Lead Coordinator / Local)
+  function changeRole(faculty_id: string, role: string) {
+    setCoordinators(coordinators.map((c) => ((c.faculty_id || c.faculty?.id) === faculty_id ? { ...c, role } : c)));
   }
 
   async function handleRemoveCoordinator(faculty_id: string) {
@@ -113,30 +127,31 @@ export default function EditCoordinatorsModal({
     <Modal
       title="Edit coordinators"
       subtitle={`${session.session_code} – ${session.session_name}`}
-      size="md"
+      size="sm"
+      dense
       busy={isSaving}
       onClose={onClose}
       footer={
         <>
-          <Button onClick={onClose} disabled={isSaving}>Cancel</Button>
-          <Button variant="primary" onClick={handleSave} busy={isSaving}>
+          <Button size="sm" onClick={onClose} disabled={isSaving}>Cancel</Button>
+          <Button size="sm" variant="primary" onClick={handleSave} busy={isSaving}>
             {isSaving ? 'Saving…' : 'Save coordinators'}
           </Button>
         </>
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-3">
         <section aria-labelledby="coord-current">
-          <div className="mb-2 flex items-baseline justify-between gap-3">
-            <h3 id="coord-current" className="text-sm font-semibold text-ink">Current coordinators</h3>
-            {coordinators.length > 1 && <p className="text-xs text-muted">Drag a row to change the order</p>}
+          <div className="mb-1 flex items-baseline justify-between gap-2">
+            <h3 id="coord-current" className="text-xs font-semibold text-ink">Current coordinators</h3>
+            {coordinators.length > 1 && <p className="text-[11px] text-muted">Drag to reorder</p>}
           </div>
           {coordinators.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-field bg-canvas p-4 text-center text-sm text-ink-2">
-              No coordinators yet. Search below to add one.
+            <p className="rounded-md border border-dashed border-field bg-canvas p-2 text-center text-xs text-ink-2">
+              No coordinators yet. Add one below.
             </p>
           ) : (
-            <ol className="space-y-1.5">
+            <ol className="space-y-1">
               {coordinators.map((c, i) => (
                 <li
                   key={c.faculty_id || c.faculty?.id || i}
@@ -145,18 +160,26 @@ export default function EditCoordinatorsModal({
                   onDragOver={(e) => { e.preventDefault(); dragOver(i); }}
                   onDragEnd={() => setDragIndex(null)}
                   onDrop={(e) => { e.preventDefault(); setDragIndex(null); }}
-                  className={`flex items-center gap-2 rounded-lg border bg-white py-1.5 pl-1.5 pr-2 transition-colors ${
+                  className={`flex items-center gap-1 rounded-md border bg-white py-1 pl-1 pr-1.5 transition-colors ${
                     dragIndex === i ? 'border-accent bg-accent-tint shadow-card' : 'border-line'
                   }`}
                 >
-                  <span className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center text-muted active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">
-                    <GripIcon />
+                  <span className="flex h-6 w-5 shrink-0 cursor-grab items-center justify-center text-muted active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">
+                    <GripIcon width={14} height={14} />
                   </span>
-                  <span className="tnum w-5 shrink-0 text-center text-sm font-semibold text-ink-2">{i + 1}</span>
+                  <span className="tnum w-4 shrink-0 text-center text-xs font-semibold text-ink-2">{i + 1}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-ink">{c.faculty?.canonical_name}</span>
+                    <span className="block truncate text-xs font-medium text-ink">{c.faculty?.canonical_name}</span>
                   </span>
-                  <Badge tone={roleTone(c.role)}>{c.role}</Badge>
+                  <select
+                    value={c.role}
+                    onChange={(e) => changeRole(c.faculty_id || c.faculty?.id, e.target.value)}
+                    aria-label={`Role of ${c.faculty?.canonical_name}`}
+                    title="Change role"
+                    className="h-7 w-[7.5rem] shrink-0 rounded-md border border-field bg-white px-1 text-[11px] text-ink"
+                  >
+                    {ROLE_CHOICES.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
                   <span className="flex shrink-0 flex-col">
                     <button type="button" onClick={() => moveCoordinator(i, -1)} disabled={i === 0}
                       aria-label={`Move ${c.faculty?.canonical_name} up`} title="Move up"
@@ -170,9 +193,9 @@ export default function EditCoordinatorsModal({
                     onClick={() => handleRemoveCoordinator(c.faculty_id || c.faculty.id)}
                     aria-label={`Remove ${c.faculty?.canonical_name}`}
                     title="Remove"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-danger hover:text-white"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-2 transition-colors hover:bg-danger hover:text-white"
                   >
-                    <CloseIcon width={18} height={18} />
+                    <CloseIcon width={15} height={15} />
                   </button>
                 </li>
               ))}
@@ -180,48 +203,46 @@ export default function EditCoordinatorsModal({
           )}
         </section>
 
-        <section aria-labelledby="coord-add" className="border-t border-line pt-4">
-          <h3 id="coord-add" className="mb-2 text-sm font-semibold text-ink">Add a coordinator</h3>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <label htmlFor="coord-role" className="mb-1.5 block text-sm font-medium text-ink">Role</label>
-              <select id="coord-role" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} className={inputCls}>
-                <option value="National">National</option>
-                <option value="Lead Coordinator">Lead Coordinator</option>
-                <option value="Local">Local</option>
+        <section aria-labelledby="coord-add" className="border-t border-line pt-2">
+          <h3 id="coord-add" className="mb-1 text-xs font-semibold text-ink">Add coordinator</h3>
+          <div className="flex min-w-0 gap-2">
+            <div className="w-32 shrink-0">
+              <label htmlFor="coord-role" className="sr-only">Coordinator role</label>
+              <select id="coord-role" title="Coordinator role" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} className={coordinatorInputCls}>
+                {ROLE_CHOICES.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
-            <div className="relative sm:col-span-2">
-              <label htmlFor="coord-search" className="mb-1.5 block text-sm font-medium text-ink">Search faculty</label>
+            <div className="relative min-w-0 flex-1">
+              <label htmlFor="coord-search" className="sr-only">Search faculty by name or email</label>
               <input
                 id="coord-search"
                 type="search"
-                placeholder="Type a name or email"
-                className={inputCls}
+                placeholder="Name or email"
+                className={coordinatorInputCls}
                 value={searchFaculty}
                 onChange={(e) => setSearchFaculty(e.target.value)}
               />
-              {searchFaculty.length > 0 && (
-                <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-line bg-white shadow-pop">
-                  {filteredFaculty.length === 0 ? (
-                    <p className="p-3 text-sm text-ink-2">No faculty found.</p>
-                  ) : (
-                    filteredFaculty.map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => handleAddCoordinator(f)}
-                        className="block w-full border-b border-line px-3 py-2 text-left text-sm last:border-b-0 hover:bg-accent-tint"
-                      >
-                        <span className="block font-medium text-ink">{f.canonical_name}</span>
-                        <span className="block text-xs text-muted">{f.email}</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
             </div>
           </div>
+          {searchFaculty.length > 0 && (
+            <div ref={resultsRef} role="listbox" aria-label="Matching faculty" className="mt-1.5 max-h-48 overflow-y-auto rounded-md border border-line bg-white">
+              {filteredFaculty.length === 0 ? (
+                <p className="p-2 text-xs text-ink-2">No faculty found.</p>
+              ) : (
+                filteredFaculty.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => handleAddCoordinator(f)}
+                    className="block w-full border-b border-line px-2 py-1.5 text-left text-xs last:border-b-0 hover:bg-accent-tint"
+                  >
+                    <span className="block font-medium text-ink">{f.canonical_name}</span>
+                    <span className="block text-[11px] text-muted">{f.email}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </section>
 
         {error && <Notice tone="danger">{error}</Notice>}

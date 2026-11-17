@@ -59,7 +59,6 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
   const people: any[] = data?.allCoordinators || [];
   const withEmail = people.filter((c) => c.hasEmail);
   const count = picked.size;
-  const enough = data?.success && (data.quota - data.reserve >= count);
   const toggle = (id: string) => setPicked((p) => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const selectRole = (role: string | null) =>
     setPicked(new Set(withEmail.filter((c) => role === null || c.roles.includes(role)).map((c) => c.id)));
@@ -91,7 +90,7 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
               variant="primary"
               onClick={() => setConfirming(true)}
               busy={busy}
-              disabled={pdfBusy || !data?.success || count === 0 || !enough}
+              disabled={pdfBusy || !data?.success || count === 0}
             >
               {busy ? 'Sending…' : `Send to ${count} coordinator${count === 1 ? '' : 's'}…`}
             </Button>
@@ -157,14 +156,8 @@ export default function CoordinatorReportDialog({ session, onClose }: { session:
               One email each (no PDF attached). <strong>Generate PDF</strong> makes the session sheet on its own and emails nobody. Confirmation status is as of the last sync
               {data.syncedAt ? <> (<strong>{data.syncedAt}</strong>)</> : <> (<strong>never synced</strong>)</>}. Click <strong>Sync</strong> first if you want the latest.
             </p>
-            <p className="mt-2 text-ink-2">Emails left today: <strong className="tnum">{data.quota}</strong></p>
+            {data.counts && <p className="mt-2 text-ink-2">Faculty emailed so far: <strong className="tnum">{data.counts.emailed}</strong> ({data.counts.today} today)</p>}
           </fieldset>
-
-          {!enough && count > 0 && (
-            <p role="alert" className="flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">
-              <AlertIcon className="mt-0.5 shrink-0" width={16} height={16} /> Not enough emails left today to send this report.
-            </p>
-          )}
 
           <div className="overflow-x-auto rounded-xl border border-line">
             <table className="w-full min-w-[560px] border-collapse text-left text-sm">

@@ -20,10 +20,16 @@ var SETTINGS = {
   entryName: "entry.640056832",
   entryPhone: "entry.778392849",
   entrySessions: "entry.1359171350",
+  // Optional form question "Your email (we send your confirmation here)". Paste its entry id here
+  // (get it from Form > ⋮ > Get pre-filled link) and the link will arrive with the email filled in.
+  entryEmail: "entry.1559163626",
 
-  // Emails kept free for the confirmation thank-you emails. Bulk sends from the
-  // app stop when only this many remain.
-  quotaReserve: 5,
+  // The app no longer holds emails back. Google's own daily sending limit still applies; if Google
+  // refuses a message, the app shows Google's error and stops.
+  quotaReserve: 0,
+
+  // Public 3D venue map (shown in the confirmation thank-you email)
+  mapUrl: "https://dermacon2027venue3dmap-bydruzzaif.vercel.app",
 
   // Google Drive file IDs (images must be shared: Anyone with the link = Viewer)
   images: {
@@ -34,6 +40,15 @@ var SETTINGS = {
     sigJagdish: "1YnfUTVnzQ2A4GDM-csACA28KjzLnmevd",
     sigKandarp: "1qVJd9oAvZJT1SA4uo5c24yYDLt9IMHsk"
   }
+};
+
+// Who a faculty email is sent as. "workshop" (default) = the account that runs this script, unchanged.
+// "scientific" = shown as "Scientific Committee" with replies going to scientific@dermacon2027.com.
+// To make the mail really come FROM that address, scientific@ must be a verified "Send mail as" alias on
+// this Google account; then add the Gmail scope to appsscript.json, re-authorize (run authorizeAll)
+// and set the script property SCIENTIFIC_SEND_AS = true. Until then the display name + Reply-To are used.
+var SENDERS = {
+  scientific: { name: "Scientific Committee", email: "scientific@dermacon2027.com" }
 };
 
 var LOG_SHEET = "EmailLog";
@@ -79,8 +94,9 @@ function driveImgUrl(fileId) {
   return "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w600";
 }
 
-function buildPrefilledLink(name, phone, sessions) {
+function buildPrefilledLink(name, phone, sessions, email) {
   return SETTINGS.formBaseUrl + "?usp=pp_url" +
+    (SETTINGS.entryEmail && email ? "&" + SETTINGS.entryEmail + "=" + encodeURIComponent(email) : "") +
     "&" + SETTINGS.entryName + "=" + encodeURIComponent(name || "") +
     "&" + SETTINGS.entryPhone + "=" + encodeURIComponent(phone || "") +
     "&" + SETTINGS.entrySessions + "=" + encodeURIComponent(sessions || "");
@@ -102,10 +118,6 @@ function sendManualFacultyEmail(send) {
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    if (quotaLeft() <= SETTINGS.quotaReserve) {
-      throw new Error("The daily email reserve has been reached. Try again after the quota resets.");
-    }
-
     var properties = PropertiesService.getScriptProperties();
     var lastSentAt = Number(properties.getProperty(LAST_MANUAL_FACULTY_EMAIL_PROPERTY)) || 0;
     var waitMs = lastSentAt
@@ -118,6 +130,53 @@ function sendManualFacultyEmail(send) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// Thank-you emails. GmailApp is used so the message appears in the Gmail Sent folder; if Gmail
+// access is not granted yet, MailApp is used instead (works, but leaves no Sent copy).
+// Every attempt is written to the "ThankYouLog" sheet.
+var THANKYOU_SHEET = "ThankYouLog";
+
+function logThankYou(to, name, result, detail) {
+  try {
+    var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+    var sh = ss.getSheetByName(THANKYOU_SHEET);
+    if (!sh) {
+      sh = ss.insertSheet(THANKYOU_SHEET);
+      sh.appendRow(["At", "To", "Name", "Result", "Detail"]);
+      sh.setFrozenRows(1);
+    }
+    sh.appendRow([new Date(), to, name || "", result, detail || ""]);
+  } catch (err) { Logger.log("logThankYou failed: " + err); }
+}
+
+function sendThankYou(kind, msg) {
+  var via = "Gmail";
+  try {
+    GmailApp.sendEmail(msg.to, msg.subject, msg.body, { htmlBody: msg.htmlBody, attachments: msg.attachments, name: "DERMACON International 2027" });
+  } catch (gmailErr) {
+    Logger.log("GmailApp not available (" + gmailErr + "); using MailApp (no Sent copy).");
+    MailApp.sendEmail(msg);
+    via = "MailApp (no Sent copy)";
+  }
+  logThankYou(msg.to, msg.name || "", "Sent via " + via, kind);
+}
+
+// Send one faculty email as the chosen sender (see SENDERS)
+function sendFacultyMessage(sender, msg) {
+  if (sender !== 'scientific') { MailApp.sendEmail(msg); return; }
+  var who = SENDERS.scientific;
+  msg.name = who.name;
+  msg.replyTo = who.email;
+  var sendAs = PropertiesService.getScriptProperties().getProperty('SCIENTIFIC_SEND_AS') === 'true';
+  if (!sendAs) { MailApp.sendEmail(msg); return; }
+  if (GmailApp.getAliases().indexOf(who.email) === -1) {
+    throw new Error(who.email + " is not a verified 'Send mail as' alias on this Google account.");
+  }
+  GmailApp.sendEmail(msg.to, msg.subject, msg.body, {
+    from: who.email, name: who.name, replyTo: who.email,
+    htmlBody: msg.htmlBody, attachments: msg.attachments
+  });
 }
 
 function roleLabel(role) {
@@ -262,6 +321,22 @@ function removeTopicConfirmations(email, sessionsData) {
   }
 }
 
+// Drops the topics whose line the faculty deleted from the pre-filled sessions answer.
+// Safe fallbacks: if no topic line can be found anywhere in the response (answer emptied,
+// question renamed, older email without form_line) every topic is kept as before.
+function keepTopicsLeftInForm(sessionsData, rowValues) {
+  function norm(s) { return String(s || '').toLowerCase().replace(/\s+/g, ' ').trim(); }
+  var answers = norm((rowValues || []).join('\n'));
+  var anyFound = false;
+  var kept = (sessionsData || []).filter(function (r) {
+    var line = norm(r.form_line);
+    if (!line) return true;                 // not listed on the form (e.g. virtual): always kept
+    if (answers.indexOf(line) !== -1) { anyFound = true; return true; }
+    return false;
+  });
+  return anyFound ? kept : (sessionsData || []);
+}
+
 // Called when the faculty submits the Google Form
 function markResponded(email, name, status) {
   var lock = LockService.getScriptLock();
@@ -351,6 +426,19 @@ function pdfsFromSnapshot(sessionsData) {
 // ==========================================================================
 // LETTER BUILDING (Template.html = the faculty letter, ReportTemplate.html = shell)
 // ==========================================================================
+// Phone numbers and email addresses in a letter are tappable links (call / write)
+function telLink(phone) {
+  var shown = String(phone || '').trim();
+  var digits = shown.replace(/[^0-9+]/g, '');
+  if (!shown || !digits) return esc(shown);
+  return '<a href="tel:' + digits + '" style="color:#1a5fb4; text-decoration:none;">' + esc(shown) + '</a>';
+}
+function mailLink(email) {
+  var shown = String(email || '').trim();
+  if (!shown || shown.indexOf('@') < 1) return esc(shown);
+  return '<a href="mailto:' + esc(shown) + '" style="color:#1a5fb4;">' + esc(shown) + '</a>';
+}
+
 function extraRows(r) {
   var speakers = r.speakers || [];
   var out = '';
@@ -387,6 +475,18 @@ function statusTag(status) {
   return '';
 }
 
+var WORKSHOP_COMMITTEE_HTML =
+  '<p style="font-size:14px; font-weight:bold; color:#7a1f3d; margin:0 0 6px;">Workshop Committee</p>' +
+  '<p style="font-size:13px; line-height:1.6; margin:0 0 20px;">' +
+  '<strong style="color:#7a1f3d;">Chairpersons:</strong> Dr. Aarti Shah, Dr. Janak Thakkar<br>' +
+  '<strong style="color:#7a1f3d;">Co-Chairs:</strong> Dr. Bhavesh Devani, Dr. Geeta Patel, Dr. Kirti Shah, Dr. Smita Nagpal' +
+  '</p>';
+// Workshops are the sessions whose code starts with WS or MC; everything else is a scientific session
+function isWorkshopCode(code) { return /^(WS|MC)/i.test(String(code || '').trim()); }
+function hasWorkshop(rows) {
+  return (rows || []).some(function (r) { return isWorkshopCode(r.session_code); });
+}
+
 // o: { name, role, title, greeting, intro, formLink, changes }
 function buildLetterHtml(rows, o) {
   var template = readTemplate('Template');
@@ -408,8 +508,8 @@ function buildLetterHtml(rows, o) {
       SessionTime:   esc(r.session_time || ''),
       ExtraRows:     extraRows(r),
       CoordName:     esc(r.coordName || ''),
-      CoordPhone:    esc(r.coordPhone || ''),
-      CoordEmail:    esc(r.coordEmail || '')
+      CoordPhone:    telLink(r.coordPhone),
+      CoordEmail:    mailLink(r.coordEmail)
     });
   });
 
@@ -420,11 +520,47 @@ function buildLetterHtml(rows, o) {
     LetterDate:  Utilities.formatDate(new Date(), "Asia/Kolkata", "dd/MM/yyyy"),
     EmailTitle:  o.title,
     Greeting:    o.greeting,
-    IntroText:   o.intro,
-    ChangesBox:  changesBox(o.changes)
+    // Optional block straight after the greeting (the thank-you email puts the venue map there)
+    AfterGreeting: o.afterGreeting || '',
+    // No intro text = no empty paragraph
+    IntroBlock:  o.intro ? '<p style="font-size:14px; line-height:1.6; margin:0 0 20px;">' + o.intro + '</p>' : '',
+    ChangesBox:  changesBox(o.changes),
+    // Committee names only belong on workshop letters (session code WS.. or MC..)
+    WorkshopCommittee: hasWorkshop(rows) ? WORKSHOP_COMMITTEE_HTML : ''
   });
   html = html.replace('https://forms.gle/REPLACE_WITH_YOUR_GOOGLE_FORM_LINK', function () { return o.formLink || '#'; });
   return resolveImages(html);
+}
+
+// "Visit the virtual map" box for the confirmation email. Links open the 3D map at the
+// Registration Hall, the Preview Room and each hall the faculty is speaking in.
+// A hall name the map does not recognise simply opens the full map.
+function mapLink(to) {
+  return SETTINGS.mapUrl + (to ? '/?to=' + encodeURIComponent(String(to).toLowerCase()) : '');
+}
+
+function mapBox(rows) {
+  var halls = [];
+  (rows || []).forEach(function (r) {
+    var h = String(r.session_hall || '').trim();
+    if (h && h.toUpperCase() !== 'TBD' && halls.indexOf(h) === -1) halls.push(h);
+  });
+  var linkStyle = 'color:#4a2c6e; font-weight:bold;';
+  var items =
+    '<li><a href="' + mapLink('registration') + '" style="' + linkStyle + '">Registration Hall</a></li>' +
+    '<li><a href="' + mapLink('preview-room') + '" style="' + linkStyle + '">Preview Room</a> (slide check &amp; upload)</li>';
+  halls.forEach(function (h) {
+    items += '<li>Your lecture hall: <a href="' + mapLink(h) + '" style="' + linkStyle + '">' + esc(h) + '</a></li>';
+  });
+  if (!halls.length) {
+    items += '<li><a href="' + mapLink('') + '" style="' + linkStyle + '">Full venue map</a></li>';
+  }
+  return '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e3d3ee; border-radius:6px; background:#fbf7fd; margin:0 0 22px;">' +
+    '<tr><td style="padding:16px 20px;">' +
+    '<div style="font-size:15px; font-weight:bold; margin-bottom:6px; color:#4a2c6e;">Visit our 3D virtual venue map</div>' +
+    '<div style="font-size:13px; line-height:1.6; margin-bottom:8px;">Before you arrive, take a virtual walk through the venue and locate the Registration Hall, the Preview Room and your lecture hall:</div>' +
+    '<ul style="font-size:13px; line-height:1.8; margin:0; padding-left:20px;">' + items + '</ul>' +
+    '</td></tr></table>';
 }
 
 // Letterhead shell for short emails (reminder, report, thank-you)
@@ -483,13 +619,7 @@ function doPost(e) {
     if (data.action === "sendFormLink" || data.action === "sendScheduleUpdate") {
       var isUpdate = (data.action === "sendScheduleUpdate");
 
-      if (quotaLeft() <= SETTINGS.quotaReserve) {
-        return json({ status: "Error", quotaLeft: quotaLeft(),
-          message: "Only " + quotaLeft() + " emails left today. " + SETTINGS.quotaReserve + " are kept for faculty confirmations. Try again after the daily limit resets." });
-      }
-
-      var prefilledLink = buildPrefilledLink(data.name, data.phone, data.formSessions || data.sessions);
-      var roleText = esc(data.role || 'Faculty');
+      var prefilledLink = buildPrefilledLink(data.name, data.phone, data.formSessions || data.sessions, data.email);
       var htmlBody = buildLetterHtml(data.sessionsData, {
         name: data.name,
         role: data.role,
@@ -497,7 +627,7 @@ function doPost(e) {
         greeting: "Greetings from the Scientific Committee of <strong>DERMACON International 2027</strong>.",
         intro: isUpdate
           ? "There has been a change in your scientific commitment. Your current details are below, with the changes listed first."
-          : "We are delighted to welcome you as <strong>" + roleText + "</strong>. Your scientific commitment details are below.",
+          : "We are delighted to welcome you and share the details of your scientific commitment. Your role for each topic is shown below.",
         formLink: prefilledLink,
         changes: isUpdate ? data.changes : []
       });
@@ -505,7 +635,7 @@ function doPost(e) {
       var pdfBlobs = savePdfs(data);
 
       sendManualFacultyEmail(function () {
-        MailApp.sendEmail({
+        sendFacultyMessage(data.sender, {
           to: data.email,
           subject: (isUpdate ? "[DERMACON International 2027] Schedule Update - " : "[DERMACON International 2027] Scientific Commitments - ") + data.name,
           body: "Dear " + data.name + ",\n\nYour scientific commitment details are included in this email (PDF attached).\n\nConfirm your attendance here: " + prefilledLink,
@@ -520,12 +650,44 @@ function doPost(e) {
       return json({ status: "Success", pdfsReceived: (data.pdfs || []).length, pdfsAttached: pdfBlobs.length, quotaLeft: quotaLeft() });
     }
 
+    // ---- thank-you (sent from the app's "Thank you" button) -----------------
+    if (data.action === "sendThankYou") {
+      var tyHtml = buildLetterHtml(data.sessionsData, {
+        name: data.name,
+        role: (data.sessionsData && data.sessionsData[0] && data.sessionsData[0].role) || data.role || "Faculty",
+        title: "Participation Confirmed – DERMACON International 2027",
+        greeting: "Thank you for confirming your participation for <strong>DERMACON International 2027</strong>.",
+        intro: "",
+        afterGreeting: mapBox(data.sessionsData),
+        formLink: "",
+        changes: []
+      });
+      // The "confirm" box makes no sense here: replace it with a short note
+      var tyA = tyHtml.indexOf('<!-- CONFIRM_BOX_START -->');
+      var tyB = tyHtml.indexOf('<!-- CONFIRM_BOX_END -->');
+      if (tyA !== -1 && tyB !== -1) {
+        tyHtml = tyHtml.substring(0, tyA) +
+          '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe0ee; border-radius:6px; background:#f7fbff; margin:0 0 22px;"><tr><td style="padding:16px 20px;">' +
+          '<div style="font-size:15px; font-weight:bold;">Your participation is confirmed for the scientific commitment(s) above.</div></td></tr></table>' +
+          tyHtml.substring(tyB + '<!-- CONFIRM_BOX_END -->'.length);
+      }
+      var tyPdfs = savePdfs(data);
+      sendManualFacultyEmail(function () {
+        sendThankYou("Thank-you button", {
+          to: data.email,
+          name: data.name,
+          subject: "✅ Confirmed: DERMACON International 2027",
+          body: "Thank you for confirming, " + data.name + ". Your confirmed sessions and topics are listed in the HTML version of this email (PDF attached).",
+          htmlBody: tyHtml,
+          attachments: tyPdfs
+        });
+      });
+      return json({ status: "Success", pdfsAttached: tyPdfs.length, quotaLeft: quotaLeft() });
+    }
+
     // ---- reminder ----------------------------------------------------------
     if (data.action === "sendReminder") {
-      if (quotaLeft() <= SETTINGS.quotaReserve) {
-        return json({ status: "Error", quotaLeft: quotaLeft(), message: "Not enough emails left today." });
-      }
-      var link = buildPrefilledLink(data.name, data.phone, data.formSessions || data.sessions);
+      var link = buildPrefilledLink(data.name, data.phone, data.formSessions || data.sessions, data.email);
       // Keep the saved topic list current, so "Yes" confirms the topics shown in this reminder
       try { refreshSnapshot(data.email, data.sessionsData); }
       catch (errSnap) { Logger.log("refreshSnapshot failed: " + errSnap); }
@@ -542,7 +704,7 @@ function doPost(e) {
         '<p style="margin:0 0 20px;">' + confirmButton('Confirm participation', link) + '</p>' +
         '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
       sendManualFacultyEmail(function () {
-        MailApp.sendEmail({
+        sendFacultyMessage(data.sender, {
           to: data.email,
           subject: "[Reminder] [DERMACON International 2027] Please confirm your participation - " + data.name,
           body: "Dear " + data.name + ",\n\nThis is a gentle reminder. Please confirm your participation: " + link,
@@ -556,9 +718,6 @@ function doPost(e) {
     if (data.action === "sendCoordinatorReport") {
       var coords = (data.coordinators || []).filter(function (c) { return c.email && String(c.email).indexOf('@') > 0; });
       if (!coords.length) return json({ status: "Error", message: "No coordinator with an email address." });
-      if (quotaLeft() - coords.length < SETTINGS.quotaReserve) {
-        return json({ status: "Error", quotaLeft: quotaLeft(), message: "Not enough emails left today for " + coords.length + " coordinator(s)." });
-      }
 
       var s = data.session || {};
       var tbl =
@@ -645,6 +804,27 @@ function doPost(e) {
   }
 }
 
+// Find the log-sheet row (index into `values`, header = 0) of the faculty who answered the
+// form. Tries the email first, then the phone (last 10 digits), then the exact name, so a
+// faculty who used another email address is still recognised. Returns -1 if none.
+function findLogRow(values, email, phone, name) {
+  var e = String(email || '').trim().toLowerCase();
+  var p = String(phone || '').replace(/\D/g, '').slice(-10);
+  var n = String(name || '').trim().toLowerCase();
+  if (n === 'doctor') n = '';
+  var i;
+  if (e) for (i = 1; i < values.length; i++) {
+    if (String(values[i][2]).trim().toLowerCase() === e) return i;
+  }
+  if (p.length === 10) for (i = 1; i < values.length; i++) {
+    if (String(values[i][3] || '').replace(/\D/g, '').slice(-10) === p) return i;
+  }
+  if (n) for (i = 1; i < values.length; i++) {
+    if (String(values[i][1]).trim().toLowerCase() === n) return i;
+  }
+  return -1;
+}
+
 // ==========================================================================
 // doGet : the app's Sync button and the quota display
 //   ?action=quota  -> { quota }
@@ -676,13 +856,40 @@ function doGet(e) {
 // onFormSubmit : faculty submitted the Google Form
 //   1. store the result  2. send ONE thank-you email to the faculty. Nothing else.
 // ==========================================================================
+var RESEND_TO = "";
+
+// Re-sends the thank-you for one form response, to the address you choose.
+// Run from the Apps Script editor: set the two values below, select resendThankYou, click Run.
+//   row   = the row number of his response in the "Form Responses" sheet (row 1 = headers)
+//   toEmail = where the thank-you should go. Leave "" to use the address we originally emailed him.
+function resendThankYou() {
+  var row = 0;          // <-- e.g. 59
+  var toEmail = "";     // <-- e.g. "his.address@gmail.com"
+
+  if (!row) throw new Error("Set 'row' at the top of resendThankYou() first.");
+  var ss = SpreadsheetApp.openById(SETTINGS.sheetId);
+  var sheet = ss.getSheets().filter(function (s) { return /^form responses/i.test(s.getName()); })[0];
+  if (!sheet) throw new Error("No 'Form Responses' sheet found.");
+  var values = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+  CacheService.getScriptCache().remove('resp_' + sheet.getSheetId() + '_' + row);
+  RESEND_TO = toEmail;
+  try {
+    onFormSubmit({ range: sheet.getRange(row, 1, 1, sheet.getLastColumn()), values: values });
+  } finally {
+    RESEND_TO = "";
+  }
+  Logger.log("resendThankYou done for row " + row + ". Check the log above for 'sending thank-you to'.");
+}
+
 function onFormSubmit(e) {
+  if (!e || !e.range) { Logger.log("onFormSubmit: no event data (it only works when a form is submitted, not when run from the editor)."); return; }
   var sheet = e.range.getSheet();
+  Logger.log("onFormSubmit: sheet '" + sheet.getName() + "' row " + e.range.getRow());
 
   // Guard: never process the same response twice (duplicate triggers, retries)
   var cache = CacheService.getScriptCache();
   var guardKey = 'resp_' + sheet.getSheetId() + '_' + e.range.getRow();
-  if (cache.get(guardKey)) return;
+  if (cache.get(guardKey)) { Logger.log("onFormSubmit: row " + e.range.getRow() + " already processed (" + guardKey + "), skipped."); return; }
   cache.put(guardKey, '1', 21600);
 
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
@@ -697,11 +904,33 @@ function onFormSubmit(e) {
   var iName   = getCol("Full Name");
   var iStatus = getCol("Attendance Status");
   var iEmail  = getCol("Email address");
+  var iPhone  = getCol("Phone");
+  if (iPhone < 0) iPhone = getCol("Mobile");
+  if (iPhone < 0) iPhone = getCol("WhatsApp");
+  var formPhone = iPhone >= 0 ? String(row[iPhone] || "").trim() : "";
 
   var name   = iName   >= 0 ? String(row[iName]   || "Doctor").trim() : "Doctor";
   var status = iStatus >= 0 ? String(row[iStatus] || "").trim() : "";
   var email  = iEmail  >= 0 ? String(row[iEmail]  || "").trim() : "";
-  if (!email) return;
+  if (!email) {
+    // Column title did not match: use the first cell that looks like an email address
+    for (var k = 0; k < row.length; k++) {
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(row[k] || "").trim())) { email = String(row[k]).trim(); break; }
+    }
+  }
+  if (!email) {
+    cache.remove(guardKey);
+    Logger.log("onFormSubmit: NO EMAIL found. Headers: " + JSON.stringify(headers) + " Values: " + JSON.stringify(row));
+    return;
+  }
+  // The address the faculty TYPED in the form ("Your email ...") wins over the Google account
+  // they happened to be signed in with (often a different Gmail).
+  var iTyped = getCol("Your email");
+  var typedEmail = iTyped >= 0 ? String(row[iTyped] || "").trim() : "";
+  var googleEmail = email;
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typedEmail)) email = typedEmail;
+  if (RESEND_TO) email = RESEND_TO;   // only set by resendThankYou()
+  Logger.log("onFormSubmit: email=" + email + " (form account: " + googleEmail + ") name=" + name + " status=" + status);
 
   // Whole words only: /no/ alone also matched "know", "not sure", "announce"...
   // and turned a "Yes" answer into a decline.
@@ -730,13 +959,18 @@ function onFormSubmit(e) {
   }
   if (accepted) {
     var logData = getLogSheet().getDataRange().getValues();
-    for (var i = 1; i < logData.length; i++) {
-      if (String(logData[i][2]).trim().toLowerCase() === email.toLowerCase()) {
-        try { sessionsData = JSON.parse(logData[i][9] || "[]"); } catch (errParse) {}
-        savedLink = String(logData[i][5] || "");
-        break;
-      }
+    var hit = findLogRow(logData, email, formPhone, name);
+    if (hit > 0) {
+      try { sessionsData = JSON.parse(logData[hit][9] || "[]"); } catch (errParse) {}
+      savedLink = String(logData[hit][5] || "");
+      // Nothing typed: send the thank-you to the address we originally emailed, not to whatever
+      // Google account they were signed in with.
+      var logEmail = String(logData[hit][2] || "").trim();
+      if (email === googleEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(logEmail)) email = logEmail;
     }
+    // The form's sessions box is pre-filled with one line per topic. A line the faculty deleted
+    // means they are NOT taking that topic: leave it unconfirmed and out of the thank-you.
+    sessionsData = keepTopicsLeftInForm(sessionsData, row);
     try { recordTopicConfirmations(email, sessionsData); }
     catch (errConf) { Logger.log("recordTopicConfirmations failed: " + errConf); }
   }
@@ -747,13 +981,14 @@ function onFormSubmit(e) {
     Logger.log("Daily email limit reached: thank-you for " + email + " not sent. Result IS stored.");
     return;
   }
+  Logger.log("onFormSubmit: sending thank-you to " + email + " (accepted=" + accepted + ", declined=" + declined + ", sessions=" + sessionsData.length + ")");
 
   try {
     if (declined) {
       var nb = '<p style="font-size:14px; font-weight:bold; margin:0 0 12px;">Dear ' + esc(name) + ',</p>' +
                '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">Thank you for your response. We have noted your unavailability.</p>' +
                '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
-      MailApp.sendEmail({
+      sendThankYou("Declined", {
         to: email,
         subject: "[DERMACON International 2027] Response Received",
         body: "Dear " + name + ",\n\nThank you for your response. We have noted your unavailability.",
@@ -768,7 +1003,9 @@ function onFormSubmit(e) {
         role: sessionsData[0].role || "Faculty",
         title: "Participation Confirmed – DERMACON International 2027",
         greeting: "Thank you for confirming your participation for <strong>DERMACON International 2027</strong>.",
-        intro: "Your participation is confirmed for the following scientific commitment(s).",
+        intro: "",
+        // Venue map section sits right under "Thank you for confirming your participation for DERMACON International 2027."
+        afterGreeting: mapBox(sessionsData),
         formLink: savedLink,
         changes: []
       });
@@ -779,7 +1016,7 @@ function onFormSubmit(e) {
         '<!-- CONFIRM_BOX_START -->' +
         '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe0ee; border-radius:6px; background:#f7fbff; margin:0 0 22px;">' +
         '<tr><td style="padding:16px 20px;">' +
-        '<div style="font-size:15px; font-weight:bold; margin-bottom:6px;">Your participation is confirmed</div>' +
+        '<div style="font-size:15px; font-weight:bold; margin-bottom:6px;">Your participation is confirmed for the scientific commitment(s) above.</div>' +
         '<div style="font-size:13px; margin-bottom:12px;">Need to change something? You can edit your response below.</div>' +
         (editLink ? confirmButton('Edit your response', editLink) : '') +
         '</td></tr></table>' +
@@ -790,7 +1027,7 @@ function onFormSubmit(e) {
         htmlBody = htmlBody.substring(0, a) + editBox + htmlBody.substring(b + '<!-- CONFIRM_BOX_END -->'.length);
       }
 
-      MailApp.sendEmail({
+      sendThankYou("Confirmed", {
         to: email,
         subject: "✅ Confirmed: DERMACON International 2027",
         body: "Thank you for confirming, " + name + ". Your confirmed sessions and topics are listed in the HTML version of this email (PDF attached).",
@@ -803,8 +1040,9 @@ function onFormSubmit(e) {
     // Accepted, but no saved schedule was found for this email
     var fb = '<p style="font-size:14px; font-weight:bold; margin:0 0 12px;">Dear ' + esc(name) + ',</p>' +
              '<p style="font-size:14px; line-height:1.6; margin:0 0 12px;">Thank you for confirming your participation for <strong>DERMACON International 2027</strong>.</p>' +
+             mapBox([]) +
              '<p style="font-size:14px; margin:0;">Warm regards,<br><strong>DERMACON International 2027</strong></p>';
-    MailApp.sendEmail({
+    sendThankYou("Confirmed (no saved schedule)", {
       to: email,
       subject: "✅ Confirmed: DERMACON International 2027",
       body: "Thank you for confirming, " + name,
@@ -812,6 +1050,7 @@ function onFormSubmit(e) {
     });
   } catch (errMail) {
     Logger.log("Thank-you email failed for " + email + ": " + errMail);
+    logThankYou(email, name, "FAILED", String(errMail));
   }
 }
 
@@ -829,6 +1068,7 @@ function authorizeAll() {
   CacheService.getScriptCache().put('auth_test', '1', 5);
   LockService.getScriptLock();
   ScriptApp.getProjectTriggers();
+  GmailApp.getAliases();   // asks for Gmail access so thank-yous appear in the Sent folder
   Logger.log("Authorized. Emails left today: " + quotaLeft());
 }
 

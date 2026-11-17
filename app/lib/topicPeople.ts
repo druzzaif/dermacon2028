@@ -55,3 +55,12 @@ export function panelText(g: PanelGroups): string {
     g.debaters.length ? `Debaters: ${num(g.debaters)}` : '',
   ].filter(Boolean).join(' | ');
 }
+
+/**
+ * Topics marked "all faculty of the session": the individual panelist rows (kept so each person
+ * can confirm) are not listed one by one; the schedule shows "All faculty" instead.
+ */
+export function visiblePeople<T extends { role?: string | null }>(topic: { all_faculty_panel?: boolean | null }, rows: T[]): T[] {
+  if (!topic.all_faculty_panel) return rows;
+  return rows.filter((r) => !(r.role === 'Panel' || r.role === 'Panelist' || r.role === 'Penalist'));
+}

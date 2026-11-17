@@ -5,7 +5,9 @@ import Modal from './Modal';
 import Badge from './Badge';
 import { AlertIcon, CheckIcon } from './Icons';
 import { Button, LoadingBlock, Notice } from './ui';
+import TopicPicker from './TopicPicker';
 import { previewEmails, sendEmailToFaculty } from '../actions';
+import { allTopicIds, selectionToIds, suggestedSender, GROUP_LABEL, type TopicGroup } from '../lib/topicChoices';
 
 type Kind = 'first' | 'update' | 'reminder';
 export type SendItem = { facultyId: string; kind: Kind };
@@ -16,6 +18,7 @@ type EmailTopicPreview = {
   hall: string;
   time: string;
   role: string;
+  group: TopicGroup;
   isNew?: boolean;
   confirmed: boolean;
 };
@@ -27,14 +30,13 @@ type EmailPreviewRow = {
   problem: string;
   topics: EmailTopicPreview[];
   changes: string[];
+  changeItems?: { line: string; topicId: string; session: string }[];
 };
+type EmailCounts = { emailed: number; today: number; faculty: number };
 type EmailPreviewResponse = {
   success: boolean;
   message?: string;
-  quota: number;
-  reserve: number;
-  quotaOk: boolean;
-  quotaMessage?: string;
+  counts?: EmailCounts;
   rows: EmailPreviewRow[];
 };
 type SendEmailResponse = { success: boolean; message?: string };
@@ -45,8 +47,8 @@ const KIND_LABEL: Record<Kind, string> = {
   reminder: 'Reminder: asks the faculty to confirm',
 };
 
-// Seconds to wait between two emails, so Google never sees a burst.
-const DELAY_SECONDS = 6;
+// Seconds to wait between two emails, so Google never sees a burst. Default is the shortest choice.
+const DELAY_CHOICES = [6, 15, 30, 60, 120];
 
 type Status = { state: 'waiting' | 'sending' | 'ok' | 'failed' | 'skipped'; message?: string };
 
@@ -66,9 +68,7 @@ export default function SendEmailsDialog({
 }) {
   const [phase, setPhase] = useState<'loading' | 'preview' | 'sending' | 'done'>('loading');
   const [rows, setRows] = useState<EmailPreviewRow[]>([]);
-  const [quota, setQuota] = useState(0);
-  const [reserve, setReserve] = useState(5);
-  const [quotaProblem, setQuotaProblem] = useState('');
+  const [counts, setCounts] = useState<EmailCounts | null>(null);
   const [loadError, setLoadError] = useState('');
   const [status, setStatus] = useState<Record<string, Status>>({});
   const stopRef = useRef(false);
@@ -82,40 +82,78 @@ export default function SendEmailsDialog({
       if (!alive) return;
       if (!r.success) { setLoadError(r.message || 'Could not prepare the emails.'); setPhase('preview'); return; }
       setRows(r.rows);
-      setQuota(r.quota);
-      setReserve(r.reserve);
-      setQuotaProblem(r.quotaOk ? '' : r.quotaMessage || 'Could not read the daily email limit.');
+      setCounts(r.counts ?? null);
       setPhase('preview');
     }).catch((e) => { if (alive) { setLoadError(e?.message || 'Could not prepare the emails.'); setPhase('preview'); } });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sendable = rows.filter((r) => !r.problem);
-  const usable = Math.max(0, quota - reserve);
-  const notEnough = !quotaProblem && sendable.length > usable;
-  const minutes = Math.max(1, Math.round((sendable.length * (DELAY_SECONDS + 6)) / 60));
+  // User can override first <-> update per faculty (reminders are not switchable)
+  const [kindOverride, setKindOverride] = useState<Record<string, Kind>>({});
+  const kindOf = (r: EmailPreviewRow): Kind => (r.kind === 'reminder' ? 'reminder' : kindOverride[r.facultyId] || r.kind);
+  const setAllKinds = (k: Kind) => {
+    const next: Record<string, Kind> = {};
+    rows.forEach((r) => { if (r.kind !== 'reminder') next[r.facultyId] = k; });
+    setKindOverride(next);
+  };
+  const canSwitch = rows.some((r) => r.kind !== 'reminder' && !r.problem);
+
+  // Which topics each person's email (and PDF) will include. Default: everything.
+  const [selection, setSelection] = useState<Record<string, Set<string>>>({});
+  const [openPicker, setOpenPicker] = useState<string | null>(null);
+  const selOf = (r: EmailPreviewRow) => selection[r.facultyId] ?? allTopicIds(r.topics);
+  const setSel = (facultyId: string, next: Set<string>) => setSelection((s) => ({ ...s, [facultyId]: next }));
+  const setEveryone = (group: TopicGroup | 'all') => {
+    const next: Record<string, Set<string>> = {};
+    rows.forEach((r) => {
+      next[r.facultyId] = new Set(r.topics.filter((t) => group === 'all' || t.group === group).map((t) => t.topicId));
+    });
+    setSelection(next);
+  };
+
+  const effRows = rows.map((r) => {
+    const sel = selOf(r);
+    const kind = kindOf(r);
+    // changes shown / sent only for the topics that are ticked
+    const sessions = new Set(r.topics.filter((t) => sel.has(t.topicId)).map((t) => t.session));
+    const all = sel.size === r.topics.length;
+    const changes = r.changeItems
+      ? r.changeItems.filter((c) => all || sel.has(c.topicId) || sessions.has(c.session)).map((c) => c.line)
+      : r.changes;
+    return { ...r, kind, sel, changes, problem: r.problem || (sel.size === 0 ? 'No topic is ticked.' : '') };
+  });
+
+  // Sender: Scientific Committee is suggested when only scientific topics are ticked; the user can override
+  const [senderOverride, setSenderOverride] = useState<'workshop' | 'scientific' | null>(null);
+  const tickedAll = effRows.filter((r) => !r.problem).flatMap((r) => r.topics.filter((t) => r.sel.has(t.topicId)));
+  const sender = senderOverride ?? suggestedSender(tickedAll as any, new Set(tickedAll.map((t) => t.topicId)));
+
+  const sendable = effRows.filter((r) => !r.problem);
+  // Many emails: default to a longer pause so the account is not flagged for bursts
+  const [delaySeconds, setDelaySeconds] = useState(items.length > 5 ? 30 : 6);
+  const minutes = Math.max(1, Math.round((sendable.length * (delaySeconds + 6)) / 60));
 
   async function run() {
     setPhase('sending');
     stopRef.current = false;
     const init: Record<string, Status> = {};
-    rows.forEach((r) => { init[r.facultyId] = r.problem ? { state: 'skipped', message: r.problem } : { state: 'waiting' }; });
+    effRows.forEach((r) => { init[r.facultyId] = r.problem ? { state: 'skipped', message: r.problem } : { state: 'waiting' }; });
     setStatus(init);
 
-    const queue = rows.filter((r) => !r.problem);
+    const queue = effRows.filter((r) => !r.problem);
     for (let i = 0; i < queue.length; i++) {
       if (stopRef.current) break;
       const r = queue[i];
       setStatus((s) => ({ ...s, [r.facultyId]: { state: 'sending' } }));
-      const res: SendEmailResponse = await sendEmailToFaculty(r.facultyId, r.kind);
+      const res: SendEmailResponse = await sendEmailToFaculty(r.facultyId, r.kind, { topicIds: selectionToIds(r.topics as any, r.sel), sender });
       setStatus((s) => ({ ...s, [r.facultyId]: { state: res.success ? 'ok' : 'failed', message: res.message } }));
-      if (!res.success && /left today|limit|Unauthorized|unexpected reply/i.test(res.message || '')) {
+      if (!res.success && /limit|too many times|Unauthorized|unexpected reply/i.test(res.message || '')) {
         stopRef.current = true;           // a limit or setup problem would fail every remaining email
         break;
       }
       if (i < queue.length - 1 && !stopRef.current) {
-        await new Promise((resolve) => setTimeout(resolve, DELAY_SECONDS * 1000));
+        await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000));
       }
     }
     setStopped(stopRef.current);
@@ -141,7 +179,7 @@ export default function SendEmailsDialog({
     footer = (
       <>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="primary" onClick={() => setConfirming(true)} disabled={sendable.length === 0 || notEnough || !!loadError}>
+        <Button variant="primary" onClick={() => setConfirming(true)} disabled={sendable.length === 0 || !!loadError}>
           Send {sendWord}…
         </Button>
       </>
@@ -175,7 +213,7 @@ export default function SendEmailsDialog({
         <div className="space-y-4">
           {confirming && (
             <Notice tone="warning" title={`You are about to send ${sendWord}`}>
-              Real emails will go to the addresses listed below, each with a PDF attached. Sent emails cannot be recalled.
+              Real emails will go to the addresses listed below, sent as {sender === 'scientific' ? 'Scientific Committee' : 'the Workshop Committee account'}, each with a PDF of the ticked topics attached. Sent emails cannot be recalled.
               Click <strong>Yes, send {sendWord}</strong> to start, or <strong>Go back</strong> to change the list.
             </Notice>
           )}
@@ -183,48 +221,95 @@ export default function SendEmailsDialog({
             <p className="font-semibold">
               {sendable.length} email{sendable.length === 1 ? '' : 's'} will be sent from the Google account that runs your script.
             </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <label htmlFor="send-from" className="font-medium">Send as:</label>
+              <select
+                id="send-from"
+                value={sender}
+                disabled={confirming}
+                onChange={(e) => setSenderOverride(e.target.value as 'workshop' | 'scientific')}
+                className="rounded-lg border border-line bg-white px-2 py-1 text-sm text-ink"
+              >
+                <option value="workshop">Workshop / DERMACON (default)</option>
+                <option value="scientific">Scientific Committee &lt;scientific@dermacon2027.com&gt;</option>
+              </select>
+              {senderOverride === null && sender === 'scientific' && <span className="text-xs text-muted">Suggested: only scientific topics are ticked.</span>}
+            </div>
+            {sender === 'scientific' && (
+              <p className="mt-1 text-xs text-ink-2">Shown as “Scientific Committee”; replies go to scientific@dermacon2027.com.</p>
+            )}
             <ul className="mt-2 list-disc space-y-1 pl-5 text-ink-2">
-              <li>One email at a time, with a {DELAY_SECONDS}-second pause between emails and the same minimum enforced by Google Apps Script (about {minutes} minute{minutes === 1 ? '' : 's'} in total).</li>
-              <li>Each email has one PDF attached, with one page per session.</li>
+              <li>
+                One email at a time, with a{' '}
+                <select
+                  aria-label="Pause between emails"
+                  value={delaySeconds}
+                  disabled={confirming}
+                  onChange={(e) => setDelaySeconds(Number(e.target.value))}
+                  className="rounded-lg border border-line bg-white px-1.5 py-0.5 text-sm text-ink"
+                >
+                  {DELAY_CHOICES.map((s) => <option key={s} value={s}>{s} seconds</option>)}
+                </select>
+                {' '}pause between emails (about {minutes} minute{minutes === 1 ? '' : 's'} in total). Keep this window open while sending.
+              </li>
+              <li>Each email has one PDF attached with the ticked topics only, one page per session.</li>
               <li>No coordinator or committee member receives anything.</li>
             </ul>
-            <p className="mt-3">
-              Emails left today: <strong className="tnum">{quotaProblem ? 'unknown' : quota}</strong>
-              {!quotaProblem && <> ({reserve} are kept free for confirmation thank-you emails, so <strong className="tnum">{usable}</strong> can be used now).</>}
-            </p>
+            {counts && (
+              <p className="mt-3">
+                Faculty emailed so far: <strong className="tnum">{counts.emailed}</strong> of <span className="tnum">{counts.faculty}</span>
+                {' '}(<strong className="tnum">{counts.today}</strong> today). No limit is set by this app.
+              </p>
+            )}
           </div>
 
-          {quotaProblem && (
-            <p role="alert" className="flex items-start gap-2 rounded-lg border border-warning-line bg-warning-tint p-3 text-sm text-warning">
-              <AlertIcon className="mt-0.5 shrink-0" width={16} height={16} />
-              {quotaProblem} You can still send, but the limit could not be checked first.
-            </p>
+          {canSwitch && !confirming && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium text-ink">Send all as:</span>
+              <Button onClick={() => setAllKinds('first')}>New email</Button>
+              <Button onClick={() => setAllKinds('update')}>Schedule update</Button>
+            </div>
           )}
-          {notEnough && (
-            <p role="alert" className="flex items-start gap-2 rounded-lg border border-danger-line bg-danger-tint p-3 text-sm text-danger-strong">
-              <AlertIcon className="mt-0.5 shrink-0" width={16} height={16} />
-              Only {usable} email{usable === 1 ? '' : 's'} can be sent today but you selected {sendable.length}. Select fewer faculty, or wait for the daily limit to reset.
-            </p>
+
+          {!confirming && rows.some((r) => r.topics.length > 0) && (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium text-ink">Include for everyone:</span>
+              <Button onClick={() => setEveryone('all')}>Everything</Button>
+              <Button onClick={() => setEveryone('workshop')}>{GROUP_LABEL.workshop} only</Button>
+              <Button onClick={() => setEveryone('scientific')}>{GROUP_LABEL.scientific} only</Button>
+            </div>
           )}
 
           <ul className="space-y-3">
-            {rows.map((r) => (
+            {effRows.map((r) => { const rr = r; return (
               <li key={r.facultyId} className={`rounded-xl border p-3.5 ${r.problem ? 'border-danger-line bg-danger-tint' : 'border-line bg-white'}`}>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div className="min-w-0">
                     <span className="font-semibold text-ink">{r.name}</span>
                     <span className="ml-2 break-all text-sm text-muted">{r.email || 'no email'}</span>
                   </div>
-                  <Badge tone={r.kind === 'update' ? 'warning' : r.kind === 'reminder' ? 'neutral' : 'accent'}>
-                    {r.kind === 'first' ? 'First email' : r.kind === 'update' ? 'Schedule update' : 'Reminder'}
-                  </Badge>
+                  {rr.kind !== 'reminder' && !r.problem && !confirming ? (
+                    <select
+                      aria-label={`Email type for ${r.name}`}
+                      value={r.kind}
+                      onChange={(e) => setKindOverride((o) => ({ ...o, [r.facultyId]: e.target.value as Kind }))}
+                      className="rounded-lg border border-line bg-white px-2 py-1 text-sm text-ink"
+                    >
+                      <option value="first">New email</option>
+                      <option value="update">Schedule update</option>
+                    </select>
+                  ) : (
+                    <Badge tone={r.kind === 'update' ? 'warning' : r.kind === 'reminder' ? 'neutral' : 'accent'}>
+                      {r.kind === 'first' ? 'New email' : r.kind === 'update' ? 'Schedule update' : 'Reminder'}
+                    </Badge>
+                  )}
                 </div>
                 {r.problem ? (
                   <p className="mt-2 text-sm font-medium text-danger-strong">Will be skipped: {r.problem}</p>
                 ) : (
                   <>
                     <p className="mt-1 text-xs text-muted">{KIND_LABEL[r.kind as Kind]}</p>
-                    {r.changes?.length > 0 && (
+                    {r.kind === 'update' && r.changes?.length > 0 && (
                       <div className="mt-2 rounded-lg bg-warning-tint p-2.5 text-sm text-warning">
                         <p className="font-semibold">What changed (shown at the top of the email)</p>
                         <ul className="mt-1 list-disc space-y-0.5 pl-5">
@@ -232,8 +317,20 @@ export default function SendEmailsDialog({
                         </ul>
                       </div>
                     )}
+                    {!confirming && (
+                      <div className="mt-2">
+                        <Button size="sm" onClick={() => setOpenPicker(openPicker === r.facultyId ? null : r.facultyId)} aria-expanded={openPicker === r.facultyId}>
+                          Choose topics ({r.sel.size} of {r.topics.length})
+                        </Button>
+                      </div>
+                    )}
+                    {openPicker === r.facultyId && !confirming && (
+                      <div className="mt-2">
+                        <TopicPicker topics={r.topics as any} selected={r.sel} onChange={(next) => setSel(r.facultyId, next)} />
+                      </div>
+                    )}
                     <ul className="mt-2 space-y-1">
-                      {r.topics.map((t) => (
+                      {r.topics.filter((t) => r.sel.has(t.topicId)).map((t) => (
                         <li key={t.topicId} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                           <span className="tnum font-medium text-accent">{t.session}</span>
                           <span className="text-ink">{t.title}</span>
@@ -248,7 +345,7 @@ export default function SendEmailsDialog({
                   </>
                 )}
               </li>
-            ))}
+            ); })}
           </ul>
         </div>
       )}
@@ -262,7 +359,7 @@ export default function SendEmailsDialog({
             </p>
           )}
           <ul className="divide-y divide-line rounded-xl border border-line bg-white">
-            {rows.map((r) => {
+            {effRows.map((r) => {
               const st = status[r.facultyId] || { state: 'waiting' as const };
               return (
                 <li key={r.facultyId} className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 text-sm">
