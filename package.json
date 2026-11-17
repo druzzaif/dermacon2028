@@ -10,15 +10,20 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.5.0",
     "@supabase/supabase-js": "^2.119.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "csv-parse": "^7.0.3",
+    "lucide-react": "^1.74.0",
     "next": "16.4.5",
     "nodemailer": "^10.4.0",
     "pg": "^8.23.1",
     "puppeteer": "^25.16.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "resend": "^6.37.0"
+    "resend": "^6.37.0",
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.5",

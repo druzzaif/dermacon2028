@@ -84,10 +84,10 @@ export default function SessionsPage() {
     s.session_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-gray-50 text-gray-500 text-xl">Loading Master Schedule...</div>;
+  if (loading) return <div className="h-[calc(100vh-var(--topbar-h))] flex items-center justify-center bg-gray-50 text-gray-500 text-xl">Loading Master Schedule...</div>;
 
   return (
-    <div className="flex h-screen bg-gray-100 text-gray-900 font-sans overflow-hidden">
+    <div className="flex h-[calc(100vh-var(--topbar-h))] bg-gray-100 text-gray-900 font-sans overflow-hidden">
       
       <aside className="w-80 bg-white border-r border-gray-200 flex flex-col shrink-0">
         <div className="p-5 border-b border-gray-200 bg-gray-800 text-white">
@@ -95,12 +95,6 @@ export default function SessionsPage() {
           <p className="text-sm text-gray-300 mt-1">Master Schedule</p>
         </div>
         
-        <div className="flex gap-4 p-4 bg-gray-50 border-b border-gray-200 text-sm font-semibold">
-          <a href="/" className="text-gray-600 hover:text-blue-600">Faculty</a>
-          <a href="/sessions" className="text-blue-600">Sessions</a>
-          <a href="/overlaps" className="text-red-600 hover:text-red-700">Overlaps</a>
-        </div>
-
         <div className="p-4 border-b border-gray-200">
           <input 
             type="text" 

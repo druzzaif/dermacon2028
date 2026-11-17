@@ -52,18 +52,7 @@ export default function Dashboard() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-900 font-sans">
-      <aside className="w-72 bg-white border-r border-gray-200 flex flex-col shrink-0">
-        <div className="h-20 flex items-center px-8 border-b border-gray-200 bg-gray-800">
-          <span className="text-2xl font-bold text-white tracking-wide">DERMACON 2028</span>
-        </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <a href="/" className="block px-4 py-3 bg-blue-50 text-blue-700 rounded-lg font-bold text-lg">Faculty</a>
-          <a href="/sessions" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium text-lg">Master Schedule</a>
-          <a href="/overlaps" className="block px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg font-medium text-lg">Overlaps</a>
-        </nav>
-      </aside>
-
+    <div className="flex min-h-[calc(100vh-var(--topbar-h))] bg-gray-50 text-gray-900 font-sans">
       <main className="flex-1 p-8 md:p-10 overflow-y-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>

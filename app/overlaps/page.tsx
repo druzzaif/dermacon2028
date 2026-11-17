@@ -93,19 +93,7 @@ export default function OverlapsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8 shrink-0">
-        <div className="flex items-center gap-8">
-          <span className="text-xl font-bold text-blue-600">DERMACON 2028</span>
-          <nav className="flex gap-6 items-center h-16">
-            <a href="/" className="text-gray-600 hover:text-blue-600 font-medium h-full flex items-center">Faculty</a>
-            <a href="/sessions" className="text-gray-600 hover:text-blue-600 font-medium h-full flex items-center">Master Schedule</a>
-            <a href="/overlaps" className="text-red-600 border-b-2 border-red-600 font-bold h-full flex items-center">Overlaps</a>
-          </nav>
-        </div>
-      </header>
-
+    <div className="min-h-[calc(100vh-var(--topbar-h))] bg-gray-50 text-gray-900 font-sans flex flex-col">
       <main className="flex-1 p-8 max-w-6xl mx-auto w-full">
         <h1 className="text-3xl font-bold mb-2">Schedule Conflicts</h1>
         <p className="text-gray-500 mb-8">Automatically detected clashes in faculty schedules and hall bookings.</p>
