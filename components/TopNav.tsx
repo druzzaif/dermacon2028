@@ -17,8 +17,8 @@ export default function TopNav() {
 
   return (
     <header className="sticky top-0 z-40 h-(--topbar-h) border-b border-border bg-background">
-      <div className="mx-auto flex h-full max-w-screen-2xl items-center gap-8 px-6">
-        <Link href="/" className="text-lg font-bold tracking-tight text-primary">
+      <div className="mx-auto flex h-full max-w-screen-2xl items-center gap-4 px-4 sm:gap-8 sm:px-6">
+        <Link href="/" className="whitespace-nowrap text-lg font-bold tracking-tight text-primary">
           DERMACON 2028
         </Link>
         <nav aria-label="Main" className="flex h-full items-center gap-1">
@@ -29,6 +29,7 @@ export default function TopNav() {
                 key={href}
                 href={href}
                 aria-current={active ? 'page' : undefined}
+                aria-label={label}
                 className={cn(
                   'flex h-11 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   active
@@ -37,7 +38,7 @@ export default function TopNav() {
                 )}
               >
                 <Icon className="size-4" aria-hidden="true" />
-                {label}
+                <span className="hidden sm:inline">{label}</span>
               </Link>
             );
           })}
