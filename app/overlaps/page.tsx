@@ -58,7 +58,7 @@ export default function OverlapsPage() {
       // 3. Find Hall Overlaps
       const hallIssues: any[] = [];
       const sessionsMap = new Map();
-      topics.forEach(t => {
+      (topics as any[]).forEach(t => {
         if (t.conference_sessions?.hall) {
           const key = `${t.conference_sessions.hall}-${t.conference_sessions.session_date}`;
           if (!sessionsMap.has(key)) sessionsMap.set(key, []);

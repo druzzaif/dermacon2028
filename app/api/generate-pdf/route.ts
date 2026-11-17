@@ -33,7 +33,7 @@ export async function GET(req: Request) {
     if (!topics || topics.length === 0) throw new Error("This faculty member has no sessions assigned.");
 
     const sessionsMap: Record<string, any> = {};
-    topics.forEach(t => {
+    (topics as any[]).forEach(t => {
       const session = t.session_topics?.conference_sessions;
       if (!session) return;
       if (!sessionsMap[session.id]) sessionsMap[session.id] = { session, topics: [] };
@@ -52,7 +52,7 @@ export async function GET(req: Request) {
         .eq('role', 'Lead Coordinator')
         .single();
 
-      const leadCoord = coordData?.faculty;
+      const leadCoord = coordData?.faculty as any;
       const coordName = leadCoord?.canonical_name || 'Scientific Committee';
       const coordPhone = leadCoord?.phone || '+91 99981 84930';
       const coordEmail = leadCoord?.email || 'osdermacon@iadvl.org';
@@ -129,12 +129,12 @@ export async function GET(req: Request) {
     // 4. Generate PDF
     const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'], headless: true });
     const page = await browser.newPage();
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+    await page.setContent(fullHtml, { waitUntil: 'networkidle0' as any });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
 
     // 5. Return the PDF file directly
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

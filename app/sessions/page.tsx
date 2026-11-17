@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import EditSessionModal from '../components/EditSessionModal';
 import AddTopicModal from '../components/AddTopicModal';
 import EditCoordinatorsModal from '../components/EditCoordinatorsModal';
 import { useSearchParams } from 'next/navigation';
 
-export default function SessionsPage() {
+function SessionsContent() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [selectedSession, setSelectedSession] = useState<any | null>(null);
   const [coordinators, setCoordinators] = useState<any[]>([]);
@@ -262,5 +262,13 @@ export default function SessionsPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function SessionsPage() {
+  return (
+    <Suspense fallback={null}>
+      <SessionsContent />
+    </Suspense>
   );
 }
